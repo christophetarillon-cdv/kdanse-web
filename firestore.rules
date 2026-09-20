@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users: chacun peut lire/écrire son profil, admins peuvent tout faire
+    match /users/{userId} {
+      allow read: if request.auth.uid == userId || isAdmin();
+      allow write: if request.auth.uid == userId && !request.resource.data.roles.size() > 0 || isAdmin();
+    }
+
+    // AppSettings: admins seulement
+    match /appSettings/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // Stages: tous les utilisateurs connectés peuvent lire
+    match /stages/{stageId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Memberships: les utilisateurs peuvent voir leurs propres adhésions
+    match /memberships/{membershipId} {
+      allow read: if canViewMembership(membershipId);
+      allow write: if isAdmin() || isOwnMembership(membershipId);
+    }
+
+    // PaymentGroups: visibleUserIds permet à plusieurs personnes d'accéder
+    match /paymentGroups/{paymentGroupId} {
+      allow read: if canViewPaymentGroup(paymentGroupId);
+      allow write: if isAdmin();
+    }
+
+    // PaymentInstallments: les utilisateurs voient les leurs via paymentGroups
+    match /paymentInstallments/{installmentId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // BankAccounts: admins seulement
+    match /bankAccounts/{accountId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Existing collections: garder l'ouverture pour l'app mobile
+    match /seances/{seanceId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /activites/{activiteId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /inscriptions/{inscriptionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /users/{userId}/photos/{photoId} {
+      allow read, write: if request.auth.uid == userId || isAdmin();
+    }
+
+    match /medias/{mediaId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /annonces/{annonce} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /channels/{channelId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /analytics_{dataType} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /config/{configId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /participations/{participationId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /soiree/{soireeId} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+
+  function isAuthenticated() {
+    return request.auth != null;
+  }
+
+  function isAdmin() {
+    return isAuthenticated() &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin']);
+  }
+
+  function canViewMembership(membershipId) {
+    let membership = get(/databases/$(database)/documents/memberships/$(membershipId)).data;
+    return isAuthenticated() &&
+           (request.auth.uid == membership.userId ||
+            request.auth.uid in membership.visibleUserIds ||
+            isAdmin());
+  }
+
+  function canViewPaymentGroup(paymentGroupId) {
+    let paymentGroup = get(/databases/$(database)/documents/paymentGroups/$(paymentGroupId)).data;
+    return isAuthenticated() &&
+           (request.auth.uid in paymentGroup.visibleUserIds ||
+            isAdmin());
+  }
+
+  function isOwnMembership(membershipId) {
+    let membership = get(/databases/$(database)/documents/memberships/$(membershipId)).data;
+    return isAuthenticated() && request.auth.uid == membership.userId;
+  }
+}
