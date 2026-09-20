@@ -1,7 +1,8 @@
-import { redirect } from 'next/navigation';
-
-export const dynamic = 'force-dynamic';
-
 export default function HomePage() {
-  redirect('/login');
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <script>{`window.location.href = '/login';`}</script>
+      <p>Redirection vers la page de connexion...</p>
+    </div>
+  );
 }
