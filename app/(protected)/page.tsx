@@ -3,8 +3,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 
-export const dynamic = 'force-dynamic';
-
 export default function DashboardPage() {
   const { user } = useAuth();
 
