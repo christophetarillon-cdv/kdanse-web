@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description: "Site de réservation et paiement Kdanse",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
