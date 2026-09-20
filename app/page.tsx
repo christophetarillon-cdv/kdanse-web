@@ -1,18 +1,55 @@
-import Link from 'next/link';
-
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
-        <h1 className="text-4xl font-bold mb-4 text-gray-900">Kdanse</h1>
-        <p className="text-gray-600 mb-6">Site de réservation et paiement</p>
-        <p className="text-sm text-gray-500 mb-8">Phase 1 : Fondations ✅</p>
-        <Link
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#f3f4f6'
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        padding: '32px',
+        borderRadius: '8px',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+        textAlign: 'center',
+        maxWidth: '448px'
+      }}>
+        <h1 style={{
+          fontSize: '36px',
+          fontWeight: 'bold',
+          marginBottom: '16px',
+          color: '#111827'
+        }}>
+          Kdanse
+        </h1>
+        <p style={{
+          color: '#4b5563',
+          marginBottom: '24px'
+        }}>
+          Site de réservation et paiement
+        </p>
+        <p style={{
+          fontSize: '14px',
+          color: '#6b7280',
+          marginBottom: '32px'
+        }}>
+          Phase 1 : Fondations ✅
+        </p>
+        <a
           href="/login"
-          className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          style={{
+            display: 'inline-block',
+            padding: '8px 24px',
+            backgroundColor: '#2563eb',
+            color: 'white',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontWeight: '500'
+          }}
         >
           Se connecter
-        </Link>
+        </a>
       </div>
     </div>
   );
