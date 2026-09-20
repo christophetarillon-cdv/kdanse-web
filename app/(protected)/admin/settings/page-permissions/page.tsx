@@ -6,6 +6,8 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { PagePermissions } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 const availablePages = [
   { id: 'membership', name: 'Adhésion / Paiement' },
   { id: 'admin-payment-plans', name: 'Admin - Validation paiements' },

@@ -1,10 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users: chacun peut lire/écrire son profil, admins peuvent tout faire
+    // Users: authentifiés peuvent lire/écrire leur profil, admins gèrent tout
     match /users/{userId} {
       allow read: if request.auth.uid == userId || isAdmin();
-      allow write: if request.auth.uid == userId && !request.resource.data.roles.size() > 0 || isAdmin();
+      allow write: if request.auth.uid == userId || isAdmin();
     }
 
     // AppSettings: admins seulement
@@ -12,25 +12,25 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // Stages: tous les utilisateurs connectés peuvent lire
+    // Stages: tous les utilisateurs connectés peuvent lire, admins écrivent
     match /stages/{stageId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }
 
-    // Memberships: les utilisateurs peuvent voir leurs propres adhésions
+    // Memberships: utilisateurs voient leurs adhésions, admins gèrent
     match /memberships/{membershipId} {
-      allow read: if canViewMembership(membershipId);
-      allow write: if isAdmin() || isOwnMembership(membershipId);
-    }
-
-    // PaymentGroups: visibleUserIds permet à plusieurs personnes d'accéder
-    match /paymentGroups/{paymentGroupId} {
-      allow read: if canViewPaymentGroup(paymentGroupId);
+      allow read: if request.auth.uid != null;
       allow write: if isAdmin();
     }
 
-    // PaymentInstallments: les utilisateurs voient les leurs via paymentGroups
+    // PaymentGroups: utilisateurs voient les leurs, admins gèrent
+    match /paymentGroups/{paymentGroupId} {
+      allow read: if request.auth.uid != null;
+      allow write: if isAdmin();
+    }
+
+    // PaymentInstallments: admins seulement
     match /paymentInstallments/{installmentId} {
       allow read: if isAdmin();
       allow write: if isAdmin();
@@ -71,7 +71,7 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
-    match /analytics_{dataType} {
+    match /analytics/{document=**} {
       allow read: if isAdmin();
       allow write: if false;
     }
@@ -96,25 +96,5 @@ service cloud.firestore {
   function isAdmin() {
     return isAuthenticated() &&
            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin']);
-  }
-
-  function canViewMembership(membershipId) {
-    let membership = get(/databases/$(database)/documents/memberships/$(membershipId)).data;
-    return isAuthenticated() &&
-           (request.auth.uid == membership.userId ||
-            request.auth.uid in membership.visibleUserIds ||
-            isAdmin());
-  }
-
-  function canViewPaymentGroup(paymentGroupId) {
-    let paymentGroup = get(/databases/$(database)/documents/paymentGroups/$(paymentGroupId)).data;
-    return isAuthenticated() &&
-           (request.auth.uid in paymentGroup.visibleUserIds ||
-            isAdmin());
-  }
-
-  function isOwnMembership(membershipId) {
-    let membership = get(/databases/$(database)/documents/memberships/$(membershipId)).data;
-    return isAuthenticated() && request.auth.uid == membership.userId;
   }
 }
