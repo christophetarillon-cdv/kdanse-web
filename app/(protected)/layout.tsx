@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { getAuth, signOut } from 'firebase/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,9 +53,9 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
               <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600">{user?.email}</span>
                 <button
-                  onClick={() => {
-                    const auth = require('firebase/auth').getAuth();
-                    require('firebase/auth').signOut(auth);
+                  onClick={async () => {
+                    const auth = getAuth();
+                    await signOut(auth);
                     router.push('/login');
                   }}
                   className="text-sm text-red-600 hover:text-red-800"
