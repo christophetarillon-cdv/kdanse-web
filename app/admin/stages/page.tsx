@@ -80,8 +80,17 @@ export default function AdminStagesPage() {
     }
   };
 
-  if (loading || stagesLoading) return <div className="p-8">Chargement...</div>;
-  if (!firebaseUser || !user?.roles?.includes('admin')) return null;
+  if (loading) return <div className="p-8">Chargement...</div>;
+
+  if (!firebaseUser) {
+    return <div className="p-8">Non authentifié</div>;
+  }
+
+  if (!user?.roles?.includes('admin')) {
+    return <div className="p-8">Accès refusé: administrateur requis</div>;
+  }
+
+  if (stagesLoading) return <div className="p-8">Chargement des stages...</div>;
 
   return (
     <div className="space-y-8">
