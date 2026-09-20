@@ -7,6 +7,8 @@ import { auth } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default function ProtectedLayout({
   children,
 }: {
