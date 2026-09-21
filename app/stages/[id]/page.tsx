@@ -16,11 +16,29 @@ interface Stage {
   endDate?: string;
   maxParticipants?: number;
   pricing?: {
-    solo: number;
-    couple: number;
-    ffdanse: number;
-    withHousing: number;
+    stage: {
+      soloLicensed: number;
+      soloUnlicensed: number;
+      coupleUnlicensed: number;
+      coupleLicensed: number;
+      coupleMixed: number;
+    };
+    housing: {
+      solo: number;
+      couple: number;
+    };
   };
+}
+
+interface Dancer {
+  licensed: boolean;
+}
+
+interface RegistrationForm {
+  danceType: 'solo' | 'couple'; // solo ou couple de danseurs
+  dancers: Dancer[]; // array of 1 or 2 dancers
+  housingSolo: number;
+  housingCouple: number;
 }
 
 export default function StageDetailPage() {
@@ -31,8 +49,12 @@ export default function StageDetailPage() {
   const [stage, setStage] = useState<Stage | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [pricingType, setPricingType] = useState<'solo' | 'couple' | 'ffdanse' | 'withHousing'>('solo');
-  const [withHousing, setWithHousing] = useState(false);
+  const [form, setForm] = useState<RegistrationForm>({
+    danceType: 'solo',
+    dancers: [{ licensed: false }],
+    housingSolo: 0,
+    housingCouple: 0,
+  });
 
   useEffect(() => {
     if (!authLoading && !firebaseUser) {
@@ -72,19 +94,54 @@ export default function StageDetailPage() {
     }
   };
 
+  const calculatePrice = (): number => {
+    if (!stage?.pricing) return 0;
+
+    let stagePrice = 0;
+    const p = stage.pricing.stage;
+
+    // Calcul du prix du stage
+    if (form.danceType === 'solo') {
+      stagePrice = form.dancers[0]?.licensed ? p.soloLicensed : p.soloUnlicensed;
+    } else if (form.danceType === 'couple') {
+      const d1Licensed = form.dancers[0]?.licensed;
+      const d2Licensed = form.dancers[1]?.licensed;
+
+      if (d1Licensed && d2Licensed) {
+        stagePrice = p.coupleLicensed;
+      } else if (!d1Licensed && !d2Licensed) {
+        stagePrice = p.coupleUnlicensed;
+      } else {
+        stagePrice = p.coupleMixed;
+      }
+    }
+
+    // Calcul du prix d'hébergement
+    const housingPrice = (form.housingSolo * stage.pricing.housing.solo) +
+                         (form.housingCouple * stage.pricing.housing.couple);
+
+    return stagePrice + housingPrice;
+  };
+
   const handleRegister = async () => {
     if (!firebaseUser || !stage) return;
 
     setSubmitting(true);
     try {
-      const price = stage.pricing?.[withHousing ? 'withHousing' : pricingType] || 0;
+      const totalPrice = calculatePrice();
+      const summary = {
+        danceType: form.danceType,
+        dancers: form.dancers,
+        housingSolo: form.housingSolo,
+        housingCouple: form.housingCouple,
+      };
 
       await addDoc(collection(db, 'memberships'), {
         userId: firebaseUser.uid,
         stageId: stage.id,
         stageName: stage.name,
-        pricingCategory: withHousing ? 'withHousing' : pricingType,
-        amount: price,
+        registrationDetails: summary,
+        amount: totalPrice,
         status: 'pending_payment',
         createdAt: new Date(),
       });
@@ -132,80 +189,172 @@ export default function StageDetailPage() {
               )}
             </div>
 
+            {/* Formulaire d'inscription flexible */}
             <div className="border-t pt-8">
-              <h2 className="text-2xl font-semibold mb-4">Tarifs</h2>
-              {stage.pricing ? (
-                <div className="grid md:grid-cols-2 gap-4 mb-6">
-                  <div
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition ${
-                      pricingType === 'solo' && !withHousing
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300'
-                    }`}
-                    onClick={() => {
-                      setPricingType('solo');
-                      setWithHousing(false);
-                    }}
-                  >
-                    <p className="font-semibold">Solo</p>
-                    <p className="text-2xl font-bold text-blue-600">{stage.pricing.solo}€</p>
-                  </div>
+              <h2 className="text-2xl font-semibold mb-6">Configurez votre inscription</h2>
 
-                  <div
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition ${
-                      pricingType === 'couple' && !withHousing
-                        ? 'border-green-600 bg-green-50'
-                        : 'border-gray-200 hover:border-green-300'
+              {/* Étape 1: Type de participation */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                <h3 className="font-semibold text-blue-900 mb-4 flex items-center">
+                  <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">1</span>
+                  Nombre de danseurs
+                </h3>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setForm({ ...form, danceType: 'solo', dancers: [{ licensed: false }] })}
+                    className={`flex-1 p-4 border-2 rounded-lg font-semibold transition ${
+                      form.danceType === 'solo'
+                        ? 'border-blue-600 bg-blue-100 text-blue-900'
+                        : 'border-gray-300 hover:border-blue-400'
                     }`}
-                    onClick={() => {
-                      setPricingType('couple');
-                      setWithHousing(false);
-                    }}
                   >
-                    <p className="font-semibold">Couple</p>
-                    <p className="text-2xl font-bold text-green-600">{stage.pricing.couple}€</p>
-                  </div>
-
-                  <div
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition ${
-                      pricingType === 'ffdanse' && !withHousing
-                        ? 'border-purple-600 bg-purple-50'
-                        : 'border-gray-200 hover:border-purple-300'
+                    🧑‍🎤 Solo
+                  </button>
+                  <button
+                    onClick={() => setForm({ ...form, danceType: 'couple', dancers: [{ licensed: false }, { licensed: false }] })}
+                    className={`flex-1 p-4 border-2 rounded-lg font-semibold transition ${
+                      form.danceType === 'couple'
+                        ? 'border-blue-600 bg-blue-100 text-blue-900'
+                        : 'border-gray-300 hover:border-blue-400'
                     }`}
-                    onClick={() => {
-                      setPricingType('ffdanse');
-                      setWithHousing(false);
-                    }}
                   >
-                    <p className="font-semibold">FFDanse</p>
-                    <p className="text-2xl font-bold text-purple-600">{stage.pricing.ffdanse}€</p>
-                  </div>
+                    👥 Couple
+                  </button>
+                </div>
+              </div>
 
-                  <div className="p-4 border-2 border-gray-200 rounded-lg flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={withHousing}
-                      onChange={(e) => setWithHousing(e.target.checked)}
-                      className="w-5 h-5"
-                    />
-                    <div>
-                      <p className="font-semibold">+ Logement</p>
-                      <p className="text-lg font-bold text-orange-600">+{stage.pricing.withHousing}€</p>
+              {/* Étape 2: Statut FFDanse */}
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-6 mb-6">
+                <h3 className="font-semibold text-purple-900 mb-4 flex items-center">
+                  <span className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">2</span>
+                  Licence FFDanse
+                </h3>
+                <div className="space-y-3">
+                  {form.dancers.map((dancer, idx) => (
+                    <div key={idx} className="flex items-center gap-4 p-3 bg-white rounded border">
+                      <label className="flex-1 font-medium text-gray-700">
+                        {form.danceType === 'solo' ? 'Vous êtes' : `Danseur${idx + 1}`}
+                      </label>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            const newDancers = [...form.dancers];
+                            newDancers[idx].licensed = false;
+                            setForm({ ...form, dancers: newDancers });
+                          }}
+                          className={`px-4 py-2 rounded font-semibold transition ${
+                            !dancer.licensed
+                              ? 'bg-purple-600 text-white'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          }`}
+                        >
+                          Non licencié
+                        </button>
+                        <button
+                          onClick={() => {
+                            const newDancers = [...form.dancers];
+                            newDancers[idx].licensed = true;
+                            setForm({ ...form, dancers: newDancers });
+                          }}
+                          className={`px-4 py-2 rounded font-semibold transition ${
+                            dancer.licensed
+                              ? 'bg-purple-600 text-white'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          }`}
+                        >
+                          Licencié FFDanse
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Étape 3: Hébergement */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+                <h3 className="font-semibold text-green-900 mb-4 flex items-center">
+                  <span className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">3</span>
+                  Hébergement
+                </h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block font-medium text-gray-700 mb-3">
+                      Chambres solo ({stage?.pricing?.housing.solo}€ chacune)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setForm({ ...form, housingSolo: Math.max(0, form.housingSolo - 1) })}
+                        className="w-10 h-10 bg-gray-300 hover:bg-gray-400 rounded font-bold"
+                      >
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        value={form.housingSolo}
+                        onChange={(e) => setForm({ ...form, housingSolo: Math.max(0, parseInt(e.target.value) || 0) })}
+                        className="w-16 border rounded px-3 py-2 text-center font-semibold"
+                        min="0"
+                      />
+                      <button
+                        onClick={() => setForm({ ...form, housingSolo: form.housingSolo + 1 })}
+                        className="w-10 h-10 bg-green-500 hover:bg-green-600 text-white rounded font-bold"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block font-medium text-gray-700 mb-3">
+                      Lits couples ({stage?.pricing?.housing.couple}€ chacun)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setForm({ ...form, housingCouple: Math.max(0, form.housingCouple - 1) })}
+                        className="w-10 h-10 bg-gray-300 hover:bg-gray-400 rounded font-bold"
+                      >
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        value={form.housingCouple}
+                        onChange={(e) => setForm({ ...form, housingCouple: Math.max(0, parseInt(e.target.value) || 0) })}
+                        className="w-16 border rounded px-3 py-2 text-center font-semibold"
+                        min="0"
+                      />
+                      <button
+                        onClick={() => setForm({ ...form, housingCouple: form.housingCouple + 1 })}
+                        className="w-10 h-10 bg-green-500 hover:bg-green-600 text-white rounded font-bold"
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
                 </div>
-              ) : (
-                <p className="text-gray-600">Tarifs non disponibles</p>
-              )}
-            </div>
+              </div>
 
-            <div className="border-t pt-8">
+              {/* Résumé du prix */}
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6 mb-6">
+                <h3 className="font-semibold text-orange-900 mb-4">Résumé de votre inscription</h3>
+                <div className="space-y-2 text-gray-800 mb-4">
+                  <p>
+                    <strong>Participation stage:</strong> {form.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
+                    {form.dancers.some(d => d.licensed) && ' (licencié FFDanse)'}
+                  </p>
+                  {form.housingSolo > 0 && <p><strong>Hébergement solo:</strong> {form.housingSolo} place(s)</p>}
+                  {form.housingCouple > 0 && <p><strong>Hébergement couple:</strong> {form.housingCouple} lit(s)</p>}
+                </div>
+                <div className="text-3xl font-bold text-orange-600">
+                  Total: {calculatePrice()}€
+                </div>
+              </div>
+
+              {/* Bouton d'inscription */}
               <button
                 onClick={handleRegister}
                 disabled={submitting}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
+                className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 disabled:opacity-50"
               >
-                {submitting ? 'Inscription en cours...' : 'S\'inscrire à ce stage'}
+                {submitting ? 'Inscription en cours...' : `Continuer vers le paiement (${calculatePrice()}€)`}
               </button>
             </div>
           </div>
