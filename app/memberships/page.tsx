@@ -140,9 +140,12 @@ export default function MembershipsPage() {
 
                 {membership.status === 'pending_payment' && (
                   <div className="mt-4 pt-4 border-t">
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <Link
+                      href={`/memberships/${membership.id}/pay`}
+                      className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
                       Procéder au paiement
-                    </button>
+                    </Link>
                   </div>
                 )}
               </div>
