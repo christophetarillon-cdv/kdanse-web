@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { getAuth, signOut } from 'firebase/auth';
 
 export default function DashboardPage() {
   const { user, firebaseUser, loading } = useAuth();
@@ -20,11 +21,29 @@ export default function DashboardPage() {
 
   const isAdmin = user?.roles?.includes('admin');
 
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth();
+      await signOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <div className="space-y-8">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg shadow-lg p-8">
-        <h1 className="text-4xl font-bold mb-2">Bienvenue, {user?.displayName || user?.email}!</h1>
-        <p className="text-blue-100">Site de réservation et paiement Kdanse</p>
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg shadow-lg p-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-4xl font-bold mb-2">Bienvenue, {user?.displayName || user?.email}!</h1>
+          <p className="text-blue-100">Site de réservation et paiement Kdanse</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+        >
+          Déconnexion
+        </button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
