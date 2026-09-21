@@ -12,12 +12,33 @@ interface Stage {
   startDate?: string;
   endDate?: string;
   pricing?: {
-    solo: number;
-    couple: number;
-    ffdanse: number;
-    withHousing: number;
+    stage: {
+      soloLicensed: number;
+      soloUnlicensed: number;
+      coupleUnlicensed: number;
+      coupleLicensed: number;
+      coupleMixed: number;
+    };
+    housing: {
+      solo: number;
+      couple: number;
+    };
   };
 }
+
+const defaultPricing = {
+  stage: {
+    soloLicensed: 0,
+    soloUnlicensed: 0,
+    coupleUnlicensed: 0,
+    coupleLicensed: 0,
+    coupleMixed: 0,
+  },
+  housing: {
+    solo: 0,
+    couple: 0,
+  },
+};
 
 export default function AdminStagesPage() {
   const [stages, setStages] = useState<Stage[]>([]);
@@ -28,12 +49,7 @@ export default function AdminStagesPage() {
     location: '',
     startDate: '',
     endDate: '',
-    pricing: {
-      solo: 0,
-      couple: 0,
-      ffdanse: 0,
-      withHousing: 0,
-    },
+    pricing: defaultPricing,
   });
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -68,7 +84,7 @@ export default function AdminStagesPage() {
           createdAt: new Date(),
         });
       }
-      setForm({ name: '', description: '', location: '', startDate: '', endDate: '', pricing: { solo: 0, couple: 0, ffdanse: 0, withHousing: 0 } });
+      setForm({ name: '', description: '', location: '', startDate: '', endDate: '', pricing: defaultPricing });
       fetchStages();
     } catch (error) {
       console.error('Error:', error);
@@ -82,7 +98,7 @@ export default function AdminStagesPage() {
       location: stage.location,
       startDate: stage.startDate || '',
       endDate: stage.endDate || '',
-      pricing: stage.pricing || { solo: 0, couple: 0, ffdanse: 0, withHousing: 0 },
+      pricing: stage.pricing || defaultPricing,
     });
     setEditing(stage.id);
   };
@@ -99,7 +115,7 @@ export default function AdminStagesPage() {
 
   const handleCancel = () => {
     setEditing(null);
-    setForm({ name: '', description: '', location: '', startDate: '', endDate: '', pricing: { solo: 0, couple: 0, ffdanse: 0, withHousing: 0 } });
+    setForm({ name: '', description: '', location: '', startDate: '', endDate: '', pricing: defaultPricing });
   };
 
   if (loading) return <div className="p-8">Chargement...</div>;
@@ -156,57 +172,146 @@ export default function AdminStagesPage() {
             />
           </div>
 
-          <div className="border-t pt-4 mt-4">
-            <h3 className="font-semibold text-gray-900 mb-3">Tarifs (€)</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              <input
-                type="number"
-                placeholder="Solo"
-                value={form.pricing.solo || ''}
-                onChange={(e) => setForm({
-                  ...form,
-                  pricing: { ...form.pricing, solo: parseFloat(e.target.value) || 0 }
-                })}
-                className="border rounded px-3 py-2"
-                min="0"
-                step="0.01"
-              />
-              <input
-                type="number"
-                placeholder="En couple"
-                value={form.pricing.couple || ''}
-                onChange={(e) => setForm({
-                  ...form,
-                  pricing: { ...form.pricing, couple: parseFloat(e.target.value) || 0 }
-                })}
-                className="border rounded px-3 py-2"
-                min="0"
-                step="0.01"
-              />
-              <input
-                type="number"
-                placeholder="FFDanse"
-                value={form.pricing.ffdanse || ''}
-                onChange={(e) => setForm({
-                  ...form,
-                  pricing: { ...form.pricing, ffdanse: parseFloat(e.target.value) || 0 }
-                })}
-                className="border rounded px-3 py-2"
-                min="0"
-                step="0.01"
-              />
-              <input
-                type="number"
-                placeholder="Avec logement"
-                value={form.pricing.withHousing || ''}
-                onChange={(e) => setForm({
-                  ...form,
-                  pricing: { ...form.pricing, withHousing: parseFloat(e.target.value) || 0 }
-                })}
-                className="border rounded px-3 py-2"
-                min="0"
-                step="0.01"
-              />
+          {/* Tarifs du stage */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="font-semibold text-lg text-gray-900 mb-4 flex items-center">
+              <span className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-2">1</span>
+              Tarifs du stage (€)
+            </h3>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Solo licencié</label>
+                  <input
+                    type="number"
+                    value={form.pricing.stage.soloLicensed || ''}
+                    onChange={(e) => setForm({
+                      ...form,
+                      pricing: {
+                        ...form.pricing,
+                        stage: { ...form.pricing.stage, soloLicensed: parseFloat(e.target.value) || 0 }
+                      }
+                    })}
+                    className="w-full border rounded px-3 py-2"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Solo non licencié</label>
+                  <input
+                    type="number"
+                    value={form.pricing.stage.soloUnlicensed || ''}
+                    onChange={(e) => setForm({
+                      ...form,
+                      pricing: {
+                        ...form.pricing,
+                        stage: { ...form.pricing.stage, soloUnlicensed: parseFloat(e.target.value) || 0 }
+                      }
+                    })}
+                    className="w-full border rounded px-3 py-2"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Couple non licencié</label>
+                  <input
+                    type="number"
+                    value={form.pricing.stage.coupleUnlicensed || ''}
+                    onChange={(e) => setForm({
+                      ...form,
+                      pricing: {
+                        ...form.pricing,
+                        stage: { ...form.pricing.stage, coupleUnlicensed: parseFloat(e.target.value) || 0 }
+                      }
+                    })}
+                    className="w-full border rounded px-3 py-2"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Couple licencié</label>
+                  <input
+                    type="number"
+                    value={form.pricing.stage.coupleLicensed || ''}
+                    onChange={(e) => setForm({
+                      ...form,
+                      pricing: {
+                        ...form.pricing,
+                        stage: { ...form.pricing.stage, coupleLicensed: parseFloat(e.target.value) || 0 }
+                      }
+                    })}
+                    className="w-full border rounded px-3 py-2"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Couple mixte (1 lic. + 1 non lic.)</label>
+                  <input
+                    type="number"
+                    value={form.pricing.stage.coupleMixed || ''}
+                    onChange={(e) => setForm({
+                      ...form,
+                      pricing: {
+                        ...form.pricing,
+                        stage: { ...form.pricing.stage, coupleMixed: parseFloat(e.target.value) || 0 }
+                      }
+                    })}
+                    className="w-full border rounded px-3 py-2"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tarifs hébergement */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="font-semibold text-lg text-gray-900 mb-4 flex items-center">
+              <span className="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-2">2</span>
+              Tarifs de l'hébergement (€)
+            </h3>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Hébergement solo (par place)</label>
+                  <input
+                    type="number"
+                    value={form.pricing.housing.solo || ''}
+                    onChange={(e) => setForm({
+                      ...form,
+                      pricing: {
+                        ...form.pricing,
+                        housing: { ...form.pricing.housing, solo: parseFloat(e.target.value) || 0 }
+                      }
+                    })}
+                    className="w-full border rounded px-3 py-2"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Hébergement couple (lit double, 2 places)</label>
+                  <input
+                    type="number"
+                    value={form.pricing.housing.couple || ''}
+                    onChange={(e) => setForm({
+                      ...form,
+                      pricing: {
+                        ...form.pricing,
+                        housing: { ...form.pricing.housing, couple: parseFloat(e.target.value) || 0 }
+                      }
+                    })}
+                    className="w-full border rounded px-3 py-2"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -251,13 +356,22 @@ export default function AdminStagesPage() {
                     ? `${stage.startDate.substring(0, 10)} - ${stage.endDate.substring(0, 10)}`
                     : 'Non défini'}
                 </td>
-                <td className="px-6 py-3 text-sm text-gray-600">
+                <td className="px-6 py-3 text-xs text-gray-600">
                   {stage.pricing ? (
-                    <div className="space-y-1">
-                      <p>Solo: {stage.pricing.solo}€</p>
-                      <p>Couple: {stage.pricing.couple}€</p>
-                      <p>FFDanse: {stage.pricing.ffdanse}€</p>
-                      <p>Logement: {stage.pricing.withHousing}€</p>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="font-semibold text-blue-700">Stage:</p>
+                        <p>Solo lic.: {stage.pricing.stage.soloLicensed}€</p>
+                        <p>Solo non lic.: {stage.pricing.stage.soloUnlicensed}€</p>
+                        <p>Couple lic.: {stage.pricing.stage.coupleLicensed}€</p>
+                        <p>Couple non lic.: {stage.pricing.stage.coupleUnlicensed}€</p>
+                        <p>Couple mixte: {stage.pricing.stage.coupleMixed}€</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-green-700">Hébergement:</p>
+                        <p>Solo: {stage.pricing.housing.solo}€</p>
+                        <p>Couple: {stage.pricing.housing.couple}€</p>
+                      </div>
                     </div>
                   ) : 'Non défini'}
                 </td>
