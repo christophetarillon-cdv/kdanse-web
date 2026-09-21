@@ -15,13 +15,15 @@ service cloud.firestore {
     // Stages: tous les utilisateurs connectés peuvent lire, admins écrivent
     match /stages/{stageId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin']);
     }
 
-    // Memberships: utilisateurs voient leurs adhésions, admins gèrent
+    // Memberships: utilisateurs voient leurs adhésions, tous créent et payent les leurs
     match /memberships/{membershipId} {
       allow read: if request.auth.uid != null;
-      allow write: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     // PaymentGroups: utilisateurs voient les leurs, admins gèrent
