@@ -7,14 +7,28 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+interface Dancer {
+  licensed: boolean;
+}
+
+interface RegistrationDetails {
+  danceType: 'solo' | 'couple';
+  dancers: Dancer[];
+  accompanists: number;
+  wantHousing: boolean;
+  housingSolo: number;
+  housingCouple: number;
+}
+
 interface Membership {
   id: string;
   stageName: string;
   stageId: string;
-  pricingCategory: string;
   amount: number;
   status: string;
   createdAt: string;
+  registrationDetails?: RegistrationDetails;
+  pricingCategory?: string; // Ancien format, compatibility
 }
 
 export default function MembershipsPage() {
@@ -45,9 +59,10 @@ export default function MembershipsPage() {
         id: doc.id,
         stageName: doc.data().stageName,
         stageId: doc.data().stageId,
-        pricingCategory: doc.data().pricingCategory,
         amount: doc.data().amount,
         status: doc.data().status,
+        registrationDetails: doc.data().registrationDetails,
+        pricingCategory: doc.data().pricingCategory,
         createdAt: doc.data().createdAt?.toDate?.()?.toLocaleDateString('fr-FR') || new Date().toLocaleDateString('fr-FR'),
       })) as Membership[];
       setMemberships(data);
@@ -119,8 +134,35 @@ export default function MembershipsPage() {
                   </span>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4 mb-4">
-                  <div>
+                {/* Détails de l'inscription */}
+                {membership.registrationDetails ? (
+                  <div className="bg-white bg-opacity-50 rounded p-4 mb-4 space-y-3">
+                    <div>
+                      <p className="text-sm text-gray-600">📋 Configuration</p>
+                      <div className="text-sm space-y-1 mt-1">
+                        <p>
+                          <strong>Danseurs:</strong> {membership.registrationDetails.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
+                          {membership.registrationDetails.dancers.some(d => d.licensed) && ' (licencié FFDanse)'}
+                        </p>
+                        {membership.registrationDetails.accompanists > 0 && (
+                          <p><strong>Accompagnateurs:</strong> {membership.registrationDetails.accompanists}</p>
+                        )}
+                        {membership.registrationDetails.wantHousing && (
+                          <p>
+                            <strong>Hébergement:</strong>
+                            {membership.registrationDetails.housingSolo > 0 && ` ${membership.registrationDetails.housingSolo} solo`}
+                            {membership.registrationDetails.housingSolo > 0 && membership.registrationDetails.housingCouple > 0 && ' +'}
+                            {membership.registrationDetails.housingCouple > 0 && ` ${membership.registrationDetails.housingCouple} couple`}
+                          </p>
+                        )}
+                        {!membership.registrationDetails.wantHousing && (
+                          <p><strong>Hébergement:</strong> Aucun</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : membership.pricingCategory ? (
+                  <div className="bg-white bg-opacity-50 rounded p-4 mb-4">
                     <p className="text-sm text-gray-600">Catégorie</p>
                     <p className="font-semibold capitalize">
                       {membership.pricingCategory === 'withHousing'
@@ -128,10 +170,11 @@ export default function MembershipsPage() {
                         : membership.pricingCategory}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Montant</p>
-                    <p className="text-2xl font-bold text-blue-600">{membership.amount}€</p>
-                  </div>
+                ) : null}
+
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600">Montant</p>
+                  <p className="text-2xl font-bold text-blue-600">{membership.amount}€</p>
                 </div>
 
                 <p className="text-sm text-gray-500">
