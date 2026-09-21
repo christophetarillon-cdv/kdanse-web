@@ -2,7 +2,7 @@
 
 import { createContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { User } from '@/types';
 
@@ -28,34 +28,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (fbUser) {
         try {
-          const userRef = doc(db, 'users', fbUser.uid);
-          const userDoc = await getDoc(userRef);
-
-          const userData = userDoc.data() || {};
-
-          // Mise à jour avec données manquantes
-          const updatedData = {
-            ...userData,
-            email: userData.email || fbUser.email || '',
-            displayName: userData.displayName || fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
-            roles: userData.roles || ['user'],
-            createdAt: userData.createdAt || new Date(),
-            updatedAt: new Date(),
-          };
-
-          // Sauvegarde si données manquantes
-          if (!userDoc.exists() || !userData.email || !userData.displayName) {
-            await setDoc(userRef, updatedData, { merge: true });
+          const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setUser({
+              id: fbUser.uid,
+              email: fbUser.email || '',
+              displayName: fbUser.displayName || userData.displayName || '',
+              roles: userData.roles || ['user'],
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+          } else {
+            setError('Profil utilisateur non trouvé');
+            setUser(null);
           }
-
-          setUser({
-            id: fbUser.uid,
-            email: updatedData.email,
-            displayName: updatedData.displayName,
-            roles: updatedData.roles,
-            createdAt: updatedData.createdAt,
-            updatedAt: updatedData.updatedAt,
-          });
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Erreur de chargement du profil');
           setUser(null);
