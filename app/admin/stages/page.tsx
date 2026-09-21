@@ -11,6 +11,12 @@ interface Stage {
   location: string;
   startDate?: string;
   endDate?: string;
+  pricing?: {
+    solo: number;
+    couple: number;
+    ffdanse: number;
+    withHousing: number;
+  };
 }
 
 export default function AdminStagesPage() {
@@ -22,6 +28,12 @@ export default function AdminStagesPage() {
     location: '',
     startDate: '',
     endDate: '',
+    pricing: {
+      solo: 0,
+      couple: 0,
+      ffdanse: 0,
+      withHousing: 0,
+    },
   });
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -56,7 +68,7 @@ export default function AdminStagesPage() {
           createdAt: new Date(),
         });
       }
-      setForm({ name: '', description: '', location: '', startDate: '', endDate: '' });
+      setForm({ name: '', description: '', location: '', startDate: '', endDate: '', pricing: { solo: 0, couple: 0, ffdanse: 0, withHousing: 0 } });
       fetchStages();
     } catch (error) {
       console.error('Error:', error);
@@ -70,6 +82,7 @@ export default function AdminStagesPage() {
       location: stage.location,
       startDate: stage.startDate || '',
       endDate: stage.endDate || '',
+      pricing: stage.pricing || { solo: 0, couple: 0, ffdanse: 0, withHousing: 0 },
     });
     setEditing(stage.id);
   };
@@ -86,7 +99,7 @@ export default function AdminStagesPage() {
 
   const handleCancel = () => {
     setEditing(null);
-    setForm({ name: '', description: '', location: '', startDate: '', endDate: '' });
+    setForm({ name: '', description: '', location: '', startDate: '', endDate: '', pricing: { solo: 0, couple: 0, ffdanse: 0, withHousing: 0 } });
   };
 
   if (loading) return <div className="p-8">Chargement...</div>;
@@ -143,6 +156,60 @@ export default function AdminStagesPage() {
             />
           </div>
 
+          <div className="border-t pt-4 mt-4">
+            <h3 className="font-semibold text-gray-900 mb-3">Tarifs (€)</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <input
+                type="number"
+                placeholder="Solo"
+                value={form.pricing.solo || ''}
+                onChange={(e) => setForm({
+                  ...form,
+                  pricing: { ...form.pricing, solo: parseFloat(e.target.value) || 0 }
+                })}
+                className="border rounded px-3 py-2"
+                min="0"
+                step="0.01"
+              />
+              <input
+                type="number"
+                placeholder="En couple"
+                value={form.pricing.couple || ''}
+                onChange={(e) => setForm({
+                  ...form,
+                  pricing: { ...form.pricing, couple: parseFloat(e.target.value) || 0 }
+                })}
+                className="border rounded px-3 py-2"
+                min="0"
+                step="0.01"
+              />
+              <input
+                type="number"
+                placeholder="FFDanse"
+                value={form.pricing.ffdanse || ''}
+                onChange={(e) => setForm({
+                  ...form,
+                  pricing: { ...form.pricing, ffdanse: parseFloat(e.target.value) || 0 }
+                })}
+                className="border rounded px-3 py-2"
+                min="0"
+                step="0.01"
+              />
+              <input
+                type="number"
+                placeholder="Avec logement"
+                value={form.pricing.withHousing || ''}
+                onChange={(e) => setForm({
+                  ...form,
+                  pricing: { ...form.pricing, withHousing: parseFloat(e.target.value) || 0 }
+                })}
+                className="border rounded px-3 py-2"
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+
           <div className="flex gap-2">
             <button
               type="submit"
@@ -170,6 +237,7 @@ export default function AdminStagesPage() {
               <th className="px-6 py-3 text-left font-semibold">Nom</th>
               <th className="px-6 py-3 text-left font-semibold">Lieu</th>
               <th className="px-6 py-3 text-left font-semibold">Dates</th>
+              <th className="px-6 py-3 text-left font-semibold">Tarifs</th>
               <th className="px-6 py-3 text-left font-semibold">Actions</th>
             </tr>
           </thead>
@@ -182,6 +250,16 @@ export default function AdminStagesPage() {
                   {stage.startDate && stage.endDate
                     ? `${stage.startDate.substring(0, 10)} - ${stage.endDate.substring(0, 10)}`
                     : 'Non défini'}
+                </td>
+                <td className="px-6 py-3 text-sm text-gray-600">
+                  {stage.pricing ? (
+                    <div className="space-y-1">
+                      <p>Solo: {stage.pricing.solo}€</p>
+                      <p>Couple: {stage.pricing.couple}€</p>
+                      <p>FFDanse: {stage.pricing.ffdanse}€</p>
+                      <p>Logement: {stage.pricing.withHousing}€</p>
+                    </div>
+                  ) : 'Non défini'}
                 </td>
                 <td className="px-6 py-3 space-x-2">
                   <button
