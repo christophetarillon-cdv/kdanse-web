@@ -92,12 +92,17 @@ export const createPage = async (page: Omit<CMSPage, 'id' | 'createdAt' | 'updat
     publishedAt: page.published ? now : undefined,
   };
 
-  await setDoc(doc(db, CMS_COLLECTION, pageId), {
-    ...newPage,
+  const docData: any = {
+    ...page,
     createdAt: now,
     updatedAt: now,
-    publishedAt: page.published ? now : undefined,
-  });
+  };
+
+  if (page.published) {
+    docData.publishedAt = now;
+  }
+
+  await setDoc(doc(db, CMS_COLLECTION, pageId), docData);
 
   return newPage;
 };
@@ -114,11 +119,16 @@ export const updatePage = async (pageId: string, updates: Partial<Omit<CMSPage, 
     publishedAt: updates.published && !page.published ? now : page.publishedAt,
   };
 
-  await updateDoc(doc(db, CMS_COLLECTION, pageId), {
-    ...updatedPage,
+  const docData: any = {
+    ...updates,
     updatedAt: now,
-    publishedAt: updates.published && !page.published ? now : page.publishedAt,
-  });
+  };
+
+  if (updates.published && !page.published) {
+    docData.publishedAt = now;
+  }
+
+  await updateDoc(doc(db, CMS_COLLECTION, pageId), docData);
 
   return updatedPage;
 };
