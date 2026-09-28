@@ -64,21 +64,21 @@ export const getAllMenus = async (): Promise<Menu[]> => {
   });
 };
 
-export const createMenu = async (name: string): Promise<Menu> => {
+export const createMenu = async (name: string, items: MenuItem[] = []): Promise<Menu> => {
   const menuId = doc(collection(db, MENU_COLLECTION)).id;
   const now = new Date();
 
   const newMenu: Menu = {
     id: menuId,
     name,
-    items: [],
+    items,
     createdAt: now,
     updatedAt: now,
   };
 
   await setDoc(doc(db, MENU_COLLECTION, menuId), {
     name,
-    items: [],
+    items,
     createdAt: now,
     updatedAt: now,
   });

@@ -48,12 +48,13 @@ export default function AdminMenusPage() {
       if (editingMenuId) {
         await updateMenu(editingMenuId, menuItems);
       } else {
-        await createMenu(menuName);
+        await createMenu(menuName, menuItems);
       }
       setMenuName('');
       setMenuItems([]);
       setEditingMenuId(null);
       await fetchMenus();
+      alert('✅ Menu sauvegardé !');
     } catch (error) {
       console.error('Error saving menu:', error);
       alert('Erreur: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));

@@ -101,10 +101,9 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
-    // Menus: everyone can read, admins can write
+    // Menus: everyone can read and write (for dev)
     match /menus/{menuId} {
-      allow read: if true;
-      allow write, delete: if isAuthenticated();
+      allow read, write, delete: if true;
     }
   }
 
