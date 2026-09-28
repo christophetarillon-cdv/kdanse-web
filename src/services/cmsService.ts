@@ -140,3 +140,13 @@ export const updatePage = async (pageId: string, updates: Partial<Omit<CMSPage, 
 export const deletePage = async (pageId: string): Promise<void> => {
   await deleteDoc(doc(db, CMS_COLLECTION, pageId));
 };
+
+export const autoSavePage = async (pageId: string, updates: any): Promise<void> => {
+  const docData: any = {
+    ...updates,
+    updatedAt: new Date(),
+  };
+  delete docData.id;
+  delete docData.createdAt;
+  await updateDoc(doc(db, CMS_COLLECTION, pageId), docData);
+};

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { getAllPages, createPage, updatePage, deletePage } from '@/services/cmsService';
+import { getAllPages, createPage, updatePage, deletePage, autoSavePage } from '@/services/cmsService';
 import { uploadImage } from '@/services/imageService';
 import CMSPreview from '@/components/CMSPreview';
 import type { CMSPage, CMSBlock } from '@/types/cms';
@@ -57,30 +57,35 @@ export default function AdminPagesPage() {
     }
   }, [firebaseUser, authLoading, isAdmin, router]);
 
-  // Auto-save draft every 30 seconds or 2 seconds after last change
+  // Auto-save draft every 2 seconds after last change
   useEffect(() => {
+    if (!editingId) return;
+
     const timer = setTimeout(async () => {
-      if (editingId && (form.slug || form.title || content.length > 0)) {
-        setAutoSaveStatus('saving');
-        try {
-          const cleanedContent = cleanContent(content);
-          await updatePage(editingId, {
-            ...form,
-            content: cleanedContent,
-            metadata: form.metadata,
-          });
-          setAutoSaveStatus('saved');
-          setLastAutoSave(new Date());
-          setTimeout(() => setAutoSaveStatus('idle'), 2000);
-        } catch (error) {
-          console.error('Auto-save error:', error);
-          setAutoSaveStatus('idle');
-        }
+      setAutoSaveStatus('saving');
+      console.log('Auto-saving page:', editingId);
+      try {
+        const cleanedContent = cleanContent(content);
+        await autoSavePage(editingId, {
+          slug: form.slug,
+          title: form.title,
+          description: form.description,
+          published: form.published,
+          metadata: form.metadata,
+          content: cleanedContent,
+        });
+        console.log('Auto-save success');
+        setAutoSaveStatus('saved');
+        setLastAutoSave(new Date());
+        setTimeout(() => setAutoSaveStatus('idle'), 2000);
+      } catch (error) {
+        console.error('Auto-save error:', error);
+        setAutoSaveStatus('idle');
       }
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [form, content, editingId]);
+  }, [form, content, editingId, cleanContent]);
 
   const fetchPages = async () => {
     try {
