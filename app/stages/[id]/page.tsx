@@ -156,12 +156,17 @@ export default function StageDetailPage() {
 
     setSubmitting(true);
     try {
+      console.log('Stage data:', stage);
+      console.log('Stage pricing:', stage.pricing);
+
       if (!stage.pricing) {
         throw new Error('Tarifs non disponibles');
       }
 
       // Create cart item
       const itemId = `${stage.id}-${Date.now()}`;
+      console.log('Creating cart item with ID:', itemId);
+
       const cartItem: CartItem = {
         id: itemId,
         stageId: stage.id,
@@ -172,14 +177,20 @@ export default function StageDetailPage() {
         quantity: 1,
       };
 
+      console.log('Cart item:', cartItem);
+
       // Add to cart
+      console.log('Adding to cart for user:', firebaseUser.uid);
       const cart = await addToCart(firebaseUser.uid, cartItem);
+
+      console.log('Cart after add:', cart);
 
       // Redirect to cart
       router.push('/cart');
     } catch (error) {
-      console.error('Error:', error);
-      alert('Erreur lors de l\'ajout au panier');
+      console.error('Full error:', error);
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
+      alert(`Erreur lors de l'ajout au panier: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setSubmitting(false);
     }
