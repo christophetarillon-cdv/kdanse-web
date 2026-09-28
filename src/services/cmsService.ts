@@ -84,6 +84,8 @@ export const createPage = async (page: Omit<CMSPage, 'id' | 'createdAt' | 'updat
   const pageId = doc(collection(db, CMS_COLLECTION)).id;
   const now = new Date();
 
+  const { publishedAt, ...pageWithoutPublishedAt } = page;
+
   const newPage: CMSPage = {
     ...page,
     id: pageId,
@@ -93,7 +95,7 @@ export const createPage = async (page: Omit<CMSPage, 'id' | 'createdAt' | 'updat
   };
 
   const docData: any = {
-    ...page,
+    ...pageWithoutPublishedAt,
     createdAt: now,
     updatedAt: now,
   };
@@ -112,6 +114,8 @@ export const updatePage = async (pageId: string, updates: Partial<Omit<CMSPage, 
   if (!page) throw new Error('Page not found');
 
   const now = new Date();
+  const { publishedAt, ...updatesWithoutPublishedAt } = updates;
+
   const updatedPage = {
     ...page,
     ...updates,
@@ -120,7 +124,7 @@ export const updatePage = async (pageId: string, updates: Partial<Omit<CMSPage, 
   };
 
   const docData: any = {
-    ...updates,
+    ...updatesWithoutPublishedAt,
     updatedAt: now,
   };
 
