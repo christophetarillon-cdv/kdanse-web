@@ -13,6 +13,7 @@ export default function AdminPagesPage() {
   const [pages, setPages] = useState<CMSPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     slug: '',
     title: '',
@@ -47,6 +48,7 @@ export default function AdminPagesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       if (editingId) {
         await updatePage(editingId, {
@@ -67,10 +69,12 @@ export default function AdminPagesPage() {
       }
       setForm({ slug: '', title: '', description: '', published: false, metadata: {} as any });
       setEditingId(null);
-      fetchPages();
+      await fetchPages();
     } catch (error) {
       console.error('Error saving page:', error);
-      alert('Erreur lors de la sauvegarde');
+      alert('Erreur lors de la sauvegarde: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -181,15 +185,17 @@ export default function AdminPagesPage() {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold"
+              disabled={submitting}
+              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {editingId ? 'Mettre à jour' : 'Créer'}
+              {submitting ? 'En cours...' : (editingId ? 'Mettre à jour' : 'Créer')}
             </button>
             {editingId && (
               <button
                 type="button"
                 onClick={handleCancel}
-                className="bg-gray-400 text-white px-6 py-2 rounded hover:bg-gray-500"
+                disabled={submitting}
+                className="bg-gray-400 text-white px-6 py-2 rounded hover:bg-gray-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 Annuler
               </button>
