@@ -18,11 +18,7 @@ export default function AdminPagesPage() {
     title: '',
     description: '',
     published: false,
-    metadata: {
-      seoTitle: '',
-      seoDescription: '',
-      keywords: [] as string[],
-    },
+    metadata: {} as any,
   });
 
   const isAdmin = user?.roles?.includes('admin');
@@ -69,7 +65,7 @@ export default function AdminPagesPage() {
           metadata: form.metadata,
         });
       }
-      setForm({ slug: '', title: '', description: '', published: false, metadata: { seoTitle: '', seoDescription: '', keywords: [] } });
+      setForm({ slug: '', title: '', description: '', published: false, metadata: {} as any });
       setEditingId(null);
       fetchPages();
     } catch (error) {
@@ -102,7 +98,7 @@ export default function AdminPagesPage() {
 
   const handleCancel = () => {
     setEditingId(null);
-    setForm({ slug: '', title: '', description: '', published: false, metadata: { seoTitle: '', seoDescription: '', keywords: [] } });
+    setForm({ slug: '', title: '', description: '', published: false, metadata: {} as any });
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
