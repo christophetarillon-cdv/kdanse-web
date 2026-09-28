@@ -100,6 +100,12 @@ service cloud.firestore {
     match /soiree/{soireeId} {
       allow read, write: if isAuthenticated();
     }
+
+    // Menus: everyone can read, admins can write
+    match /menus/{menuId} {
+      allow read: if true;
+      allow write, delete: if isAuthenticated();
+    }
   }
 
   function isAuthenticated() {
