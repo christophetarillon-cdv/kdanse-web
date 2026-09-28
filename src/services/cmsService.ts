@@ -143,7 +143,6 @@ export const deletePage = async (pageId: string): Promise<void> => {
 
 export const autoSavePage = async (pageId: string, updates: any): Promise<void> => {
   console.log('autoSavePage called with pageId:', pageId);
-  console.log('updates:', updates);
 
   const docData: any = {
     slug: updates.slug,
@@ -155,13 +154,13 @@ export const autoSavePage = async (pageId: string, updates: any): Promise<void> 
     updatedAt: new Date(),
   };
 
-  console.log('docData to save:', docData);
+  console.log('docData:', docData);
 
   try {
-    await updateDoc(doc(db, CMS_COLLECTION, pageId), docData);
-    console.log('updateDoc completed successfully');
+    const result = await updateDoc(doc(db, CMS_COLLECTION, pageId), docData);
+    console.log('updateDoc completed:', result);
   } catch (error) {
-    console.error('updateDoc failed:', error);
+    console.error('updateDoc error:', error instanceof Error ? error.message : error);
     throw error;
   }
 };
