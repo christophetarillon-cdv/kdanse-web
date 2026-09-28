@@ -8,6 +8,7 @@ import {
   query,
   where,
   getDocs,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { CMSPage } from '@/types/cms';
@@ -151,16 +152,16 @@ export const autoSavePage = async (pageId: string, updates: any): Promise<void> 
     published: updates.published,
     metadata: updates.metadata,
     content: updates.content,
-    updatedAt: new Date(),
+    updatedAt: serverTimestamp(),
   };
 
   console.log('docData:', docData);
 
   try {
-    const result = await updateDoc(doc(db, CMS_COLLECTION, pageId), docData);
-    console.log('updateDoc completed:', result);
+    const result = await setDoc(doc(db, CMS_COLLECTION, pageId), docData, { merge: true });
+    console.log('setDoc completed:', result);
   } catch (error) {
-    console.error('updateDoc error:', error instanceof Error ? error.message : error);
+    console.error('setDoc error:', error instanceof Error ? error.message : error);
     throw error;
   }
 };
