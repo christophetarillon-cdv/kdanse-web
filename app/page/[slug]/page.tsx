@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getPageBySlug } from '@/services/cmsService';
-import { CMSPage } from '@/types/cms';
+import type { CMSPage } from '@/types/cms';
 
 export default function CMSPage() {
   const params = useParams();

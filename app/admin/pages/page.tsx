@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { getAllPages, createPage, updatePage, deletePage } from '@/services/cmsService';
-import { CMSPage } from '@/types/cms';
+import type { CMSPage } from '@/types/cms';
 
 export default function AdminPagesPage() {
   const { user, firebaseUser, loading: authLoading } = useAuth();
@@ -55,15 +55,19 @@ export default function AdminPagesPage() {
       if (editingId) {
         await updatePage(editingId, {
           ...form,
-          content: [], // Placeholder - à améliorer avec un éditeur
+          content: [],
           metadata: form.metadata,
-        } as Partial<CMSPage>);
+        });
       } else {
         await createPage({
           ...form,
           content: [],
+          slug: form.slug,
+          title: form.title,
+          description: form.description,
+          published: form.published,
           metadata: form.metadata,
-        } as Omit<CMSPage, 'id' | 'createdAt' | 'updatedAt'>);
+        });
       }
       setForm({ slug: '', title: '', description: '', published: false, metadata: { seoTitle: '', seoDescription: '', keywords: [] } });
       setEditingId(null);

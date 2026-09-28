@@ -10,7 +10,7 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { CMSPage } from '@/types/cms';
+import type { CMSPage } from '@/types/cms';
 
 const CMS_COLLECTION = 'cmsPages';
 
@@ -102,7 +102,7 @@ export const createPage = async (page: Omit<CMSPage, 'id' | 'createdAt' | 'updat
   return newPage;
 };
 
-export const updatePage = async (pageId: string, updates: Partial<CMSPage>): Promise<CMSPage> => {
+export const updatePage = async (pageId: string, updates: Partial<Omit<CMSPage, 'id' | 'createdAt'>>): Promise<CMSPage> => {
   const page = await getPage(pageId);
   if (!page) throw new Error('Page not found');
 
