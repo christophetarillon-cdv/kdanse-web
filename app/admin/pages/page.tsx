@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { getAllPages, createPage, updatePage, deletePage } from '@/services/cmsService';
 import { uploadImage } from '@/services/imageService';
+import CMSPreview from '@/components/CMSPreview';
 import type { CMSPage, CMSBlock } from '@/types/cms';
 
 export default function AdminPagesPage() {
@@ -183,10 +184,12 @@ export default function AdminPagesPage() {
         <p className="text-gray-600">Créez et gérez les pages statiques</p>
       </div>
 
-      {/* Formulaire */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4">{editingId ? 'Modifier' : 'Créer'} une page</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Formulaire + Preview */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Formulaire */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold mb-4">{editingId ? 'Modifier' : 'Créer'} une page</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <input
               type="text"
@@ -456,6 +459,13 @@ export default function AdminPagesPage() {
             )}
           </div>
         </form>
+        </div>
+
+        {/* Preview */}
+        <div className="bg-gray-50 rounded-lg p-6 max-h-screen overflow-y-auto">
+          <h2 className="text-xl font-semibold mb-4">Aperçu</h2>
+          <CMSPreview title={form.title || 'Titre'} description={form.description} content={content} />
+        </div>
       </div>
 
       {/* Tableau */}
