@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/hooks/useCart';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
@@ -8,6 +9,7 @@ import { getAuth, signOut } from 'firebase/auth';
 
 export default function DashboardPage() {
   const { user, firebaseUser, loading } = useAuth();
+  const { cart } = useCart();
   const router = useRouter();
 
   useEffect(() => {
@@ -51,15 +53,38 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-bold text-blue-600 mb-2">📅 Stages</h2>
           <p className="text-gray-600">Découvrez nos stages</p>
         </Link>
-        <Link href="/memberships" className="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+        <Link href="/memberships" className="bg-white rounded-lg shadow hover:shadow-lg transition p-6 relative">
           <h2 className="text-2xl font-bold text-green-600 mb-2">✓ Mes inscriptions</h2>
           <p className="text-gray-600">Vos inscriptions</p>
+          {cart && (
+            <div className="absolute top-4 right-4 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+              {cart.items.length}
+            </div>
+          )}
         </Link>
         <Link href="/account" className="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
           <h2 className="text-2xl font-bold text-purple-600 mb-2">👤 Mon compte</h2>
           <p className="text-gray-600">Informations personnelles</p>
         </Link>
       </div>
+
+      {/* Panier en cours */}
+      {cart && (
+        <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-6 mt-6">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-yellow-900 mb-1">🛒 Panier en cours</h2>
+              <p className="text-sm text-yellow-800">{cart.items.length} article(s) - Total: {cart.totals.total}€</p>
+            </div>
+            <Link
+              href="/cart"
+              className="bg-yellow-600 text-white px-6 py-2 rounded hover:bg-yellow-700 font-semibold"
+            >
+              Voir panier
+            </Link>
+          </div>
+        </div>
+      )}
 
       {isAdmin && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
