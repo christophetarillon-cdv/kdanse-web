@@ -17,6 +17,8 @@ export default function AdminPagesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [lastAutoSave, setLastAutoSave] = useState<Date | null>(null);
   const [form, setForm] = useState({
     slug: '',
     title: '',
@@ -38,6 +40,31 @@ export default function AdminPagesPage() {
       fetchPages();
     }
   }, [firebaseUser, authLoading, isAdmin, router]);
+
+  // Auto-save draft every 30 seconds or 2 seconds after last change
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (editingId && (form.slug || form.title || content.length > 0)) {
+        setAutoSaveStatus('saving');
+        try {
+          const cleanedContent = cleanContent(content);
+          await updatePage(editingId, {
+            ...form,
+            content: cleanedContent,
+            metadata: form.metadata,
+          });
+          setAutoSaveStatus('saved');
+          setLastAutoSave(new Date());
+          setTimeout(() => setAutoSaveStatus('idle'), 2000);
+        } catch (error) {
+          console.error('Auto-save error:', error);
+          setAutoSaveStatus('idle');
+        }
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [form, content, editingId]);
 
   const fetchPages = async () => {
     try {
@@ -188,7 +215,20 @@ export default function AdminPagesPage() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Formulaire */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">{editingId ? 'Modifier' : 'Créer'} une page</h2>
+          <div className="flex justify-between items-start mb-4">
+            <h2 className="text-xl font-semibold">{editingId ? 'Modifier' : 'Créer'} une page</h2>
+            {editingId && (
+              <div className={`text-xs px-2 py-1 rounded font-semibold ${
+                autoSaveStatus === 'saving' ? 'bg-yellow-100 text-yellow-800' :
+                autoSaveStatus === 'saved' ? 'bg-green-100 text-green-800' :
+                'bg-gray-100 text-gray-600'
+              }`}>
+                {autoSaveStatus === 'saving' && '💾 Sauvegarde...'}
+                {autoSaveStatus === 'saved' && '✓ Sauvegardé'}
+                {autoSaveStatus === 'idle' && (lastAutoSave ? `Sauvegardé à ${lastAutoSave.toLocaleTimeString('fr-FR')}` : 'Prêt')}
+              </div>
+            )}
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <input
