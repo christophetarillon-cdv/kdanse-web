@@ -2,22 +2,30 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { getMenuByName } from '@/services/menuService';
+import { getMenuByName, getMenu } from '@/services/menuService';
 import type { Menu } from '@/types/menu';
 
 interface NavigationProps {
   menuName?: string;
+  menuId?: string;
   className?: string;
 }
 
-export default function Navigation({ menuName = 'Main Navigation', className = '' }: NavigationProps) {
+export default function Navigation({ menuName, menuId, className = '' }: NavigationProps) {
   const [menu, setMenu] = useState<Menu | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMenu = async () => {
       try {
-        const menuData = await getMenuByName(menuName);
+        let menuData: Menu | null = null;
+
+        if (menuId) {
+          menuData = await getMenu(menuId);
+        } else if (menuName) {
+          menuData = await getMenuByName(menuName);
+        }
+
         setMenu(menuData);
       } catch (error) {
         console.error('Error loading menu:', error);
@@ -27,7 +35,7 @@ export default function Navigation({ menuName = 'Main Navigation', className = '
     };
 
     fetchMenu();
-  }, [menuName]);
+  }, [menuName, menuId]);
 
   if (loading || !menu) return null;
 

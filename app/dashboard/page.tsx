@@ -99,8 +99,8 @@ export default function DashboardPage() {
             <Link href="/admin/menus" className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-center">
               Gérer les menus
             </Link>
-            <Link href="/admin/settings/page-permissions" className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-center">
-              Permissions
+            <Link href="/admin/settings" className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-center">
+              Paramètres
             </Link>
           </div>
         </div>

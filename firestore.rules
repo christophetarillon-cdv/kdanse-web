@@ -105,6 +105,12 @@ service cloud.firestore {
     match /menus/{menuId} {
       allow read, write, delete: if true;
     }
+
+    // Site config: everyone can read, admins can write
+    match /config/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
   }
 
   function isAuthenticated() {
