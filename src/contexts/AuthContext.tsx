@@ -21,7 +21,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Mode dev local - bypass auth
+  const isLocalDev = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   useEffect(() => {
+    if (isLocalDev) {
+      // Mode dev: créer un utilisateur admin de test
+      const devUser: User = {
+        id: 'dev-user-123',
+        email: 'dev@localhost',
+        displayName: 'Dev Admin',
+        roles: ['admin', 'user'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      setUser(devUser);
+      setFirebaseUser({
+        uid: 'dev-user-123',
+        email: 'dev@localhost',
+        emailVerified: true,
+        displayName: 'Dev Admin',
+        isAnonymous: false,
+        metadata: {},
+        providerData: [],
+        reload: async () => {},
+        getIdToken: async () => 'dev-token',
+        getIdTokenResult: async () => ({} as any),
+        toJSON: () => ({}),
+      } as FirebaseUser);
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser);
       setError(null);
@@ -55,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isLocalDev]);
 
   return (
     <AuthContext.Provider value={{ user, firebaseUser, loading, error }}>
