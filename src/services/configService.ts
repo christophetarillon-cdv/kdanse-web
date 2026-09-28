@@ -24,12 +24,16 @@ export const getConfig = async (): Promise<SiteConfig> => {
 };
 
 export const updateConfig = async (config: Partial<SiteConfig>): Promise<void> => {
-  await setDoc(
-    doc(db, CONFIG_COLLECTION, CONFIG_ID),
-    {
-      ...config,
-      updatedAt: new Date(),
-    },
-    { merge: true }
-  );
+  const docData: any = {
+    updatedAt: new Date(),
+  };
+
+  if (config.headerMenuId) {
+    docData.headerMenuId = config.headerMenuId;
+  }
+  if (config.footerMenuId) {
+    docData.footerMenuId = config.footerMenuId;
+  }
+
+  await setDoc(doc(db, CONFIG_COLLECTION, CONFIG_ID), docData, { merge: true });
 };
