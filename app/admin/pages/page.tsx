@@ -30,6 +30,22 @@ export default function AdminPagesPage() {
 
   const isAdmin = user?.roles?.includes('admin');
 
+  const cleanContent = (blocks: CMSBlock[]): CMSBlock[] => {
+    return blocks.map(block => {
+      const cleaned: any = {
+        id: block.id,
+        type: block.type,
+      };
+      if (block.text) cleaned.text = block.text;
+      if (block.level) cleaned.level = block.level;
+      if (block.items?.length) cleaned.items = block.items;
+      if (block.content?.length) cleaned.content = block.content;
+      if (block.src) cleaned.src = block.src;
+      if (block.alt) cleaned.alt = block.alt;
+      return cleaned;
+    });
+  };
+
   useEffect(() => {
     if (!authLoading && (!firebaseUser || !isAdmin)) {
       router.push('/dashboard');
@@ -75,22 +91,6 @@ export default function AdminPagesPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const cleanContent = (blocks: CMSBlock[]): CMSBlock[] => {
-    return blocks.map(block => {
-      const cleaned: any = {
-        id: block.id,
-        type: block.type,
-      };
-      if (block.text) cleaned.text = block.text;
-      if (block.level) cleaned.level = block.level;
-      if (block.items?.length) cleaned.items = block.items;
-      if (block.content?.length) cleaned.content = block.content;
-      if (block.src) cleaned.src = block.src;
-      if (block.alt) cleaned.alt = block.alt;
-      return cleaned;
-    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
