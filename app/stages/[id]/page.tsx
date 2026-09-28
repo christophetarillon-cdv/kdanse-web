@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, getDoc, addDoc, collection } from 'firebase/firestore';
+import { doc, getDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { addToCart } from '@/services/cartService';
+import { CartItem } from '@/types/cart';
 
 interface Stage {
   id: string;
@@ -149,36 +151,41 @@ export default function StageDetailPage() {
     return stagePrice + housingPrice;
   };
 
-  const handleRegister = async () => {
+  const handleAddToCart = async () => {
     if (!firebaseUser || !stage) return;
 
     setSubmitting(true);
     try {
-      const totalPrice = calculatePrice();
-      const summary = {
-        danceType: form.danceType,
-        dancers: form.dancers,
-        accompanists: form.accompanists,
-        wantHousing: form.wantHousing,
-        housingSolo: form.housingSolo,
-        housingCouple: form.housingCouple,
-      };
+      if (!stage.pricing) {
+        throw new Error('Tarifs non disponibles');
+      }
 
-      await addDoc(collection(db, 'memberships'), {
-        userId: firebaseUser.uid,
+      // Create cart item
+      const cartItem: CartItem = {
+        id: doc(collection(db, 'placeholder')).id,
         stageId: stage.id,
         stageName: stage.name,
-        registrationDetails: summary,
-        amount: totalPrice,
-        status: 'pending_payment',
-        createdAt: new Date(),
-      });
+        configuration: form,
+        stagePrices: stage.pricing.stage,
+        housingPrices: stage.pricing.housing,
+        quantity: 1,
+        totals: {
+          stageTotal: 0,
+          housingTotal: 0,
+          subtotal: 0,
+          tax: 0,
+          total: 0,
+        },
+      };
 
-      alert('Inscription créée ! Allez à la page des paiements pour finaliser.');
-      router.push('/memberships');
+      // Add to cart
+      const cart = await addToCart(firebaseUser.uid, cartItem);
+
+      // Redirect to cart
+      router.push('/cart');
     } catch (error) {
       console.error('Error:', error);
-      alert('Erreur lors de l\'inscription');
+      alert('Erreur lors de l\'ajout au panier');
     } finally {
       setSubmitting(false);
     }
@@ -455,13 +462,13 @@ export default function StageDetailPage() {
                 </div>
               </div>
 
-              {/* Bouton d'inscription */}
+              {/* Bouton ajout au panier */}
               <button
-                onClick={handleRegister}
+                onClick={handleAddToCart}
                 disabled={submitting}
                 className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 disabled:opacity-50"
               >
-                {submitting ? 'Inscription en cours...' : `Continuer vers le paiement (${calculatePrice()}€)`}
+                {submitting ? 'Ajout au panier...' : `Ajouter au panier (${calculatePrice()}€)`}
               </button>
             </div>
           </div>
