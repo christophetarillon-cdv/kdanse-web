@@ -61,9 +61,15 @@ export const calculateCartTotals = (items: CartItem[]): CartTotals => {
   let housingTotal = 0;
 
   items.forEach((item) => {
-    const itemTotals = calculateItemPrice(item);
-    stageTotal += itemTotals.stageTotal;
-    housingTotal += itemTotals.housingTotal;
+    // Use cached totals if available, otherwise calculate
+    if (item.totals) {
+      stageTotal += item.totals.stageTotal;
+      housingTotal += item.totals.housingTotal;
+    } else {
+      const itemTotals = calculateItemPrice(item);
+      stageTotal += itemTotals.stageTotal;
+      housingTotal += itemTotals.housingTotal;
+    }
   });
 
   const subtotal = stageTotal + housingTotal;
@@ -81,6 +87,11 @@ export const createCart = async (userId: string, item: CartItem): Promise<Cart> 
   const cartId = doc(collection(db, CART_COLLECTION)).id;
   const now = new Date();
   const expiresAt = new Date(now.getTime() + CART_EXPIRY_HOURS * 60 * 60 * 1000);
+
+  // Ensure item has totals calculated
+  if (!item.totals) {
+    item.totals = calculateItemPrice(item);
+  }
 
   const cart: Cart = {
     id: cartId,
@@ -152,6 +163,10 @@ export const addToCart = async (
   userId: string,
   item: CartItem
 ): Promise<Cart> => {
+  // Calculate item totals
+  const itemTotals = calculateItemPrice(item);
+  item.totals = itemTotals;
+
   // Check if user has existing pending cart
   let cart = await getUserCart(userId);
 

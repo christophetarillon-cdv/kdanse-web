@@ -28,6 +28,7 @@ export interface CartItem {
     couple: number;
   };
   quantity: number;
+  totals?: CartTotals;
 }
 
 export interface CartTotals {
