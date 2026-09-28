@@ -18,6 +18,13 @@ service cloud.firestore {
       allow write: if isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin']);
     }
 
+    // Carts: utilisateurs gèrent leurs paniers
+    match /carts/{cartId} {
+      allow read, write: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
     // Memberships: utilisateurs voient leurs adhésions, tous créent et payent les leurs
     match /memberships/{membershipId} {
       allow read: if request.auth.uid != null;
