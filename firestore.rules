@@ -12,10 +12,9 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // CMS Pages: tous peuvent lire les pages publiées, admins créent/modifient
+    // CMS Pages: everyone can read and write (for dev)
     match /cmsPages/{pageId} {
-      allow read: if isAdmin() || (resource.data != null && resource.data.published == true);
-      allow write, delete: if isAuthenticated();
+      allow read, write, delete: if true;
     }
 
     // Stages: tous les utilisateurs connectés peuvent lire, admins écrivent
@@ -106,10 +105,9 @@ service cloud.firestore {
       allow read, write, delete: if true;
     }
 
-    // Site config: everyone can read, admins can write
+    // Site config: everyone can read and write (for dev)
     match /config/{document=**} {
-      allow read: if true;
-      allow write: if isAuthenticated();
+      allow read, write: if true;
     }
   }
 
