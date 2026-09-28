@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { getAllPages, createPage, updatePage, deletePage } from '@/services/cmsService';
+import { uploadImage } from '@/services/imageService';
 import type { CMSPage, CMSBlock } from '@/types/cms';
 
 export default function AdminPagesPage() {
@@ -14,6 +15,7 @@ export default function AdminPagesPage() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
   const [form, setForm] = useState({
     slug: '',
     title: '',
@@ -57,6 +59,8 @@ export default function AdminPagesPage() {
       if (block.level) cleaned.level = block.level;
       if (block.items?.length) cleaned.items = block.items;
       if (block.content?.length) cleaned.content = block.content;
+      if (block.src) cleaned.src = block.src;
+      if (block.alt) cleaned.alt = block.alt;
       return cleaned;
     });
   };
@@ -132,6 +136,21 @@ export default function AdminPagesPage() {
     const newContent = [...content];
     [newContent[idx], newContent[idx + (direction === 'up' ? -1 : 1)]] = [newContent[idx + (direction === 'up' ? -1 : 1)], newContent[idx]];
     setContent(newContent);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, blockId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(blockId);
+    try {
+      const url = await uploadImage(file);
+      updateBlock(blockId, { src: url, alt: file.name });
+    } catch (error) {
+      alert('Erreur upload: ' + (error instanceof Error ? error.message : 'Erreur'));
+    } finally {
+      setUploading(null);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -249,6 +268,13 @@ export default function AdminPagesPage() {
               >
                 + Section
               </button>
+              <button
+                type="button"
+                onClick={() => addBlock('image')}
+                className="bg-gray-200 text-gray-900 px-3 py-1 rounded text-sm hover:bg-gray-300"
+              >
+                + Image
+              </button>
             </div>
 
             <div className="space-y-3 bg-gray-50 p-4 rounded">
@@ -364,6 +390,34 @@ export default function AdminPagesPage() {
                           className="border rounded px-2 py-1 w-full text-sm mb-2"
                         />
                         <p className="text-xs text-gray-500">Les sections peuvent contenir du texte via Firestore directement.</p>
+                      </div>
+                    )}
+
+                    {block.type === 'image' && (
+                      <div className="space-y-2">
+                        {block.src && (
+                          <div className="relative w-full max-h-48 overflow-hidden rounded border">
+                            <img src={block.src} alt={block.alt || 'Image'} className="w-full h-auto" />
+                          </div>
+                        )}
+                        <div>
+                          <label className="text-xs text-gray-600">Upload image</label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e, block.id)}
+                            disabled={uploading === block.id}
+                            className="border rounded px-2 py-1 w-full text-sm disabled:bg-gray-100"
+                          />
+                          {uploading === block.id && <p className="text-xs text-gray-500">Upload en cours...</p>}
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Texte alternatif (alt)"
+                          value={block.alt || ''}
+                          onChange={(e) => updateBlock(block.id, { alt: e.target.value })}
+                          className="border rounded px-2 py-1 w-full text-sm"
+                        />
                       </div>
                     )}
                   </div>

@@ -91,6 +91,19 @@ export default function CMSPage() {
                       )}
                     </div>
                   )}
+
+                  {block.type === 'image' && (
+                    <figure className="my-6">
+                      {block.src && (
+                        <img
+                          src={block.src}
+                          alt={block.alt || 'Image'}
+                          className="w-full h-auto rounded-lg shadow-md"
+                        />
+                      )}
+                      {block.alt && <figcaption className="text-center text-sm text-gray-500 mt-2">{block.alt}</figcaption>}
+                    </figure>
+                  )}
                 </div>
               ))
             ) : (

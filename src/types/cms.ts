@@ -1,10 +1,12 @@
 export interface CMSBlock {
   id: string;
-  type: 'heading' | 'paragraph' | 'list' | 'section';
+  type: 'heading' | 'paragraph' | 'list' | 'section' | 'image';
   level?: number; // pour les headings (1-6)
   text?: string;
   items?: string[]; // pour les listes
   content?: CMSBlock[]; // pour les sections
+  src?: string; // pour les images (URL Firebase Storage)
+  alt?: string; // texte alt pour les images
 }
 
 export interface CMSMetadata {
