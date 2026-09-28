@@ -7,19 +7,21 @@ export interface CMSBlock {
   content?: CMSBlock[]; // pour les sections
 }
 
+export interface CMSMetadata {
+  seoTitle?: string;
+  seoDescription?: string;
+  keywords?: string[];
+  author?: string;
+}
+
 export interface CMSPage {
   id: string;
-  slug: string; // URL-friendly identifier
+  slug: string;
   title: string;
   description?: string;
   content: CMSBlock[];
   published: boolean;
-  metadata: {
-    seoTitle?: string;
-    seoDescription?: string;
-    keywords?: string[];
-    author?: string;
-  };
+  metadata: CMSMetadata;
   createdAt: Date;
   updatedAt: Date;
   publishedAt?: Date;
@@ -30,10 +32,6 @@ export interface CMSPageForm {
   title: string;
   description?: string;
   published: boolean;
-  metadata: {
-    seoTitle?: string;
-    seoDescription?: string;
-    keywords?: string[];
-  };
-  content: string; // JSON stringified content for easier editing
+  metadata: CMSMetadata;
+  content?: string;
 }
