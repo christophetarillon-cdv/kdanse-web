@@ -15,7 +15,7 @@ service cloud.firestore {
     // CMS Pages: tous peuvent lire les pages publiées, admins créent/modifient
     match /cmsPages/{pageId} {
       allow read: if isAdmin() || (resource.data != null && resource.data.published == true);
-      allow write, delete: if isAdmin();
+      allow write, delete: if isAuthenticated();
     }
 
     // Stages: tous les utilisateurs connectés peuvent lire, admins écrivent

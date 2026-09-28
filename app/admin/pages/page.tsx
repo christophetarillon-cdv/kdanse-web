@@ -19,6 +19,7 @@ export default function AdminPagesPage() {
   const [uploading, setUploading] = useState<string | null>(null);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [lastAutoSave, setLastAutoSave] = useState<Date | null>(null);
+  const [draftSaving, setDraftSaving] = useState(false);
   const [form, setForm] = useState({
     slug: '',
     title: '',
@@ -201,6 +202,29 @@ export default function AdminPagesPage() {
     setEditingId(null);
     setForm({ slug: '', title: '', description: '', published: false, metadata: {} as any });
     setContent([]);
+  };
+
+  const handleSaveDraft = async () => {
+    if (!editingId) return;
+    setDraftSaving(true);
+    try {
+      const cleanedContent = cleanContent(content);
+      const result = await autoSavePage(editingId, {
+        slug: form.slug,
+        title: form.title,
+        description: form.description,
+        published: form.published,
+        metadata: form.metadata,
+        content: cleanedContent,
+      });
+      console.log('Manual draft save result:', result);
+      alert('✅ Brouillon sauvegardé !');
+    } catch (error) {
+      console.error('Draft save error:', error);
+      alert('❌ Erreur: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
+    } finally {
+      setDraftSaving(false);
+    }
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
@@ -484,7 +508,7 @@ export default function AdminPagesPage() {
             <label className="font-medium text-gray-700">Publier cette page</label>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               type="submit"
               disabled={submitting}
@@ -493,14 +517,24 @@ export default function AdminPagesPage() {
               {submitting ? 'En cours...' : (editingId ? 'Mettre à jour' : 'Créer')}
             </button>
             {editingId && (
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={submitting}
-                className="bg-gray-400 text-white px-6 py-2 rounded hover:bg-gray-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                Annuler
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleSaveDraft}
+                  disabled={draftSaving}
+                  className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {draftSaving ? '💾...' : '💾 Sauvegarder brouillon'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={submitting}
+                  className="bg-gray-400 text-white px-6 py-2 rounded hover:bg-gray-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  Annuler
+                </button>
+              </>
             )}
           </div>
         </form>
