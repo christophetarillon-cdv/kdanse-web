@@ -1,0 +1,128 @@
+import {
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  getDocs,
+} from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { CMSPage } from '@/types/cms';
+
+const CMS_COLLECTION = 'cmsPages';
+
+export const getPageBySlug = async (slug: string): Promise<CMSPage | null> => {
+  const q = query(
+    collection(db, CMS_COLLECTION),
+    where('slug', '==', slug),
+    where('published', '==', true)
+  );
+
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+
+  const doc = snapshot.docs[0];
+  const data = doc.data();
+
+  return {
+    id: doc.id,
+    slug: data.slug,
+    title: data.title,
+    description: data.description,
+    content: data.content,
+    published: data.published,
+    metadata: data.metadata,
+    createdAt: data.createdAt?.toDate?.() || new Date(),
+    updatedAt: data.updatedAt?.toDate?.() || new Date(),
+    publishedAt: data.publishedAt?.toDate?.(),
+  };
+};
+
+export const getPage = async (pageId: string): Promise<CMSPage | null> => {
+  const pageDoc = await getDoc(doc(db, CMS_COLLECTION, pageId));
+  if (!pageDoc.exists()) return null;
+
+  const data = pageDoc.data();
+  return {
+    id: pageDoc.id,
+    slug: data.slug,
+    title: data.title,
+    description: data.description,
+    content: data.content,
+    published: data.published,
+    metadata: data.metadata,
+    createdAt: data.createdAt?.toDate?.() || new Date(),
+    updatedAt: data.updatedAt?.toDate?.() || new Date(),
+    publishedAt: data.publishedAt?.toDate?.(),
+  };
+};
+
+export const getAllPages = async (): Promise<CMSPage[]> => {
+  const snapshot = await getDocs(collection(db, CMS_COLLECTION));
+
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      slug: data.slug,
+      title: data.title,
+      description: data.description,
+      content: data.content,
+      published: data.published,
+      metadata: data.metadata,
+      createdAt: data.createdAt?.toDate?.() || new Date(),
+      updatedAt: data.updatedAt?.toDate?.() || new Date(),
+      publishedAt: data.publishedAt?.toDate?.(),
+    };
+  });
+};
+
+export const createPage = async (page: Omit<CMSPage, 'id' | 'createdAt' | 'updatedAt'>): Promise<CMSPage> => {
+  const pageId = doc(collection(db, CMS_COLLECTION)).id;
+  const now = new Date();
+
+  const newPage: CMSPage = {
+    ...page,
+    id: pageId,
+    createdAt: now,
+    updatedAt: now,
+    publishedAt: page.published ? now : undefined,
+  };
+
+  await setDoc(doc(db, CMS_COLLECTION, pageId), {
+    ...newPage,
+    createdAt: now,
+    updatedAt: now,
+    publishedAt: page.published ? now : undefined,
+  });
+
+  return newPage;
+};
+
+export const updatePage = async (pageId: string, updates: Partial<CMSPage>): Promise<CMSPage> => {
+  const page = await getPage(pageId);
+  if (!page) throw new Error('Page not found');
+
+  const now = new Date();
+  const updatedPage = {
+    ...page,
+    ...updates,
+    updatedAt: now,
+    publishedAt: updates.published && !page.published ? now : page.publishedAt,
+  };
+
+  await updateDoc(doc(db, CMS_COLLECTION, pageId), {
+    ...updatedPage,
+    updatedAt: now,
+    publishedAt: updates.published && !page.published ? now : page.publishedAt,
+  });
+
+  return updatedPage;
+};
+
+export const deletePage = async (pageId: string): Promise<void> => {
+  await deleteDoc(doc(db, CMS_COLLECTION, pageId));
+};

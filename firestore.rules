@@ -12,6 +12,12 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // CMS Pages: tous peuvent lire les pages publiées, admins créent/modifient
+    match /cmsPages/{pageId} {
+      allow read: if resource.data.published == true;
+      allow read, write, delete: if isAdmin();
+    }
+
     // Stages: tous les utilisateurs connectés peuvent lire, admins écrivent
     match /stages/{stageId} {
       allow read: if isAuthenticated();
