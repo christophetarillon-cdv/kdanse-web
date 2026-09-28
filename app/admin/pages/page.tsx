@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { getAllPages, createPage, updatePage, deletePage } from '@/services/cmsService';
-import type { CMSPage } from '@/types/cms';
+import type { CMSPage, CMSBlock } from '@/types/cms';
 
 export default function AdminPagesPage() {
   const { user, firebaseUser, loading: authLoading } = useAuth();
@@ -21,6 +21,7 @@ export default function AdminPagesPage() {
     published: false,
     metadata: {} as any,
   });
+  const [content, setContent] = useState<CMSBlock[]>([]);
 
   const isAdmin = user?.roles?.includes('admin');
 
@@ -53,13 +54,13 @@ export default function AdminPagesPage() {
       if (editingId) {
         await updatePage(editingId, {
           ...form,
-          content: [],
+          content,
           metadata: form.metadata,
         });
       } else {
         await createPage({
           ...form,
-          content: [],
+          content,
           slug: form.slug,
           title: form.title,
           description: form.description,
@@ -68,6 +69,7 @@ export default function AdminPagesPage() {
         });
       }
       setForm({ slug: '', title: '', description: '', published: false, metadata: {} as any });
+      setContent([]);
       setEditingId(null);
       await fetchPages();
     } catch (error) {
@@ -86,7 +88,35 @@ export default function AdminPagesPage() {
       published: page.published,
       metadata: page.metadata,
     });
+    setContent(page.content || []);
     setEditingId(page.id);
+  };
+
+  const addBlock = (type: CMSBlock['type']) => {
+    const newBlock: CMSBlock = {
+      id: `block-${Date.now()}`,
+      type,
+      text: '',
+      items: type === 'list' ? [] : undefined,
+      content: type === 'section' ? [] : undefined,
+    };
+    setContent([...content, newBlock]);
+  };
+
+  const updateBlock = (id: string, updates: Partial<CMSBlock>) => {
+    setContent(content.map(block => block.id === id ? { ...block, ...updates } : block));
+  };
+
+  const removeBlock = (id: string) => {
+    setContent(content.filter(block => block.id !== id));
+  };
+
+  const moveBlock = (id: string, direction: 'up' | 'down') => {
+    const idx = content.findIndex(b => b.id === id);
+    if ((direction === 'up' && idx === 0) || (direction === 'down' && idx === content.length - 1)) return;
+    const newContent = [...content];
+    [newContent[idx], newContent[idx + (direction === 'up' ? -1 : 1)]] = [newContent[idx + (direction === 'up' ? -1 : 1)], newContent[idx]];
+    setContent(newContent);
   };
 
   const handleDelete = async (id: string) => {
@@ -103,6 +133,7 @@ export default function AdminPagesPage() {
   const handleCancel = () => {
     setEditingId(null);
     setForm({ slug: '', title: '', description: '', published: false, metadata: {} as any });
+    setContent([]);
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
@@ -170,6 +201,160 @@ export default function AdminPagesPage() {
               })}
               className="border rounded px-3 py-2 w-full h-16"
             />
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="font-semibold text-gray-900">Contenu</h3>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => addBlock('heading')}
+                className="bg-gray-200 text-gray-900 px-3 py-1 rounded text-sm hover:bg-gray-300"
+              >
+                + Titre
+              </button>
+              <button
+                type="button"
+                onClick={() => addBlock('paragraph')}
+                className="bg-gray-200 text-gray-900 px-3 py-1 rounded text-sm hover:bg-gray-300"
+              >
+                + Paragraphe
+              </button>
+              <button
+                type="button"
+                onClick={() => addBlock('list')}
+                className="bg-gray-200 text-gray-900 px-3 py-1 rounded text-sm hover:bg-gray-300"
+              >
+                + Liste
+              </button>
+              <button
+                type="button"
+                onClick={() => addBlock('section')}
+                className="bg-gray-200 text-gray-900 px-3 py-1 rounded text-sm hover:bg-gray-300"
+              >
+                + Section
+              </button>
+            </div>
+
+            <div className="space-y-3 bg-gray-50 p-4 rounded">
+              {content.length === 0 ? (
+                <p className="text-gray-500 text-sm italic">Aucun bloc. Ajoute du contenu avec les boutons ci-dessus.</p>
+              ) : (
+                content.map((block, idx) => (
+                  <div key={block.id} className="bg-white border rounded p-3 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-sm capitalize">{block.type}</span>
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => moveBlock(block.id, 'up')}
+                          disabled={idx === 0}
+                          className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveBlock(block.id, 'down')}
+                          disabled={idx === content.length - 1}
+                          className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeBlock(block.id)}
+                          className="text-xs px-2 py-1 bg-red-200 hover:bg-red-300 text-red-900 rounded"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+
+                    {block.type === 'heading' && (
+                      <div className="space-y-2">
+                        <select
+                          value={block.level || 1}
+                          onChange={(e) => updateBlock(block.id, { level: parseInt(e.target.value) })}
+                          className="border rounded px-2 py-1 w-full text-sm"
+                        >
+                          <option value="1">H1</option>
+                          <option value="2">H2</option>
+                          <option value="3">H3</option>
+                          <option value="4">H4</option>
+                        </select>
+                        <input
+                          type="text"
+                          placeholder="Texte du titre"
+                          value={block.text || ''}
+                          onChange={(e) => updateBlock(block.id, { text: e.target.value })}
+                          className="border rounded px-2 py-1 w-full text-sm"
+                        />
+                      </div>
+                    )}
+
+                    {block.type === 'paragraph' && (
+                      <textarea
+                        placeholder="Texte du paragraphe"
+                        value={block.text || ''}
+                        onChange={(e) => updateBlock(block.id, { text: e.target.value })}
+                        className="border rounded px-2 py-1 w-full text-sm h-20"
+                      />
+                    )}
+
+                    {block.type === 'list' && (
+                      <div className="space-y-1">
+                        {(block.items || []).map((item, i) => (
+                          <div key={i} className="flex gap-2">
+                            <input
+                              type="text"
+                              value={item}
+                              onChange={(e) => {
+                                const newItems = [...(block.items || [])];
+                                newItems[i] = e.target.value;
+                                updateBlock(block.id, { items: newItems });
+                              }}
+                              className="border rounded px-2 py-1 flex-1 text-sm"
+                              placeholder={`Item ${i + 1}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newItems = (block.items || []).filter((_, idx) => idx !== i);
+                                updateBlock(block.id, { items: newItems });
+                              }}
+                              className="text-xs px-2 bg-red-200 hover:bg-red-300 text-red-900 rounded"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => updateBlock(block.id, { items: [...(block.items || []), ''] })}
+                          className="text-xs px-2 py-1 bg-blue-200 hover:bg-blue-300 text-blue-900 rounded"
+                        >
+                          + Item
+                        </button>
+                      </div>
+                    )}
+
+                    {block.type === 'section' && (
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Titre de la section"
+                          value={block.text || ''}
+                          onChange={(e) => updateBlock(block.id, { text: e.target.value })}
+                          className="border rounded px-2 py-1 w-full text-sm mb-2"
+                        />
+                        <p className="text-xs text-gray-500">Les sections peuvent contenir du texte via Firestore directement.</p>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
