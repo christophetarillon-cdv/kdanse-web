@@ -161,21 +161,15 @@ export default function StageDetailPage() {
       }
 
       // Create cart item
+      const itemId = `${stage.id}-${Date.now()}`;
       const cartItem: CartItem = {
-        id: doc(collection(db, 'placeholder')).id,
+        id: itemId,
         stageId: stage.id,
         stageName: stage.name,
         configuration: form,
         stagePrices: stage.pricing.stage,
         housingPrices: stage.pricing.housing,
         quantity: 1,
-        totals: {
-          stageTotal: 0,
-          housingTotal: 0,
-          subtotal: 0,
-          tax: 0,
-          total: 0,
-        },
       };
 
       // Add to cart
