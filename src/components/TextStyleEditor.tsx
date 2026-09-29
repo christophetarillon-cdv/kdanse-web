@@ -34,7 +34,15 @@ export default function TextStyleEditor({
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 border rounded px-3 py-2 min-h-24 font-mono text-sm"
+          style={{
+            color: style.color || '#000000',
+            fontSize: `${style.fontSize || 14}px`,
+            fontFamily: style.fontFamily || 'monospace',
+            fontWeight: style.fontWeight || 'normal',
+            textAlign: style.textAlign || 'left',
+            lineHeight: style.lineHeight || 1.5,
+          }}
+          className="flex-1 border rounded px-3 py-2 min-h-24 text-sm"
           placeholder="Entrez votre texte..."
         />
       </div>
