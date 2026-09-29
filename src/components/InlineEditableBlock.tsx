@@ -2,33 +2,32 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Rnd } from 'react-rnd';
-import dynamic from 'next/dynamic';
 import type { CMSBlock } from '@/types/cms';
-
-const RichTextEditorWrapper = dynamic(() => import('./RichTextEditorWrapper'), {
-  ssr: false,
-  loading: () => <div className="h-32 bg-gray-100 rounded border animate-pulse" />,
-});
 
 interface InlineEditableBlockProps {
   block: CMSBlock;
   isSelected: boolean;
-  isEditing: boolean;
   onSelect: (blockId: string) => void;
-  onEdit: (blockId: string) => void;
   onUpdate: (block: CMSBlock) => void;
   onDelete: (blockId: string) => void;
+}
+
+interface SelectionState {
+  x: number;
+  y: number;
+  visible: boolean;
 }
 
 export default function InlineEditableBlock({
   block,
   isSelected,
-  isEditing,
   onSelect,
-  onEdit,
   onUpdate,
   onDelete,
 }: InlineEditableBlockProps) {
+  const [selectionState, setSelectionState] = useState<SelectionState>({ x: 0, y: 0, visible: false });
+  const contentRef = useRef<HTMLDivElement>(null);
+
   const position = {
     x: block.positionX || 0,
     y: block.positionY || 0,
@@ -37,6 +36,95 @@ export default function InlineEditableBlock({
   const size = {
     width: block.width || 300,
     height: block.height || 150,
+  };
+
+  const handleMouseUp = () => {
+    if (block.type !== 'paragraph') return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.toString().length === 0) {
+      setSelectionState({ ...selectionState, visible: false });
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    const containerRect = contentRef.current?.getBoundingClientRect();
+
+    if (containerRect) {
+      setSelectionState({
+        x: rect.left - containerRect.left + containerRect.width / 2,
+        y: rect.top - containerRect.top - 40,
+        visible: true,
+      });
+    }
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (block.type !== 'paragraph') return;
+
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const containerRect = contentRef.current?.getBoundingClientRect();
+
+      if (containerRect) {
+        setSelectionState({
+          x: rect.left - containerRect.left,
+          y: rect.top - containerRect.top - 40,
+          visible: true,
+        });
+      }
+    }
+  };
+
+  const applyFormat = (tag: string, styleAttr?: string) => {
+    const selection = window.getSelection();
+    if (!selection || selection.toString().length === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const span = document.createElement('span');
+
+    if (tag === 'bold') {
+      span.style.fontWeight = 'bold';
+    } else if (tag === 'italic') {
+      span.style.fontStyle = 'italic';
+    } else if (tag === 'color' && styleAttr) {
+      span.style.color = styleAttr;
+    } else if (tag === 'fontSize' && styleAttr) {
+      span.style.fontSize = styleAttr;
+    }
+
+    try {
+      range.surroundContents(span);
+      contentRef.current?.focus();
+      onUpdate({
+        ...block,
+        text: contentRef.current?.innerHTML || block.text,
+      });
+    } catch {
+      // Fallback pour contenu complexe
+      const selectedText = selection.toString();
+      const newHtml = (contentRef.current?.innerHTML || '').replace(
+        selectedText,
+        `<span style="${
+          tag === 'bold' ? 'font-weight: bold;' :
+          tag === 'italic' ? 'font-style: italic;' :
+          styleAttr ? `${tag === 'color' ? 'color' : 'font-size'}: ${styleAttr};` : ''
+        }">${selectedText}</span>`
+      );
+      if (contentRef.current) {
+        contentRef.current.innerHTML = newHtml;
+        onUpdate({
+          ...block,
+          text: newHtml,
+        });
+      }
+    }
+    selection.removeAllRanges();
+    setSelectionState({ ...selectionState, visible: false });
   };
 
   return (
@@ -66,44 +154,73 @@ export default function InlineEditableBlock({
       }`}
     >
       <div
-        className={`w-full h-full p-4 bg-white rounded overflow-auto cursor-pointer ${
+        className={`w-full h-full p-4 bg-white rounded overflow-auto ${
           isSelected ? 'ring-2 ring-blue-400' : ''
         }`}
-        onClick={() => !isEditing && onSelect(block.id)}
-        onDoubleClick={() => onEdit(block.id)}
+        onClick={() => onSelect(block.id)}
+        onContextMenu={handleContextMenu}
       >
-        {!isEditing ? (
-          <>
-            {block.type === 'paragraph' && (
-              <div
-                className="text-sm prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: block.text || '<p>Clique 2x pour éditer</p>' }}
-              />
-            )}
-            {block.type === 'image' && (
-              <img
-                src={block.src || ''}
-                alt="Zone"
-                className="w-full h-full object-cover"
-              />
-            )}
-          </>
-        ) : (
-          <>
-            {block.type === 'paragraph' && (
-              <RichTextEditorWrapper
-                value={block.text || ''}
-                onChange={(html) =>
-                  onUpdate({
-                    ...block,
-                    text: html,
-                  })
-                }
-              />
-            )}
-          </>
+        {block.type === 'paragraph' && (
+          <div
+            ref={contentRef}
+            contentEditable
+            suppressContentEditableWarning
+            className="text-sm outline-none min-h-full cursor-text"
+            onMouseUp={handleMouseUp}
+            onKeyUp={handleMouseUp}
+            onInput={(e) => {
+              onUpdate({
+                ...block,
+                text: (e.currentTarget as HTMLDivElement).innerHTML,
+              });
+            }}
+            dangerouslySetInnerHTML={{ __html: block.text || '' }}
+          />
+        )}
+
+        {block.type === 'image' && (
+          <img
+            src={block.src || ''}
+            alt="Zone"
+            className="w-full h-full object-cover"
+          />
         )}
       </div>
+
+      {/* Toolbar flottante */}
+      {isSelected && selectionState.visible && block.type === 'paragraph' && (
+        <div
+          className="absolute bg-gray-900 text-white rounded-lg shadow-lg p-1 flex gap-1 z-50"
+          style={{
+            left: `${selectionState.x}px`,
+            top: `${selectionState.y}px`,
+            transform: 'translateX(-50%)',
+          }}
+        >
+          <button
+            onMouseDown={() => applyFormat('bold')}
+            className="px-2 py-1 hover:bg-gray-700 rounded text-sm font-bold"
+            title="Gras"
+          >
+            B
+          </button>
+          <button
+            onMouseDown={() => applyFormat('italic')}
+            className="px-2 py-1 hover:bg-gray-700 rounded text-sm italic"
+            title="Italique"
+          >
+            I
+          </button>
+          <div className="border-l border-gray-700" />
+          <input
+            type="color"
+            onMouseDown={(e) => e.stopPropagation()}
+            onChange={(e) => applyFormat('color', e.target.value)}
+            className="w-6 h-6 cursor-pointer"
+            title="Couleur"
+          />
+        </div>
+      )}
 
       {isSelected && (
         <button
