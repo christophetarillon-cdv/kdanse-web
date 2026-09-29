@@ -15,6 +15,21 @@ import type { CMSPage } from '@/types/cms';
 
 const CMS_COLLECTION = 'cmsPages';
 
+function cleanFirestoreData(obj: any): any {
+  if (obj === undefined || obj === null) return undefined;
+  if (Array.isArray(obj)) {
+    return obj.map(cleanFirestoreData).filter(v => v !== undefined);
+  }
+  if (typeof obj === 'object' && obj.constructor === Object) {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .map(([key, value]) => [key, cleanFirestoreData(value)])
+        .filter(([, value]) => value !== undefined)
+    );
+  }
+  return obj;
+}
+
 export const getPageBySlug = async (slug: string): Promise<CMSPage | null> => {
   const q = query(
     collection(db, CMS_COLLECTION),
@@ -95,7 +110,7 @@ export const createPage = async (page: Omit<CMSPage, 'id' | 'createdAt' | 'updat
     publishedAt: page.published ? now : undefined,
   };
 
-  const docData: any = {
+  let docData: any = {
     ...pageWithoutPublishedAt,
     createdAt: now,
     updatedAt: now,
@@ -104,6 +119,9 @@ export const createPage = async (page: Omit<CMSPage, 'id' | 'createdAt' | 'updat
   if (page.published) {
     docData.publishedAt = now;
   }
+
+  // Clean all undefined values before sending to Firestore
+  docData = cleanFirestoreData(docData);
 
   await setDoc(doc(db, CMS_COLLECTION, pageId), docData);
 
@@ -124,7 +142,7 @@ export const updatePage = async (pageId: string, updates: Partial<Omit<CMSPage, 
     publishedAt: updates.published && !page.published ? now : page.publishedAt,
   };
 
-  const docData: any = {
+  let docData: any = {
     ...updatesWithoutPublishedAt,
     updatedAt: now,
   };
@@ -132,6 +150,9 @@ export const updatePage = async (pageId: string, updates: Partial<Omit<CMSPage, 
   if (updates.published && !page.published) {
     docData.publishedAt = now;
   }
+
+  // Clean all undefined values before sending to Firestore
+  docData = cleanFirestoreData(docData);
 
   await updateDoc(doc(db, CMS_COLLECTION, pageId), docData);
 

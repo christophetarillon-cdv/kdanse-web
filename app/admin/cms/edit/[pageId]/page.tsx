@@ -41,15 +41,18 @@ export default function CMSEditPage() {
 
     try {
       setIsSaving(true);
-      await updatePage(pageId, {
+      const updates = {
         content: cleanBlocks(page.content || []),
         title: page.title,
         description: page.description || '',
         published: page.published,
         metadata: cleanObject(page.metadata || {}),
-      });
+      };
+      console.log('Saving updates:', JSON.stringify(updates, null, 2));
+      await updatePage(pageId, updates);
       alert('Page sauvegardée avec succès !');
     } catch (err) {
+      console.error('Save error:', err);
       setError(err instanceof Error ? err.message : 'Failed to save page');
       alert('Erreur lors de la sauvegarde');
     } finally {
