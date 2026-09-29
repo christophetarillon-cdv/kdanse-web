@@ -58,10 +58,11 @@ export default function AdminMenusPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const cleanedItems = menuItems.map(({ children, ...item }) => item);
       if (editingMenuId) {
-        await updateMenu(editingMenuId, menuItems);
+        await updateMenu(editingMenuId, cleanedItems);
       } else {
-        await createMenu(menuName, menuItems);
+        await createMenu(menuName, cleanedItems);
       }
       setMenuName('');
       setMenuItems([]);
@@ -105,8 +106,7 @@ export default function AdminMenusPage() {
       label: '',
       url: '',
       order: menuItems.filter(i => i.parentId === parentId).length,
-      parentId,
-      children: [],
+      ...(parentId && { parentId }),
     };
     setMenuItems([...menuItems, newItem]);
   };
