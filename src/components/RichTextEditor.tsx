@@ -38,6 +38,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
     e.preventDefault();
     e.stopPropagation();
     callback();
+    editor?.view.focus();
   };
 
   return (
