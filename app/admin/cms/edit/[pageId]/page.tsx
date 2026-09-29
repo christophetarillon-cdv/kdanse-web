@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import CMSVisualEditor from '@/components/CMSVisualEditor';
 import { getPage, updatePage } from '@/services/cmsService';
+import { cleanBlocks } from '@/lib/utils';
 import type { CMSPage } from '@/types/cms';
 
 export default function CMSEditPage() {
@@ -41,7 +42,7 @@ export default function CMSEditPage() {
     try {
       setIsSaving(true);
       await updatePage(pageId, {
-        content: page.content,
+        content: cleanBlocks(page.content || []),
         title: page.title,
         description: page.description,
         published: page.published,

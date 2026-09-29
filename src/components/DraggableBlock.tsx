@@ -46,16 +46,15 @@ export default function DraggableBlock({
           height: parseInt(ref.style.height),
         });
       }}
-      className={`cursor-move transition-all ${
+      className={`transition-all ${
         isSelected ? 'border-2 border-blue-500 shadow-lg' : 'border-2 border-gray-300'
       }`}
-      onClick={() => onSelect(block.id)}
     >
       <div
-        className={`w-full h-full p-4 bg-white rounded overflow-hidden ${
+        className={`w-full h-full p-4 bg-white rounded overflow-hidden cursor-pointer ${
           isSelected ? 'ring-2 ring-blue-400' : ''
         }`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={() => onSelect(block.id)}
       >
         {block.type === 'paragraph' && (
           <div
