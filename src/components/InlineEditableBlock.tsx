@@ -200,12 +200,12 @@ export default function InlineEditableBlock({
       </Rnd>
 
       {/* Toolbar flottante (en dehors pour éviter clipping) */}
-      {isSelected && selectionState.visible && block.type === 'paragraph' && (
+      {isSelected && block.type === 'paragraph' && (
         <div
-          className="fixed bg-gray-900 text-white rounded-lg shadow-lg p-1 flex gap-1 z-50"
+          className="fixed bg-gray-900 text-white rounded-lg shadow-lg p-2 flex gap-1 z-50"
           style={{
-            left: `${position.x + selectionState.x}px`,
-            top: `${position.y + selectionState.y}px`,
+            left: `${position.x + (size.width as number) / 2}px`,
+            top: `${position.y - 40}px`,
             transform: 'translateX(-50%)',
           }}
         >
