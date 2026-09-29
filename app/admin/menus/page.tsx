@@ -5,12 +5,15 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { getAllMenus, createMenu, updateMenu, deleteMenu } from '@/services/menuService';
+import { getAllPages } from '@/services/cmsService';
 import type { Menu, MenuItem } from '@/types/menu';
+import type { CMSPage } from '@/types/cms';
 
 export default function AdminMenusPage() {
   const { user, firebaseUser, loading: authLoading } = useAuth();
   const router = useRouter();
   const [menus, setMenus] = useState<Menu[]>([]);
+  const [pages, setPages] = useState<CMSPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingMenuId, setEditingMenuId] = useState<string | null>(null);
   const [menuName, setMenuName] = useState('');
@@ -27,6 +30,7 @@ export default function AdminMenusPage() {
 
     if (firebaseUser && isAdmin) {
       fetchMenus();
+      fetchPages();
     }
   }, [firebaseUser, authLoading, isAdmin, router]);
 
@@ -36,6 +40,15 @@ export default function AdminMenusPage() {
       setMenus(allMenus);
     } catch (error) {
       console.error('Error fetching menus:', error);
+    }
+  };
+
+  const fetchPages = async () => {
+    try {
+      const allPages = await getAllPages();
+      setPages(allPages.filter(p => p.published));
+    } catch (error) {
+      console.error('Error fetching pages:', error);
     } finally {
       setLoading(false);
     }
@@ -86,12 +99,14 @@ export default function AdminMenusPage() {
     setEditingMenuId(null);
   };
 
-  const addMenuItem = () => {
+  const addMenuItem = (parentId?: string) => {
     const newItem: MenuItem = {
       id: `item-${Date.now()}`,
       label: '',
       url: '',
-      order: menuItems.length,
+      order: menuItems.filter(i => i.parentId === parentId).length,
+      parentId,
+      children: [],
     };
     setMenuItems([...menuItems, newItem]);
   };
@@ -105,18 +120,24 @@ export default function AdminMenusPage() {
   };
 
   const removeMenuItem = (id: string) => {
-    setMenuItems(menuItems.filter(item => item.id !== id));
+    setMenuItems(menuItems.filter(item => item.id !== id && item.parentId !== id));
   };
 
-  const moveMenuItem = (id: string, direction: 'up' | 'down') => {
-    const idx = menuItems.findIndex(i => i.id === id);
-    if ((direction === 'up' && idx === 0) || (direction === 'down' && idx === menuItems.length - 1)) return;
+  const moveMenuItem = (id: string, direction: 'up' | 'down', parentId?: string) => {
+    const items = menuItems.filter(i => i.parentId === parentId);
+    const idx = items.findIndex(i => i.id === id);
+    if ((direction === 'up' && idx === 0) || (direction === 'down' && idx === items.length - 1)) return;
+
     const newItems = [...menuItems];
-    [newItems[idx], newItems[idx + (direction === 'up' ? -1 : 1)]] = [
-      newItems[idx + (direction === 'up' ? -1 : 1)],
-      newItems[idx],
-    ];
-    setMenuItems(newItems);
+    const item1 = items[idx];
+    const item2 = items[idx + (direction === 'up' ? -1 : 1)];
+
+    if (item1 && item2) {
+      const idx1 = newItems.findIndex(i => i.id === item1.id);
+      const idx2 = newItems.findIndex(i => i.id === item2.id);
+      [newItems[idx1], newItems[idx2]] = [newItems[idx2], newItems[idx1]];
+      setMenuItems(newItems);
+    }
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
@@ -150,64 +171,155 @@ export default function AdminMenusPage() {
             <h3 className="font-semibold text-gray-900">Items du menu</h3>
             <button
               type="button"
-              onClick={addMenuItem}
+              onClick={() => addMenuItem()}
               className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
             >
-              + Ajouter un item
+              + Ajouter un item principal
             </button>
 
             <div className="space-y-2 bg-gray-50 p-4 rounded">
-              {menuItems.length === 0 ? (
+              {menuItems.filter(i => !i.parentId).length === 0 ? (
                 <p className="text-gray-500 text-sm italic">Aucun item. Ajoute-en avec le bouton ci-dessus.</p>
               ) : (
-                menuItems.map((item, idx) => (
-                  <div key={item.id} className="bg-white border rounded p-3 space-y-2">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-semibold text-sm">Item {idx + 1}</span>
-                      <div className="flex gap-1">
-                        <button
-                          type="button"
-                          onClick={() => moveMenuItem(item.id, 'up')}
-                          disabled={idx === 0}
-                          className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveMenuItem(item.id, 'down')}
-                          disabled={idx === menuItems.length - 1}
-                          className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded"
-                        >
-                          ↓
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeMenuItem(item.id)}
-                          className="text-xs px-2 py-1 bg-red-200 hover:bg-red-300 text-red-900 rounded"
-                        >
-                          ✕
-                        </button>
+                menuItems.filter(i => !i.parentId).map((item, idx) => {
+                  const children = menuItems.filter(i => i.parentId === item.id);
+                  const siblings = menuItems.filter(i => !i.parentId);
+                  return (
+                    <div key={item.id} className="bg-white border rounded p-3 space-y-2">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold text-sm">Item {idx + 1}</span>
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => moveMenuItem(item.id, 'up')}
+                            disabled={idx === 0}
+                            className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveMenuItem(item.id, 'down')}
+                            disabled={idx === siblings.length - 1}
+                            className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded"
+                          >
+                            ↓
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeMenuItem(item.id)}
+                            className="text-xs px-2 py-1 bg-red-200 hover:bg-red-300 text-red-900 rounded"
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
+                      <input
+                        type="text"
+                        placeholder="Label (texte affiché)"
+                        value={item.label}
+                        onChange={(e) => updateMenuItem(item.id, 'label', e.target.value)}
+                        className="border rounded px-2 py-1 w-full text-sm"
+                        required
+                      />
+                      <select
+                        value={item.url}
+                        onChange={(e) => updateMenuItem(item.id, 'url', e.target.value)}
+                        className="border rounded px-2 py-1 w-full text-sm"
+                      >
+                        <option value="">-- Sélectionner une page ou URL personnalisée --</option>
+                        {pages.map(page => (
+                          <option key={page.id} value={`/page/${page.slug}`}>
+                            {page.title} ({page.slug})
+                          </option>
+                        ))}
+                      </select>
+                      {item.url && !item.url.startsWith('/page/') && (
+                        <input
+                          type="text"
+                          placeholder="Ou entrer une URL personnalisée"
+                          value={item.url}
+                          onChange={(e) => updateMenuItem(item.id, 'url', e.target.value)}
+                          className="border rounded px-2 py-1 w-full text-sm"
+                        />
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => addMenuItem(item.id)}
+                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
+                      >
+                        + Ajouter un sous-menu
+                      </button>
+
+                      {children.length > 0 && (
+                        <div className="ml-4 space-y-2 border-l-2 border-gray-300 pl-3 pt-2">
+                          {children.map((child, childIdx) => (
+                            <div key={child.id} className="bg-blue-50 border border-blue-200 rounded p-2 space-y-1">
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs font-semibold text-gray-600">Sous-menu {childIdx + 1}</span>
+                                <div className="flex gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => moveMenuItem(child.id, 'up', item.id)}
+                                    disabled={childIdx === 0}
+                                    className="text-xs px-1.5 py-0.5 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded text-xs"
+                                  >
+                                    ↑
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => moveMenuItem(child.id, 'down', item.id)}
+                                    disabled={childIdx === children.length - 1}
+                                    className="text-xs px-1.5 py-0.5 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded text-xs"
+                                  >
+                                    ↓
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeMenuItem(child.id)}
+                                    className="text-xs px-1.5 py-0.5 bg-red-200 hover:bg-red-300 text-red-900 rounded"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="Label"
+                                value={child.label}
+                                onChange={(e) => updateMenuItem(child.id, 'label', e.target.value)}
+                                className="border rounded px-2 py-1 w-full text-xs"
+                                required
+                              />
+                              <select
+                                value={child.url}
+                                onChange={(e) => updateMenuItem(child.id, 'url', e.target.value)}
+                                className="border rounded px-2 py-1 w-full text-xs"
+                              >
+                                <option value="">-- Sélectionner une page --</option>
+                                {pages.map(page => (
+                                  <option key={page.id} value={`/page/${page.slug}`}>
+                                    {page.title}
+                                  </option>
+                                ))}
+                              </select>
+                              {child.url && !child.url.startsWith('/page/') && (
+                                <input
+                                  type="text"
+                                  placeholder="URL personnalisée"
+                                  value={child.url}
+                                  onChange={(e) => updateMenuItem(child.id, 'url', e.target.value)}
+                                  className="border rounded px-2 py-1 w-full text-xs"
+                                />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <input
-                      type="text"
-                      placeholder="Label (texte affiché)"
-                      value={item.label}
-                      onChange={(e) => updateMenuItem(item.id, 'label', e.target.value)}
-                      className="border rounded px-2 py-1 w-full text-sm"
-                      required
-                    />
-                    <input
-                      type="text"
-                      placeholder="URL (ex: /page/about ou https://example.com)"
-                      value={item.url}
-                      onChange={(e) => updateMenuItem(item.id, 'url', e.target.value)}
-                      className="border rounded px-2 py-1 w-full text-sm"
-                      required
-                    />
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

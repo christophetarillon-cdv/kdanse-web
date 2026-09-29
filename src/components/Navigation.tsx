@@ -37,25 +37,46 @@ export default function Navigation({ menuName, menuId, className = '' }: Navigat
     fetchMenu();
   }, [menuName, menuId]);
 
+  const renderItem = (item: any) => {
+    const isExternal = item.url.startsWith('http');
+    const link = isExternal ? (
+      <a href={item.url} className="hover:text-blue-600 transition">
+        {item.label}
+      </a>
+    ) : (
+      <Link href={item.url} className="hover:text-blue-600 transition">
+        {item.label}
+      </Link>
+    );
+
+    if (!item.children || item.children.length === 0) {
+      return link;
+    }
+
+    return (
+      <div className="relative group">
+        {link}
+        <ul className="absolute left-0 mt-0 hidden group-hover:block bg-white shadow rounded min-w-48">
+          {item.children.map((child: any) => (
+            <li key={child.id} className="px-4 py-2 hover:bg-gray-100">
+              {renderItem(child)}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   if (loading || !menu) return null;
+
+  const topLevelItems = menu.items.filter((item) => !item.parentId);
 
   return (
     <nav className={className}>
       <ul className="flex gap-6">
-        {menu.items.map((item) => (
+        {topLevelItems.map((item) => (
           <li key={item.id}>
-            {item.url.startsWith('http') ? (
-              <a
-                href={item.url}
-                className="hover:text-blue-600 transition"
-              >
-                {item.label}
-              </a>
-            ) : (
-              <Link href={item.url} className="hover:text-blue-600 transition">
-                {item.label}
-              </Link>
-            )}
+            {renderItem(item)}
           </li>
         ))}
       </ul>
