@@ -69,12 +69,10 @@ export default function CMSPage() {
                   )}
 
                   {block.type === 'paragraph' && (
-                    <p
-                      style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
-                      className="text-gray-700 leading-relaxed"
-                    >
-                      {block.text}
-                    </p>
+                    <div
+                      className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: block.text || '' }}
+                    />
                   )}
 
                   {block.type === 'list' && (

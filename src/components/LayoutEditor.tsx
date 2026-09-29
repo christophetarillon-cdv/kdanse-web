@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { CMSBlock } from '@/types/cms';
-import TextStyleEditor from './TextStyleEditor';
+import RichTextEditor from './RichTextEditor';
 
 interface LayoutEditorProps {
   block: CMSBlock;
@@ -152,43 +152,15 @@ export default function LayoutEditor({
                           </div>
 
                           {innerBlock.type === 'paragraph' && (
-                            <>
-                              <TextStyleEditor
-                                value={innerBlock.text || ''}
-                                style={innerBlock.style}
-                                onChange={(text) =>
-                                  updateColumnBlock(colIdx, innerBlock.id, {
-                                    ...innerBlock,
-                                    text,
-                                  })
-                                }
-                                onStyleChange={(style) =>
-                                  updateColumnBlock(colIdx, innerBlock.id, {
-                                    ...innerBlock,
-                                    style,
-                                  })
-                                }
-                              />
-                              {innerBlock.text && (
-                                <div className="bg-white border rounded p-2 mt-2">
-                                  <p className="text-xs font-semibold text-gray-600 mb-1">
-                                    Aperçu appliqué:
-                                  </p>
-                                  <div
-                                    style={{
-                                      color: innerBlock.style?.color || '#000000',
-                                      fontSize: `${innerBlock.style?.fontSize || 16}px`,
-                                      fontFamily: innerBlock.style?.fontFamily || 'Arial',
-                                      fontWeight: innerBlock.style?.fontWeight || 'normal',
-                                      textAlign: innerBlock.style?.textAlign || 'left',
-                                      lineHeight: innerBlock.style?.lineHeight || 1.5,
-                                    }}
-                                  >
-                                    {innerBlock.text}
-                                  </div>
-                                </div>
-                              )}
-                            </>
+                            <RichTextEditor
+                              value={innerBlock.text || ''}
+                              onChange={(html) =>
+                                updateColumnBlock(colIdx, innerBlock.id, {
+                                  ...innerBlock,
+                                  text: html,
+                                })
+                              }
+                            />
                           )}
 
                           {innerBlock.type === 'image' && (

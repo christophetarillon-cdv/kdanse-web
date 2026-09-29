@@ -15,21 +15,16 @@ export default function CMSLayout({ block, allBlocks }: CMSLayoutProps) {
   const renderBlock = (childBlock: CMSBlock) => {
     if (childBlock.type === 'paragraph') {
       return (
-        <p
+        <div
           style={{
             color: childBlock.style?.color || '#000000',
             fontSize: `${childBlock.style?.fontSize || 16}px`,
             fontFamily: childBlock.style?.fontFamily || 'inherit',
-            fontWeight: childBlock.style?.fontWeight || 'normal',
-            textAlign: childBlock.style?.textAlign || 'left',
             lineHeight: childBlock.style?.lineHeight || 1.5,
-            whiteSpace: 'pre-wrap',
-            wordWrap: 'break-word',
           }}
-          className="text-gray-700 leading-relaxed"
-        >
-          {childBlock.text}
-        </p>
+          className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
+          dangerouslySetInnerHTML={{ __html: childBlock.text || '' }}
+        />
       );
     }
 
