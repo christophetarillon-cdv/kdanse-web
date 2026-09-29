@@ -1,8 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 export function EnvironmentBadge() {
-  const isDev = typeof window !== 'undefined' &&
-    !window.location.hostname.includes('kdanse-booking-prod');
+  const [isDev, setIsDev] = useState(false);
+
+  useEffect(() => {
+    setIsDev(!window.location.hostname.includes('kdanse-booking-prod'));
+  }, []);
 
   if (!isDev) return null;
 

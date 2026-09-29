@@ -31,7 +31,7 @@ export default function Header() {
         <Link href="/" className="text-2xl font-bold text-blue-600">
           Kdanse
         </Link>
-        {!loading && config?.headerMenuId && (
+        {loading ? null : config?.headerMenuId && (
           <Navigation menuName="" menuId={config.headerMenuId} className="flex gap-6" />
         )}
       </div>
