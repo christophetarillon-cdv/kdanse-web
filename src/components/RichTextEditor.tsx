@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
+import TextAlign from '@tiptap/extension-text-align';
 import { useEffect } from 'react';
 
 interface RichTextEditorProps {
@@ -17,6 +18,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
       StarterKit,
       TextStyle,
       Color.configure({ types: ['textStyle'] }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -41,7 +43,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
   return (
     <div className="border rounded-lg overflow-hidden">
       {/* Toolbar */}
-      <div className="bg-gray-100 border-b p-2 flex flex-wrap gap-1" onMouseDown={(e) => e.preventDefault()}>
+      <div className="bg-gray-100 border-b p-2 flex flex-wrap gap-1">
         <button
           onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleBold().run())}
           className={`px-3 py-1 rounded text-sm font-semibold ${
@@ -78,6 +80,39 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
           className="w-10 h-8 rounded cursor-pointer border"
           title="Couleur du texte"
         />
+
+        <div className="border-l border-gray-300 mx-1" />
+
+        {/* Alignement */}
+        <button
+          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('left').run())}
+          className={`px-3 py-1 rounded text-sm ${
+            editor.isActive({ textAlign: 'left' }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+          }`}
+          title="Aligner à gauche"
+        >
+          ⬅️
+        </button>
+
+        <button
+          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('center').run())}
+          className={`px-3 py-1 rounded text-sm ${
+            editor.isActive({ textAlign: 'center' }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+          }`}
+          title="Centrer"
+        >
+          ⬆️
+        </button>
+
+        <button
+          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('right').run())}
+          className={`px-3 py-1 rounded text-sm ${
+            editor.isActive({ textAlign: 'right' }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+          }`}
+          title="Aligner à droite"
+        >
+          ➡️
+        </button>
 
         <div className="border-l border-gray-300 mx-1" />
 
