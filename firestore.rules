@@ -17,9 +17,9 @@ service cloud.firestore {
       allow read, write, delete: if true;
     }
 
-    // Stages: tous les utilisateurs connectés peuvent lire, admins écrivent
+    // Stages: everyone can read (for dev), admins can write
     match /stages/{stageId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin']);
     }
 
