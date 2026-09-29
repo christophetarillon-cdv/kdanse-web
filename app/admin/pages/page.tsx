@@ -144,11 +144,18 @@ export default function AdminPagesPage() {
   };
 
   const moveBlock = (id: string, direction: 'up' | 'down') => {
-    const idx = content.findIndex(b => b.id === id);
-    if ((direction === 'up' && idx === 0) || (direction === 'down' && idx === content.length - 1)) return;
-    const newContent = [...content];
-    [newContent[idx], newContent[idx + (direction === 'up' ? -1 : 1)]] = [newContent[idx + (direction === 'up' ? -1 : 1)], newContent[idx]];
-    setContent(newContent);
+    const topLevelBlocks = content.filter(b => !b.parentLayoutId);
+    const idx = topLevelBlocks.findIndex(b => b.id === id);
+    if ((direction === 'up' && idx === 0) || (direction === 'down' && idx === topLevelBlocks.length - 1)) return;
+
+    const newTopLevel = [...topLevelBlocks];
+    [newTopLevel[idx], newTopLevel[idx + (direction === 'up' ? -1 : 1)]] = [
+      newTopLevel[idx + (direction === 'up' ? -1 : 1)],
+      newTopLevel[idx],
+    ];
+
+    const childBlocks = content.filter(b => b.parentLayoutId);
+    setContent([...newTopLevel, ...childBlocks]);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, blockId: string) => {
@@ -323,10 +330,10 @@ export default function AdminPagesPage() {
             </div>
 
             <div className="space-y-3 bg-gray-50 p-4 rounded">
-              {content.length === 0 ? (
+              {content.filter(b => !b.parentLayoutId).length === 0 ? (
                 <p className="text-gray-500 text-sm italic">Aucun bloc. Ajoute du contenu avec les boutons ci-dessus.</p>
               ) : (
-                content.map((block, idx) => (
+                content.filter(b => !b.parentLayoutId).map((block, idx) => (
                   <div key={block.id} className="bg-white border rounded p-3 space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-sm capitalize">{block.type}</span>
