@@ -47,8 +47,6 @@ export default function Navigation({ menuName, menuId, className = '' }: Navigat
             {item.url.startsWith('http') ? (
               <a
                 href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="hover:text-blue-600 transition"
               >
                 {item.label}
