@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { CMSBlock } from '@/types/cms';
-import RichTextEditor from './RichTextEditor';
+import RichTextEditorWrapper from './RichTextEditorWrapper';
 
 interface LayoutEditorProps {
   block: CMSBlock;
@@ -152,7 +152,7 @@ export default function LayoutEditor({
                           </div>
 
                           {innerBlock.type === 'paragraph' && (
-                            <RichTextEditor
+                            <RichTextEditorWrapper
                               value={innerBlock.text || ''}
                               onChange={(html) =>
                                 updateColumnBlock(colIdx, innerBlock.id, {
