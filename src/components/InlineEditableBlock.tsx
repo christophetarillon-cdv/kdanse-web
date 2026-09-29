@@ -128,72 +128,84 @@ export default function InlineEditableBlock({
   };
 
   return (
-    <Rnd
-      position={position}
-      size={size}
-      onDragStop={(e, d) => {
-        onUpdate({
-          ...block,
-          positionX: d.x,
-          positionY: d.y,
-        });
-      }}
-      onResizeStop={(e, direction, ref, delta, pos) => {
-        onUpdate({
-          ...block,
-          positionX: pos.x,
-          positionY: pos.y,
-          width: parseInt(ref.style.width),
-          height: parseInt(ref.style.height),
-        });
-      }}
-      className={`transition-all ${
-        isSelected
-          ? 'border-2 border-blue-500 shadow-xl'
-          : 'border-2 border-gray-300 hover:border-gray-400'
-      }`}
-    >
-      <div
-        className={`w-full h-full p-4 bg-white rounded overflow-auto ${
-          isSelected ? 'ring-2 ring-blue-400' : ''
+    <>
+      <Rnd
+        position={position}
+        size={size}
+        onDragStop={(e, d) => {
+          onUpdate({
+            ...block,
+            positionX: d.x,
+            positionY: d.y,
+          });
+        }}
+        onResizeStop={(e, direction, ref, delta, pos) => {
+          onUpdate({
+            ...block,
+            positionX: pos.x,
+            positionY: pos.y,
+            width: parseInt(ref.style.width),
+            height: parseInt(ref.style.height),
+          });
+        }}
+        className={`transition-all ${
+          isSelected
+            ? 'border-2 border-blue-500 shadow-xl'
+            : 'border-2 border-gray-300 hover:border-gray-400'
         }`}
-        onClick={() => onSelect(block.id)}
-        onContextMenu={handleContextMenu}
       >
-        {block.type === 'paragraph' && (
-          <div
-            ref={contentRef}
-            contentEditable
-            suppressContentEditableWarning
-            className="text-sm outline-none min-h-full cursor-text"
-            onMouseUp={handleMouseUp}
-            onKeyUp={handleMouseUp}
-            onInput={(e) => {
-              onUpdate({
-                ...block,
-                text: (e.currentTarget as HTMLDivElement).innerHTML,
-              });
-            }}
-            dangerouslySetInnerHTML={{ __html: block.text || '' }}
-          />
-        )}
+        <div
+          className={`w-full h-full p-4 bg-white rounded overflow-auto ${
+            isSelected ? 'ring-2 ring-blue-400' : ''
+          }`}
+          onClick={() => onSelect(block.id)}
+          onContextMenu={handleContextMenu}
+        >
+          {block.type === 'paragraph' && (
+            <div
+              ref={contentRef}
+              contentEditable
+              suppressContentEditableWarning
+              className="text-sm outline-none min-h-full cursor-text"
+              onMouseUp={handleMouseUp}
+              onKeyUp={handleMouseUp}
+              onInput={(e) => {
+                onUpdate({
+                  ...block,
+                  text: (e.currentTarget as HTMLDivElement).innerHTML,
+                });
+              }}
+              dangerouslySetInnerHTML={{ __html: block.text || '' }}
+            />
+          )}
 
-        {block.type === 'image' && (
-          <img
-            src={block.src || ''}
-            alt="Zone"
-            className="w-full h-full object-cover"
-          />
-        )}
-      </div>
+          {block.type === 'image' && (
+            <img
+              src={block.src || ''}
+              alt="Zone"
+              className="w-full h-full object-cover"
+            />
+          )}
+        </div>
 
-      {/* Toolbar flottante */}
+        {isSelected && (
+          <button
+            onClick={() => onDelete(block.id)}
+            className="absolute -top-3 -right-3 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center font-bold"
+            title="Supprimer"
+          >
+            ✕
+          </button>
+        )}
+      </Rnd>
+
+      {/* Toolbar flottante (en dehors pour éviter clipping) */}
       {isSelected && selectionState.visible && block.type === 'paragraph' && (
         <div
-          className="absolute bg-gray-900 text-white rounded-lg shadow-lg p-1 flex gap-1 z-50"
+          className="fixed bg-gray-900 text-white rounded-lg shadow-lg p-1 flex gap-1 z-50"
           style={{
-            left: `${selectionState.x}px`,
-            top: `${selectionState.y}px`,
+            left: `${position.x + selectionState.x}px`,
+            top: `${position.y + selectionState.y}px`,
             transform: 'translateX(-50%)',
           }}
         >
@@ -221,16 +233,6 @@ export default function InlineEditableBlock({
           />
         </div>
       )}
-
-      {isSelected && (
-        <button
-          onClick={() => onDelete(block.id)}
-          className="absolute -top-3 -right-3 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center font-bold"
-          title="Supprimer"
-        >
-          ✕
-        </button>
-      )}
-    </Rnd>
+    </>
   );
 }
