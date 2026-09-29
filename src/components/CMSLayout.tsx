@@ -23,6 +23,8 @@ export default function CMSLayout({ block, allBlocks }: CMSLayoutProps) {
             fontWeight: childBlock.style?.fontWeight || 'normal',
             textAlign: childBlock.style?.textAlign || 'left',
             lineHeight: childBlock.style?.lineHeight || 1.5,
+            whiteSpace: 'pre-wrap',
+            wordWrap: 'break-word',
           }}
           className="text-gray-700 leading-relaxed"
         >

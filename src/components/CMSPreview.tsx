@@ -37,7 +37,12 @@ export default function CMSPreview({ title, description, content }: CMSPreviewPr
               )}
 
               {block.type === 'paragraph' && (
-                <p className="text-gray-700 leading-relaxed">{block.text}</p>
+                <p
+                  style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
+                  className="text-gray-700 leading-relaxed"
+                >
+                  {block.text}
+                </p>
               )}
 
               {block.type === 'list' && (
