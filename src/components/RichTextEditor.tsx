@@ -76,8 +76,13 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         {/* Couleur */}
         <input
           type="color"
-          onMouseDown={(e) => e.preventDefault()}
-          onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
+          onPointerDown={(e) => e.preventDefault()}
+          onChange={(e) => {
+            const hexColor = e.target.value;
+            if (/^#[0-9A-Fa-f]{6}$/.test(hexColor)) {
+              editor.chain().focus().setColor(hexColor).run();
+            }
+          }}
           value={editor.getAttributes('textStyle').color || '#000000'}
           className="w-10 h-8 rounded cursor-pointer border"
           title="Couleur du texte"
