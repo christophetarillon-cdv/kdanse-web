@@ -45,6 +45,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
       {/* Toolbar */}
       <div className="bg-gray-100 border-b p-2 flex flex-wrap gap-1">
         <button
+          type="button"
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleBold().run())}
           className={`px-3 py-1 rounded text-sm font-semibold ${
             editor.isActive('bold') ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
