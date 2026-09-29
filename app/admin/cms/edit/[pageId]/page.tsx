@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import CMSVisualEditor from '@/components/CMSVisualEditor';
 import { getPage, updatePage } from '@/services/cmsService';
-import { cleanBlocks } from '@/lib/utils';
+import { cleanBlocks, cleanObject } from '@/lib/utils';
 import type { CMSPage } from '@/types/cms';
 
 export default function CMSEditPage() {
@@ -44,11 +44,10 @@ export default function CMSEditPage() {
       await updatePage(pageId, {
         content: cleanBlocks(page.content || []),
         title: page.title,
-        description: page.description,
+        description: page.description || '',
         published: page.published,
-        metadata: page.metadata,
+        metadata: cleanObject(page.metadata || {}),
       });
-      // Optionnel: afficher un toast de succès
       alert('Page sauvegardée avec succès !');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save page');
