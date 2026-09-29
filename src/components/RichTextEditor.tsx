@@ -41,6 +41,15 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
     editor?.view.focus();
   };
 
+  const getCurrentColor = () => {
+    const color = editor?.getAttributes('textStyle')?.color;
+    // Ensure we always return a valid hex color
+    if (!color || !color.startsWith('#')) {
+      return '#000000';
+    }
+    return color;
+  };
+
   return (
     <div className="border rounded-lg overflow-hidden">
       {/* Toolbar */}
@@ -79,11 +88,9 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
           onPointerDown={(e) => e.preventDefault()}
           onChange={(e) => {
             const hexColor = e.target.value;
-            if (/^#[0-9A-Fa-f]{6}$/.test(hexColor)) {
-              editor.chain().focus().setColor(hexColor).run();
-            }
+            editor.chain().focus().setColor(hexColor).run();
           }}
-          value={editor.getAttributes('textStyle').color || '#000000'}
+          value={getCurrentColor()}
           className="w-10 h-8 rounded cursor-pointer border"
           title="Couleur du texte"
         />
