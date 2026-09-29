@@ -130,12 +130,7 @@ export default function InlineEditableBlock({
           className={`w-full h-full p-4 bg-white rounded overflow-auto ${
             isSelected ? 'ring-2 ring-blue-400' : ''
           }`}
-          onClick={() => {
-            const selection = window.getSelection();
-            if (!selection || selection.toString().length === 0) {
-              onSelect(block.id);
-            }
-          }}
+          onDoubleClick={() => onSelect(block.id)}
         >
           {block.type === 'paragraph' && (
             <div
