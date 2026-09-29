@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getAllPages, createPage, updatePage, deletePage, autoSavePage } from '@/services/cmsService';
 import { uploadImage } from '@/services/imageService';
 import CMSPreview from '@/components/CMSPreview';
+import LayoutEditor from '@/components/LayoutEditor';
 import type { CMSPage, CMSBlock } from '@/types/cms';
 
 export default function AdminPagesPage() {
@@ -43,6 +44,10 @@ export default function AdminPagesPage() {
       if (block.content?.length) cleaned.content = block.content;
       if (block.src) cleaned.src = block.src;
       if (block.alt) cleaned.alt = block.alt;
+      if (block.style) cleaned.style = block.style;
+      if (block.layoutType) cleaned.layoutType = block.layoutType;
+      if (block.columns?.length) cleaned.columns = block.columns;
+      if (block.columnGap) cleaned.columnGap = block.columnGap;
       return cleaned;
     });
   };
@@ -307,6 +312,13 @@ export default function AdminPagesPage() {
               >
                 + Image
               </button>
+              <button
+                type="button"
+                onClick={() => addBlock('layout')}
+                className="bg-purple-200 text-purple-900 px-3 py-1 rounded text-sm hover:bg-purple-300 font-semibold"
+              >
+                + Zone
+              </button>
             </div>
 
             <div className="space-y-3 bg-gray-50 p-4 rounded">
@@ -451,6 +463,14 @@ export default function AdminPagesPage() {
                           className="border rounded px-2 py-1 w-full text-sm"
                         />
                       </div>
+                    )}
+
+                    {block.type === 'layout' && (
+                      <LayoutEditor
+                        block={block}
+                        onUpdate={(updated) => updateBlock(block.id, updated)}
+                        onRemove={() => removeBlock(block.id)}
+                      />
                     )}
                   </div>
                 ))
