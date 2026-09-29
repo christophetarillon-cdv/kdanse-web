@@ -1,6 +1,7 @@
 'use client';
 
 import type { CMSBlock } from '@/types/cms';
+import CMSLayout from './CMSLayout';
 
 interface CMSPreviewProps {
   title: string;
@@ -16,8 +17,8 @@ export default function CMSPreview({ title, description, content }: CMSPreviewPr
       {description && <p className="text-lg text-gray-600">{description}</p>}
 
       <div className="mt-8 space-y-6">
-        {content && content.length > 0 ? (
-          content.map((block, idx) => (
+        {content && content.filter(b => !b.parentLayoutId).length > 0 ? (
+          content.filter(b => !b.parentLayoutId).map((block, idx) => (
             <div key={idx}>
               {block.type === 'heading' && (
                 <h2
@@ -76,6 +77,8 @@ export default function CMSPreview({ title, description, content }: CMSPreviewPr
                   )}
                 </figure>
               )}
+
+              {block.type === 'layout' && <CMSLayout block={block} allBlocks={content} />}
             </div>
           ))
         ) : (

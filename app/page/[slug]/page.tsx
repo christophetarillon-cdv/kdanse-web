@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getPageBySlug } from '@/services/cmsService';
+import CMSLayout from '@/components/CMSLayout';
 import type { CMSPage } from '@/types/cms';
 
 export default function CMSPage() {
@@ -54,8 +55,8 @@ export default function CMSPage() {
 
           {/* Render content blocks */}
           <div className="mt-8 space-y-6">
-            {page.content && page.content.length > 0 ? (
-              page.content.map((block, idx) => (
+            {page.content && page.content.filter(b => !b.parentLayoutId).length > 0 ? (
+              page.content.filter(b => !b.parentLayoutId).map((block, idx) => (
                 <div key={idx}>
                   {block.type === 'heading' && (
                     <h2 className={`font-bold mt-6 mb-3 ${
@@ -104,6 +105,8 @@ export default function CMSPage() {
                       {block.alt && <figcaption className="text-center text-sm text-gray-500 mt-2">{block.alt}</figcaption>}
                     </figure>
                   )}
+
+                  {block.type === 'layout' && <CMSLayout block={block} allBlocks={page.content} />}
                 </div>
               ))
             ) : (
