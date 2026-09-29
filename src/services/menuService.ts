@@ -14,15 +14,32 @@ import type { Menu, MenuItem } from '@/types/menu';
 
 const MENU_COLLECTION = 'menus';
 
+const buildMenuTree = (items: MenuItem[]): MenuItem[] => {
+  const itemMap = new Map(items.map(item => [item.id, { ...item, children: [] }]));
+
+  items.forEach(item => {
+    if (item.parentId && itemMap.has(item.parentId)) {
+      const parent = itemMap.get(item.parentId)!;
+      parent.children = parent.children || [];
+      if (!parent.children.find(c => c.id === item.id)) {
+        parent.children.push(itemMap.get(item.id)!);
+      }
+    }
+  });
+
+  return Array.from(itemMap.values()).filter(item => !item.parentId);
+};
+
 export const getMenu = async (menuId: string): Promise<Menu | null> => {
   const menuDoc = await getDoc(doc(db, MENU_COLLECTION, menuId));
   if (!menuDoc.exists()) return null;
 
   const data = menuDoc.data();
+  const allItems = data.items || [];
   return {
     id: menuDoc.id,
     name: data.name,
-    items: data.items || [],
+    items: buildMenuTree(allItems),
     createdAt: data.createdAt?.toDate?.() || new Date(),
     updatedAt: data.updatedAt?.toDate?.() || new Date(),
   };
@@ -35,10 +52,11 @@ export const getMenuByName = async (name: string): Promise<Menu | null> => {
   for (const doc of snapshot.docs) {
     if (doc.data().name === name) {
       const data = doc.data();
+      const allItems = data.items || [];
       return {
         id: doc.id,
         name: data.name,
-        items: data.items || [],
+        items: buildMenuTree(allItems),
         createdAt: data.createdAt?.toDate?.() || new Date(),
         updatedAt: data.updatedAt?.toDate?.() || new Date(),
       };
@@ -54,10 +72,11 @@ export const getAllMenus = async (): Promise<Menu[]> => {
 
   return snapshot.docs.map(doc => {
     const data = doc.data();
+    const allItems = data.items || [];
     return {
       id: doc.id,
       name: data.name,
-      items: data.items || [],
+      items: buildMenuTree(allItems),
       createdAt: data.createdAt?.toDate?.() || new Date(),
       updatedAt: data.updatedAt?.toDate?.() || new Date(),
     };

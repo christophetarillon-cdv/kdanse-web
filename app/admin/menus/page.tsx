@@ -77,9 +77,21 @@ export default function AdminMenusPage() {
     }
   };
 
+  const flattenItems = (items: MenuItem[]): MenuItem[] => {
+    const result: MenuItem[] = [];
+    items.forEach(item => {
+      const { children, ...itemWithoutChildren } = item;
+      result.push(itemWithoutChildren);
+      if (children && children.length > 0) {
+        result.push(...flattenItems(children));
+      }
+    });
+    return result;
+  };
+
   const handleEdit = (menu: Menu) => {
     setMenuName(menu.name);
-    setMenuItems(menu.items);
+    setMenuItems(flattenItems(menu.items));
     setEditingMenuId(menu.id);
   };
 
