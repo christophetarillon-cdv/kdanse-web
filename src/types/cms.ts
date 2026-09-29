@@ -22,6 +22,12 @@ export interface CMSBlock {
   columnGap?: number; // écart entre colonnes en %
   parentLayoutId?: string; // id du bloc layout parent (pour les blocs dans colonnes)
   columnIndex?: number; // index de la colonne (0, 1, etc.)
+  // pour le visual editor (drag-drop)
+  positionX?: number;
+  positionY?: number;
+  width?: number;
+  height?: number;
+  order?: number;
 }
 
 export interface CMSMetadata {
