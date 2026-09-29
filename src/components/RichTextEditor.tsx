@@ -34,7 +34,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
 
   if (!editor) return null;
 
-  const handleButtonClick = (e: React.MouseEvent, callback: () => void) => {
+  const handleButtonClick = (e: React.PointerEvent, callback: () => void) => {
     e.preventDefault();
     e.stopPropagation();
     callback();
@@ -45,7 +45,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
       {/* Toolbar */}
       <div className="bg-gray-100 border-b p-2 flex flex-wrap gap-1">
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleBold().run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleBold().run())}
           className={`px-3 py-1 rounded text-sm font-semibold ${
             editor.isActive('bold') ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
           }`}
@@ -54,7 +54,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         </button>
 
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleItalic().run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleItalic().run())}
           className={`px-3 py-1 rounded text-sm italic ${
             editor.isActive('italic') ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
           }`}
@@ -63,7 +63,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         </button>
 
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleStrike().run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleStrike().run())}
           className={`px-3 py-1 rounded text-sm line-through ${
             editor.isActive('strike') ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
           }`}
@@ -85,7 +85,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
 
         {/* Alignement */}
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('left').run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('left').run())}
           className={`px-3 py-1 rounded text-sm ${
             editor.isActive({ textAlign: 'left' }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
           }`}
@@ -95,7 +95,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         </button>
 
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('center').run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('center').run())}
           className={`px-3 py-1 rounded text-sm ${
             editor.isActive({ textAlign: 'center' }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
           }`}
@@ -105,7 +105,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         </button>
 
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('right').run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('right').run())}
           className={`px-3 py-1 rounded text-sm ${
             editor.isActive({ textAlign: 'right' }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
           }`}
@@ -117,7 +117,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <div className="border-l border-gray-300 mx-1" />
 
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleHeading({ level: 1 }).run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleHeading({ level: 1 }).run())}
           className={`px-3 py-1 rounded text-sm font-bold ${
             editor.isActive('heading', { level: 1 }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
           }`}
@@ -126,7 +126,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         </button>
 
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleHeading({ level: 2 }).run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleHeading({ level: 2 }).run())}
           className={`px-3 py-1 rounded text-sm font-bold ${
             editor.isActive('heading', { level: 2 }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
           }`}
@@ -135,7 +135,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         </button>
 
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleHeading({ level: 3 }).run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleHeading({ level: 3 }).run())}
           className={`px-3 py-1 rounded text-sm font-bold ${
             editor.isActive('heading', { level: 3 }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
           }`}
@@ -146,7 +146,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <div className="border-l border-gray-300 mx-1" />
 
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleBulletList().run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleBulletList().run())}
           className={`px-3 py-1 rounded text-sm ${
             editor.isActive('bulletList') ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
           }`}
@@ -155,7 +155,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         </button>
 
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleOrderedList().run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleOrderedList().run())}
           className={`px-3 py-1 rounded text-sm ${
             editor.isActive('orderedList') ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
           }`}
@@ -166,7 +166,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <div className="border-l border-gray-300 mx-1" />
 
         <button
-          onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().clearNodes().run())}
+          onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().clearNodes().run())}
           className="px-3 py-1 rounded text-sm bg-white border hover:bg-gray-50"
         >
           Réinitialiser
