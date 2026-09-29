@@ -25,8 +25,8 @@ export default function InlineEditableBlock({
   onUpdate,
   onDelete,
 }: InlineEditableBlockProps) {
-  const [selectionState, setSelectionState] = useState<SelectionState>({ x: 0, y: 0, visible: false });
   const contentRef = useRef<HTMLDivElement>(null);
+  const [initialized, setInitialized] = useState(false);
 
   const position = {
     x: block.positionX || 0,
@@ -38,46 +38,20 @@ export default function InlineEditableBlock({
     height: block.height || 150,
   };
 
-  const handleMouseUp = () => {
-    if (block.type !== 'paragraph') return;
-
-    const selection = window.getSelection();
-    if (!selection || selection.toString().length === 0) {
-      setSelectionState({ ...selectionState, visible: false });
-      return;
+  // Initialiser le contenu une seule fois
+  useEffect(() => {
+    if (contentRef.current && !initialized && block.text) {
+      contentRef.current.innerHTML = block.text;
+      setInitialized(true);
     }
+  }, [block.id, initialized]);
 
-    const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    const containerRect = contentRef.current?.getBoundingClientRect();
-
-    if (containerRect) {
-      setSelectionState({
-        x: rect.left - containerRect.left + containerRect.width / 2,
-        y: rect.top - containerRect.top - 40,
-        visible: true,
-      });
-    }
-  };
-
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (block.type !== 'paragraph') return;
-
-    const selection = window.getSelection();
-    if (selection && selection.toString().length > 0) {
-      const range = selection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
-      const containerRect = contentRef.current?.getBoundingClientRect();
-
-      if (containerRect) {
-        setSelectionState({
-          x: rect.left - containerRect.left,
-          y: rect.top - containerRect.top - 40,
-          visible: true,
-        });
-      }
-    }
+  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+    const html = (e.currentTarget as HTMLDivElement).innerHTML;
+    onUpdate({
+      ...block,
+      text: html,
+    });
   };
 
   const applyFormat = (tag: string, styleAttr?: string) => {
@@ -93,17 +67,17 @@ export default function InlineEditableBlock({
       span.style.fontStyle = 'italic';
     } else if (tag === 'color' && styleAttr) {
       span.style.color = styleAttr;
-    } else if (tag === 'fontSize' && styleAttr) {
-      span.style.fontSize = styleAttr;
     }
 
     try {
       range.surroundContents(span);
-      contentRef.current?.focus();
-      onUpdate({
-        ...block,
-        text: contentRef.current?.innerHTML || block.text,
-      });
+      if (contentRef.current) {
+        contentRef.current.focus();
+        onUpdate({
+          ...block,
+          text: contentRef.current.innerHTML,
+        });
+      }
     } catch {
       // Fallback pour contenu complexe
       const selectedText = selection.toString();
@@ -112,7 +86,7 @@ export default function InlineEditableBlock({
         `<span style="${
           tag === 'bold' ? 'font-weight: bold;' :
           tag === 'italic' ? 'font-style: italic;' :
-          styleAttr ? `${tag === 'color' ? 'color' : 'font-size'}: ${styleAttr};` : ''
+          styleAttr ? `color: ${styleAttr};` : ''
         }">${selectedText}</span>`
       );
       if (contentRef.current) {
@@ -123,8 +97,6 @@ export default function InlineEditableBlock({
         });
       }
     }
-    selection.removeAllRanges();
-    setSelectionState({ ...selectionState, visible: false });
   };
 
   return (
@@ -159,23 +131,15 @@ export default function InlineEditableBlock({
             isSelected ? 'ring-2 ring-blue-400' : ''
           }`}
           onClick={() => onSelect(block.id)}
-          onContextMenu={handleContextMenu}
         >
           {block.type === 'paragraph' && (
             <div
               ref={contentRef}
               contentEditable
               suppressContentEditableWarning
-              className="text-sm outline-none min-h-full cursor-text"
-              onMouseUp={handleMouseUp}
-              onKeyUp={handleMouseUp}
-              onInput={(e) => {
-                onUpdate({
-                  ...block,
-                  text: (e.currentTarget as HTMLDivElement).innerHTML,
-                });
-              }}
-              dangerouslySetInnerHTML={{ __html: block.text || '' }}
+              className="text-sm outline-none min-h-full cursor-text select-text"
+              style={{ direction: 'ltr', userSelect: 'text' }}
+              onInput={handleInput}
             />
           )}
 
