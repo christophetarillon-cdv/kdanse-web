@@ -172,6 +172,14 @@ export default function TextStyleEditor({
               {value || 'Votre texte apparaîtra ici...'}
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setShowStylePanel(false)}
+            className="w-full mt-2 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm font-semibold"
+          >
+            ✓ Appliquer le style
+          </button>
         </div>
       )}
     </div>
