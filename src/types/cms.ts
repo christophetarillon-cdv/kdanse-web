@@ -19,8 +19,9 @@ export interface CMSBlock {
   alt?: string; // texte alt pour les images
   // pour les layouts
   layoutType?: 'two-columns' | 'three-columns' | 'image-text' | 'text-image';
-  columns?: CMSBlock[][]; // contenus des colonnes
   columnGap?: number; // écart entre colonnes en %
+  parentLayoutId?: string; // id du bloc layout parent (pour les blocs dans colonnes)
+  columnIndex?: number; // index de la colonne (0, 1, etc.)
 }
 
 export interface CMSMetadata {

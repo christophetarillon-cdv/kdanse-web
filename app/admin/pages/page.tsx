@@ -46,8 +46,9 @@ export default function AdminPagesPage() {
       if (block.alt) cleaned.alt = block.alt;
       if (block.style) cleaned.style = block.style;
       if (block.layoutType) cleaned.layoutType = block.layoutType;
-      if (block.columns?.length) cleaned.columns = block.columns;
       if (block.columnGap) cleaned.columnGap = block.columnGap;
+      if (block.parentLayoutId) cleaned.parentLayoutId = block.parentLayoutId;
+      if (block.columnIndex !== undefined) cleaned.columnIndex = block.columnIndex;
       return cleaned;
     });
   };
@@ -468,7 +469,8 @@ export default function AdminPagesPage() {
                     {block.type === 'layout' && (
                       <LayoutEditor
                         block={block}
-                        onUpdate={(updated) => updateBlock(block.id, updated)}
+                        allBlocks={content}
+                        onUpdate={(updated) => setContent(updated)}
                         onRemove={() => removeBlock(block.id)}
                       />
                     )}
