@@ -353,7 +353,7 @@ export default function AdminStagesPage() {
                 <td className="px-6 py-3">{stage.location}</td>
                 <td className="px-6 py-3 text-sm text-gray-600">
                   {stage.startDate && stage.endDate
-                    ? `${(stage.startDate instanceof Date ? stage.startDate : new Date(stage.startDate)).toLocaleDateString('fr-FR')} - ${(stage.endDate instanceof Date ? stage.endDate : new Date(stage.endDate)).toLocaleDateString('fr-FR')}`
+                    ? `${new Date(stage.startDate).toLocaleDateString('fr-FR')} - ${new Date(stage.endDate).toLocaleDateString('fr-FR')}`
                     : 'Non défini'}
                 </td>
                 <td className="px-6 py-3 text-xs text-gray-600">
