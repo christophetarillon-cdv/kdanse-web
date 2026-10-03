@@ -13,6 +13,18 @@ export interface Season {
   updatedAt: Date;
 }
 
+// Reservation (Réservations pour la saison suivante)
+export interface Reservation {
+  id: string;
+  userId: string;
+  seasonId: string; // Saison pour laquelle on réserve
+  currentSeasonId: string; // Saison actuelle (preuve d'inscription)
+  status: 'pending' | 'confirmed' | 'cancelled';
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // User & Auth
 export type UserRole = 'admin' | 'prof' | 'animateur' | 'user';
 
