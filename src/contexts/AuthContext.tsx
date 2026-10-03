@@ -76,11 +76,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const userData = userDoc.data();
             console.log('📍 User data:', userData);
             console.log('📍 User roles:', userData.roles);
+
+            // Support both 'role' (string) and 'roles' (array) formats
+            let roles = userData.roles || ['user'];
+            if (userData.role && !Array.isArray(roles)) {
+              roles = [userData.role];
+            }
+
             setUser({
               id: fbUser.uid,
               email: fbUser.email || '',
               displayName: fbUser.displayName || userData.displayName || '',
-              roles: userData.roles || ['user'],
+              roles: roles,
               createdAt: new Date(),
               updatedAt: new Date(),
             });
