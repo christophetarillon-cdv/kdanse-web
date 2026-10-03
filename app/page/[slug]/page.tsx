@@ -55,7 +55,8 @@ export default function CMSPage() {
 
           {/* Render content blocks with absolute positioning */}
           {(() => {
-            const blocks = page.content?.filter(b => !b.parentLayoutId) || [];
+            const contentArray = Array.isArray(page.content) ? page.content : (page.content ? Object.values(page.content) : []);
+            const blocks = contentArray.filter(b => b && !b.parentLayoutId);
             if (blocks.length === 0) {
               return <p className="text-gray-600 italic mt-8">Aucun contenu pour cette page.</p>;
             }
