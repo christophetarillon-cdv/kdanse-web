@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Season } from '@/types';
-import { getNextSeason } from '@/services/seasonService';
+import { getNextSeason, getActiveSeason } from '@/services/seasonService';
 import { createReservation, getUserReservationForSeason } from '@/services/reservationService';
+import { isUserEligibleForNextSeasonReservation } from '@/services/accessService';
 
 interface ReservationFormProps {
   currentSeasonId: string;
@@ -20,6 +21,8 @@ export default function ReservationForm({ currentSeasonId, onSuccess }: Reservat
   const [existingReservation, setExistingReservation] = useState(false);
   const [notes, setNotes] = useState('');
   const [success, setSuccess] = useState(false);
+  const [isEligible, setIsEligible] = useState<boolean | null>(null);
+  const [eligibilityReason, setEligibilityReason] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -36,11 +39,25 @@ export default function ReservationForm({ currentSeasonId, onSuccess }: Reservat
 
         setNextSeason(season);
 
-        // Check if user already has a reservation
         if (user?.id) {
+          // Check if user already has a reservation
           const existing = await getUserReservationForSeason(user.id, season.id);
           if (existing) {
             setExistingReservation(true);
+            return;
+          }
+
+          // Check eligibility for next season reservation
+          const activeSeason = await getActiveSeason();
+          if (activeSeason) {
+            const eligibility = await isUserEligibleForNextSeasonReservation(
+              user.id,
+              activeSeason.id
+            );
+            setIsEligible(eligibility.eligible);
+            if (!eligibility.eligible) {
+              setEligibilityReason(eligibility.reason || null);
+            }
           }
         }
       } catch (err) {
@@ -108,6 +125,15 @@ export default function ReservationForm({ currentSeasonId, onSuccess }: Reservat
     );
   }
 
+  if (isEligible === false) {
+    return (
+      <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-6 py-4 rounded-lg">
+        <div className="font-bold mb-2">⚠️ Accès restreint</div>
+        <p>{eligibilityReason}</p>
+      </div>
+    );
+  }
+
   if (!nextSeason) {
     return null;
   }
@@ -145,6 +171,11 @@ export default function ReservationForm({ currentSeasonId, onSuccess }: Reservat
           <p className="text-sm text-gray-600">
             <span className="font-medium">Email:</span> {user?.email}
           </p>
+          {isEligible === true && (
+            <p className="text-sm text-green-700 mt-2">
+              <span className="font-medium">✓ Statut:</span> Vous êtes éligible pour cette réservation
+            </p>
+          )}
         </div>
 
         {/* Notes */}

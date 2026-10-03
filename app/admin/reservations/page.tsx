@@ -7,6 +7,7 @@ import {
   getReservationStats,
   updateReservationStatus,
 } from '@/services/reservationService';
+import { isUserEligibleForNextSeasonReservation } from '@/services/accessService';
 import type { Season, Reservation } from '@/types';
 
 export default function ReservationsAdminPage() {
@@ -15,6 +16,7 @@ export default function ReservationsAdminPage() {
   const [stats, setStats] = useState({ total: 0, pending: 0, confirmed: 0, cancelled: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [eligibility, setEligibility] = useState<Record<string, boolean>>({}); // Track eligibility by reservation ID
 
   const loadData = async () => {
     try {
@@ -36,6 +38,17 @@ export default function ReservationsAdminPage() {
 
       setReservations(reservations);
       setStats(stats);
+
+      // Check eligibility for each reservation
+      const eligibilityMap: Record<string, boolean> = {};
+      for (const reservation of reservations) {
+        const result = await isUserEligibleForNextSeasonReservation(
+          reservation.userId,
+          reservation.currentSeasonId
+        );
+        eligibilityMap[reservation.id] = result.eligible;
+      }
+      setEligibility(eligibilityMap);
     } catch (error) {
       console.error('Erreur:', error);
     } finally {
@@ -147,6 +160,9 @@ export default function ReservationsAdminPage() {
                     Date
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Éligibilité
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
                     Notes
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
@@ -166,6 +182,21 @@ export default function ReservationsAdminPage() {
                     <td className="px-6 py-4 text-sm text-gray-600">(À récupérer)</td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {reservation.createdAt.toLocaleDateString('fr-FR')}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {eligibility[reservation.id] === true ? (
+                        <span className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                          ✓ Éligible
+                        </span>
+                      ) : eligibility[reservation.id] === false ? (
+                        <span className="inline-block px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">
+                          ✕ Non éligible
+                        </span>
+                      ) : (
+                        <span className="inline-block px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs font-medium">
+                          — Vérification…
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       <div className="max-w-xs truncate">{reservation.notes || '—'}</div>
