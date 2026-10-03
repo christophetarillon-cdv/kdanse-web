@@ -1,134 +1,85 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users: authentifiés peuvent lire/écrire leur profil, admins gèrent tout
-    match /users/{userId} {
-      allow read: if request.auth.uid == userId || isAdmin();
-      allow write: if request.auth.uid == userId || isAdmin();
+
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // AppSettings: admins seulement
-    match /appSettings/{document=**} {
-      allow read, write: if isAdmin();
-    }
-
-    // CMS Pages: everyone can read and write (for dev)
-    match /cmsPages/{pageId} {
-      allow read, write, delete: if true;
-    }
-
-    // Stages: everyone can read (for dev), admins can write
-    match /stages/{stageId} {
-      allow read: if true;
-      allow write: if isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin']);
-    }
-
-    // Carts: utilisateurs gèrent leurs paniers
-    match /carts/{cartId} {
-      allow create, read, update, delete: if isAuthenticated();
-    }
-
-    // Memberships: utilisateurs voient leurs adhésions, tous créent et payent les leurs
-    match /memberships/{membershipId} {
-      allow read: if request.auth.uid != null;
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAdmin();
-    }
-
-    // PaymentGroups: utilisateurs voient les leurs, admins gèrent
-    match /paymentGroups/{paymentGroupId} {
-      allow read: if request.auth.uid != null;
-      allow write: if isAdmin();
-    }
-
-    // PaymentInstallments: admins seulement
-    match /paymentInstallments/{installmentId} {
-      allow read: if isAdmin();
-      allow write: if isAdmin();
-    }
-
-    // BankAccounts: admins seulement
-    match /bankAccounts/{accountId} {
-      allow read, write: if isAdmin();
-    }
-
-    // Existing collections: garder l'ouverture pour l'app mobile
-    match /seances/{seanceId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /activites/{activiteId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /inscriptions/{inscriptionId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
-    }
-
-    match /users/{userId}/photos/{photoId} {
-      allow read, write: if request.auth.uid == userId || isAdmin();
-    }
-
-    match /medias/{mediaId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /annonces/{annonce} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /channels/{channelId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /analytics/{document=**} {
-      allow read: if isAdmin();
-      allow write: if false;
-    }
-
-    match /config/{configId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /participations/{participationId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    match /soiree/{soireeId} {
-      allow read, write: if isAuthenticated();
-    }
-
-    // Menus: everyone can read and write (for dev)
-    match /menus/{menuId} {
-      allow read, write, delete: if true;
-    }
-
-    // Site config: everyone can read and write (for dev)
+    // Tokens Dropbox partagés : tout utilisateur authentifié
     match /config/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Collections sans donnée sensible propre à un individu : accès
+    // authentifié, comme avant.
+    match /users/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /activites/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /analytics_events/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /analytics_sessions/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /annonces/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /channelReads/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /inscriptions/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /medias/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /participations/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /seances/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /soiree/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Collections kdanse-web (Phase 4 - Gestion des Accès)
+    // Permissive for development - restrict in production
+    match /seasons/{document=**} {
+      allow read, write: if true;
+    }
+    match /stages/{document=**} {
+      allow read, write: if true;
+    }
+    match /memberships/{document=**} {
+      allow read, write: if true;
+    }
+    match /reservations/{document=**} {
       allow read, write: if true;
     }
 
-    // Seasons: everyone can read, authenticated can write
-    match /seasons/{seasonId} {
-      allow read: if true;
-      allow write: if true;
+    // Messages privés : réservés aux 2 participants du canal et aux admins.
+    // Les autres types de canal (annonces/général/activité) restent ouverts
+    // à tout utilisateur authentifié, comme avant.
+    match /channels/{channelId} {
+      allow read: if request.auth != null &&
+        (resource.data.type != 'prive' ||
+         request.auth.uid in resource.data.membres ||
+         isAdmin());
+      allow write: if request.auth != null;
+
+      match /messages/{messageId} {
+        allow read: if request.auth != null &&
+          (get(/databases/$(database)/documents/channels/$(channelId)).data.type != 'prive' ||
+           request.auth.uid in get(/databases/$(database)/documents/channels/$(channelId)).data.membres ||
+           isAdmin());
+        allow write: if request.auth != null;
+      }
     }
-
-    // Reservations: everyone can read/write for dev
-    match /reservations/{reservationId} {
-      allow read, write: if true;
-    }
-  }
-
-  function isAuthenticated() {
-    return request.auth != null;
-  }
-
-  function isAdmin() {
-    return isAuthenticated() &&
-           exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
-           get(/databases/(default)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin']);
   }
 }

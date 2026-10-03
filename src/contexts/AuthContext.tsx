@@ -34,6 +34,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (isLocalDev) {
+      // Si l'utilisateur vient de se déconnecter, rester déconnecté
+      const justLoggedOut = localStorage.getItem('justLoggedOut');
+      if (justLoggedOut) {
+        localStorage.removeItem('justLoggedOut');
+        setUser(null);
+        setFirebaseUser(null);
+        setLoading(false);
+        return;
+      }
+
       // Mode dev: créer un utilisateur admin de test
       const devUser: User = {
         id: 'dev-user-123',

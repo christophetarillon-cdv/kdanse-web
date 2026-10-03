@@ -16,6 +16,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
+      // Ne rediriger vers dashboard que si l'utilisateur n'a pas juste cliqué "Déconnexion"
+      const justLoggedOut = localStorage.getItem('justLoggedOut');
+      if (justLoggedOut) {
+        localStorage.removeItem('justLoggedOut');
+        return;
+      }
       router.push('/dashboard');
     }
   }, [user, router]);

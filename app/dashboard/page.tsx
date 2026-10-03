@@ -25,6 +25,18 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     try {
+      // Flag pour empêcher la redirection automatique vers dashboard
+      localStorage.setItem('justLoggedOut', 'true');
+
+      // Nettoyer les autres données
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key !== 'justLoggedOut') {
+          localStorage.removeItem(key);
+        }
+      });
+      sessionStorage.clear();
+
       const auth = getAuth();
       await signOut(auth);
       router.push('/login');
