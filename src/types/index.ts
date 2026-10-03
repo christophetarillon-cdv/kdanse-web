@@ -1,3 +1,18 @@
+// Season (Saisons - exemple: 2024-2025)
+export interface Season {
+  id: string;
+  name: string; // "2024-2025"
+  description?: string;
+  startDate: Date;
+  endDate: Date;
+  reservationStartDate: Date;
+  reservationEndDate: Date;
+  status: 'planning' | 'active' | 'closed' | 'reservation';
+  stageIds: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // User & Auth
 export type UserRole = 'admin' | 'prof' | 'animateur' | 'user';
 
@@ -28,6 +43,7 @@ export interface Stage {
   endDate: Date;
   maxParticipants: number;
   pricing: StagePricing;
+  seasonId?: string; // Reference to Season
   createdAt: Date;
   updatedAt: Date;
 }
