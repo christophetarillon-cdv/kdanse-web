@@ -28,6 +28,10 @@ export interface CMSBlock {
   width?: number;
   height?: number;
   order?: number;
+  zIndex?: number;
+  // propriétés de style du bloc
+  backgroundColor?: string; // hex color
+  backgroundOpacity?: number; // 0-1
 }
 
 export interface CMSMetadata {
