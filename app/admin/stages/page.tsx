@@ -357,27 +357,23 @@ export default function AdminStagesPage() {
                     : 'Non défini'}
                 </td>
                 <td className="px-6 py-3 text-xs text-gray-600">
-                  {stage.pricing ? (
+                  {stage.pricing?.stage ? (
                     <div className="space-y-2">
-                      {stage.pricing.stage ? (
-                        <div>
-                          <p className="font-semibold text-blue-700">Stage:</p>
-                          <p>Solo lic.: {stage.pricing.stage.soloLicensed}€</p>
-                          <p>Solo non lic.: {stage.pricing.stage.soloUnlicensed}€</p>
-                          <p>Couple lic.: {stage.pricing.stage.coupleLicensed}€</p>
-                          <p>Couple non lic.: {stage.pricing.stage.coupleUnlicensed}€</p>
-                          <p>Couple mixte: {stage.pricing.stage.coupleMixed}€</p>
-                        </div>
-                      ) : stage.pricing.solo ? (
-                        <p>Solo: {stage.pricing.solo}€, Couple: {stage.pricing.couple}€</p>
-                      ) : null}
-                      {stage.pricing.housing ? (
+                      <div>
+                        <p className="font-semibold text-blue-700">Stage:</p>
+                        <p>Solo lic.: {stage.pricing.stage.soloLicensed}€</p>
+                        <p>Solo non lic.: {stage.pricing.stage.soloUnlicensed}€</p>
+                        <p>Couple lic.: {stage.pricing.stage.coupleLicensed}€</p>
+                        <p>Couple non lic.: {stage.pricing.stage.coupleUnlicensed}€</p>
+                        <p>Couple mixte: {stage.pricing.stage.coupleMixed}€</p>
+                      </div>
+                      {stage.pricing.housing && (
                         <div>
                           <p className="font-semibold text-green-700">Hébergement:</p>
                           <p>Solo: {stage.pricing.housing.solo}€</p>
                           <p>Couple: {stage.pricing.housing.couple}€</p>
                         </div>
-                      ) : null}
+                      )}
                     </div>
                   ) : 'Non défini'}
                 </td>
