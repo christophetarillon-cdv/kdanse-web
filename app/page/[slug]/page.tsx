@@ -54,84 +54,36 @@ export default function CMSPage() {
           )}
 
           {/* Render content blocks with absolute positioning */}
-          {page.content && page.content.filter(b => !b.parentLayoutId).length > 0 ? (
-            <div
-              className="relative bg-white rounded-lg border border-gray-300 mt-8 shadow-lg"
-              style={{
-                width: '100%',
-                minHeight: '800px',
-                height: 'auto',
-              }}
-            >
-              {page.content.filter(b => !b.parentLayoutId).map((block, idx) => {
-                const hexToRgb = (hex: string) => {
-                  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                  return result ? {
-                    r: parseInt(result[1], 16),
-                    g: parseInt(result[2], 16),
-                    b: parseInt(result[3], 16)
-                  } : { r: 255, g: 255, b: 255 };
-                };
+          {(() => {
+            const blocks = page.content?.filter(b => !b.parentLayoutId) || [];
+            if (blocks.length === 0) {
+              return <p className="text-gray-600 italic mt-8">Aucun contenu pour cette page.</p>;
+            }
+            const maxBottom = Math.max(800, ...blocks.map(b => (b.positionY || 0) + (b.height || 150)));
 
-                const bgColor = block.backgroundColor
-                  ? `rgba(${hexToRgb(block.backgroundColor).r}, ${hexToRgb(block.backgroundColor).g}, ${hexToRgb(block.backgroundColor).b}, ${block.backgroundOpacity ?? 1})`
-                  : '#ffffff';
+            const hexToRgb = (hex: string) => {
+              const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+              return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 255, g: 255, b: 255 };
+            };
 
-                return (
-                  <div
-                    key={idx}
-                    className="border border-gray-300 rounded overflow-hidden"
-                    style={{
-                      position: 'absolute',
-                      left: `${block.positionX ?? 0}px`,
-                      top: `${block.positionY ?? 0}px`,
-                      width: `${block.width ?? 300}px`,
-                      height: `${block.height ?? 150}px`,
-                      backgroundColor: bgColor,
-                      zIndex: block.zIndex ?? 0,
-                    }}
-                  >
-                    <div className="w-full h-full p-4 overflow-auto">
-                      {block.type === 'paragraph' && (
-                        <div
-                          className="text-sm prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{ __html: block.text || '' }}
-                        />
-                      )}
-
-                      {block.type === 'heading' && (
-                        <h2 className={`font-bold ${
-                          block.level === 1 ? 'text-3xl' :
-                          block.level === 2 ? 'text-2xl' :
-                          block.level === 3 ? 'text-xl' : 'text-lg'
-                        }`}>
-                          {block.text}
-                        </h2>
-                      )}
-
-                      {block.type === 'image' && (
-                        <img
-                          src={block.src || ''}
-                          alt={block.alt || 'Image'}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-
-                      {block.type === 'list' && (
-                        <ul className="list-disc list-inside space-y-1 text-sm">
-                          {block.items?.map((item, i) => (
-                            <li key={i}>{item}</li>
-                          ))}
-                        </ul>
-                      )}
+            return (
+              <div className="relative bg-white rounded-lg border border-gray-300 mt-8 shadow-lg mx-auto" style={{ width: '1200px', height: `${maxBottom}px` }}>
+                {blocks.map((block, idx) => {
+                  const bgColor = block.backgroundColor ? `rgba(${hexToRgb(block.backgroundColor).r}, ${hexToRgb(block.backgroundColor).g}, ${hexToRgb(block.backgroundColor).b}, ${block.backgroundOpacity ?? 1})` : '#ffffff';
+                  return (
+                    <div key={idx} className="border border-gray-300 rounded overflow-hidden" style={{ position: 'absolute', left: `${block.positionX ?? 0}px`, top: `${block.positionY ?? 0}px`, width: `${block.width ?? 300}px`, height: `${block.height ?? 150}px`, backgroundColor: bgColor, zIndex: block.zIndex ?? 0 }}>
+                      <div className="w-full h-full p-4 overflow-auto">
+                        {block.type === 'paragraph' && <div className="text-sm prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: block.text || '' }} />}
+                        {block.type === 'heading' && <h2 className={`font-bold ${block.level === 1 ? 'text-3xl' : block.level === 2 ? 'text-2xl' : block.level === 3 ? 'text-xl' : 'text-lg'}`}>{block.text}</h2>}
+                        {block.type === 'image' && <img src={block.src || ''} alt={block.alt || 'Image'} className="w-full h-full object-cover" />}
+                        {block.type === 'list' && <ul className="list-disc list-inside space-y-1 text-sm">{block.items?.map((item, i) => <li key={i}>{item}</li>)}</ul>}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-gray-600 italic mt-8">Aucun contenu pour cette page.</p>
-          )}
+                  );
+                })}
+              </div>
+            );
+          })()}
         </article>
 
         {/* Metadata info */}
