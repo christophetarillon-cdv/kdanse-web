@@ -15,14 +15,17 @@ import type { Menu, MenuItem } from '@/types/menu';
 const MENU_COLLECTION = 'menus';
 
 const buildMenuTree = (items: MenuItem[]): MenuItem[] => {
-  const itemMap = new Map(items.map(item => [item.id, { ...item, children: [] }]));
+  const itemMap = new Map<string, MenuItem & { children: MenuItem[] }>(
+    items.map(item => [item.id, { ...item, children: [] }])
+  );
 
-  items.forEach(item => {
+  items.forEach((item: MenuItem) => {
     if (item.parentId && itemMap.has(item.parentId)) {
       const parent = itemMap.get(item.parentId)!;
       parent.children = parent.children || [];
-      if (!parent.children.find(c => c.id === item.id)) {
-        parent.children.push(itemMap.get(item.id)!);
+      const child = itemMap.get(item.id);
+      if (child && !parent.children.find(c => c.id === item.id)) {
+        parent.children.push(child);
       }
     }
   });

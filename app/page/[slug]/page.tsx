@@ -56,11 +56,11 @@ export default function CMSPage() {
           {/* Render content blocks with absolute positioning */}
           {(() => {
             const contentArray = Array.isArray(page.content) ? page.content : (page.content ? Object.values(page.content) : []);
-            const blocks = contentArray.filter(b => b && !b.parentLayoutId);
+            const blocks = contentArray.filter((b: any) => b && !b.parentLayoutId);
             if (blocks.length === 0) {
               return <p className="text-gray-600 italic mt-8">Aucun contenu pour cette page.</p>;
             }
-            const maxBottom = Math.max(800, ...blocks.map(b => (b.positionY || 0) + (b.height || 150)));
+            const maxBottom = Math.max(800, ...blocks.map((b: any) => (b.positionY || 0) + (b.height || 150)));
 
             const hexToRgb = (hex: string) => {
               const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -69,7 +69,7 @@ export default function CMSPage() {
 
             return (
               <div className="relative bg-white rounded-lg border border-gray-300 mt-8 shadow-lg mx-auto" style={{ width: '1200px', height: `${maxBottom}px` }}>
-                {blocks.map((block, idx) => {
+                {blocks.map((block: any, idx: number) => {
                   const bgColor = block.backgroundColor ? `rgba(${hexToRgb(block.backgroundColor).r}, ${hexToRgb(block.backgroundColor).g}, ${hexToRgb(block.backgroundColor).b}, ${block.backgroundOpacity ?? 1})` : '#ffffff';
                   return (
                     <div key={idx} className="border border-gray-300 rounded overflow-hidden" style={{ position: 'absolute', left: `${block.positionX ?? 0}px`, top: `${block.positionY ?? 0}px`, width: `${block.width ?? 300}px`, height: `${block.height ?? 150}px`, backgroundColor: bgColor, zIndex: block.zIndex ?? 0 }}>
