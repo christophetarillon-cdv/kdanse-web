@@ -78,11 +78,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.log('📍 User roles:', userData.roles);
 
             // Support both 'role' (string) and 'roles' (array) formats
-            let roles = userData.roles || ['user'];
-            if (userData.role && !Array.isArray(roles)) {
+            let roles = userData.roles;
+            if (!roles && userData.role) {
               roles = [userData.role];
             }
+            if (!roles) {
+              roles = ['user'];
+            }
 
+            console.log('📍 Final roles:', roles);
             setUser({
               id: fbUser.uid,
               email: fbUser.email || '',
