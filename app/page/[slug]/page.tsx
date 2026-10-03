@@ -53,69 +53,85 @@ export default function CMSPage() {
             <p className="text-lg text-gray-600">{page.description}</p>
           )}
 
-          {/* Render content blocks */}
-          <div className="mt-8 space-y-6">
-            {page.content && page.content.filter(b => !b.parentLayoutId).length > 0 ? (
-              page.content.filter(b => !b.parentLayoutId).map((block, idx) => (
-                <div key={idx}>
-                  {block.type === 'heading' && (
-                    <h2 className={`font-bold mt-6 mb-3 ${
-                      block.level === 1 ? 'text-3xl' :
-                      block.level === 2 ? 'text-2xl' :
-                      block.level === 3 ? 'text-xl' : 'text-lg'
-                    }`}>
-                      {block.text}
-                    </h2>
-                  )}
+          {/* Render content blocks with absolute positioning */}
+          {page.content && page.content.filter(b => !b.parentLayoutId).length > 0 ? (
+            <div
+              className="relative bg-white rounded-lg border border-gray-300 mt-8 shadow-lg"
+              style={{
+                width: '100%',
+                minHeight: '800px',
+                height: 'auto',
+              }}
+            >
+              {page.content.filter(b => !b.parentLayoutId).map((block, idx) => {
+                const hexToRgb = (hex: string) => {
+                  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                  return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                  } : { r: 255, g: 255, b: 255 };
+                };
 
-                  {block.type === 'paragraph' && (
-                    <div
-                      className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: block.text || '' }}
-                    />
-                  )}
+                const bgColor = block.backgroundColor
+                  ? `rgba(${hexToRgb(block.backgroundColor).r}, ${hexToRgb(block.backgroundColor).g}, ${hexToRgb(block.backgroundColor).b}, ${block.backgroundOpacity ?? 1})`
+                  : '#ffffff';
 
-                  {block.type === 'list' && (
-                    <ul className="list-disc list-inside space-y-2 text-gray-700">
-                      {block.items?.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {block.type === 'section' && (
-                    <div className="bg-gray-50 border-l-4 border-blue-500 p-4 my-4">
-                      {block.text && <h3 className="font-semibold mb-2">{block.text}</h3>}
-                      {block.content && (
-                        <div className="space-y-2">
-                          {block.content.map((subBlock, si) => (
-                            <p key={si} className="text-gray-600">{subBlock.text}</p>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {block.type === 'image' && (
-                    <figure className="my-6">
-                      {block.src && (
-                        <img
-                          src={block.src}
-                          alt={block.alt || 'Image'}
-                          className="w-full h-auto rounded-lg shadow-md"
+                return (
+                  <div
+                    key={idx}
+                    className="border border-gray-300 rounded overflow-hidden"
+                    style={{
+                      position: 'absolute',
+                      left: `${block.positionX ?? 0}px`,
+                      top: `${block.positionY ?? 0}px`,
+                      width: `${block.width ?? 300}px`,
+                      height: `${block.height ?? 150}px`,
+                      backgroundColor: bgColor,
+                      zIndex: block.zIndex ?? 0,
+                    }}
+                  >
+                    <div className="w-full h-full p-4 overflow-auto">
+                      {block.type === 'paragraph' && (
+                        <div
+                          className="text-sm prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: block.text || '' }}
                         />
                       )}
-                      {block.alt && <figcaption className="text-center text-sm text-gray-500 mt-2">{block.alt}</figcaption>}
-                    </figure>
-                  )}
 
-                  {block.type === 'layout' && <CMSLayout block={block} allBlocks={page.content} />}
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-600 italic">Aucun contenu pour cette page.</p>
-            )}
-          </div>
+                      {block.type === 'heading' && (
+                        <h2 className={`font-bold ${
+                          block.level === 1 ? 'text-3xl' :
+                          block.level === 2 ? 'text-2xl' :
+                          block.level === 3 ? 'text-xl' : 'text-lg'
+                        }`}>
+                          {block.text}
+                        </h2>
+                      )}
+
+                      {block.type === 'image' && (
+                        <img
+                          src={block.src || ''}
+                          alt={block.alt || 'Image'}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+
+                      {block.type === 'list' && (
+                        <ul className="list-disc list-inside space-y-1 text-sm">
+                          {block.items?.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-gray-600 italic mt-8">Aucun contenu pour cette page.</p>
+          )}
         </article>
 
         {/* Metadata info */}

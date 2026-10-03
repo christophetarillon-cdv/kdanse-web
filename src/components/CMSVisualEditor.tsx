@@ -150,7 +150,7 @@ export default function CMSVisualEditor({
           className="relative bg-white rounded-lg shadow-2xl"
           style={{
             width: '1200px',
-            height: '800px',
+            minHeight: '800px',
             margin: '0 auto',
             transform: `scale(${canvasScale})`,
             transformOrigin: 'top center',
