@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST() {
   try {
     console.log('🚀 Initialisation des données de test...');
