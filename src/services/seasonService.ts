@@ -105,22 +105,32 @@ export const removeStageFromSeason = async (seasonId: string, stageId: string) =
 
 // Get next season (for reservations)
 export const getNextSeason = async (): Promise<Season | null> => {
-  const now = new Date();
-  const q = query(
-    collection(db, SEASONS_COLLECTION),
-    where('status', '==', 'reservation'),
-    orderBy('startDate', 'asc')
-  );
-  const snapshot = await getDocs(q);
+  try {
+    const now = new Date();
+    console.log('🔍 getNextSeason: searching for reservation season');
 
-  if (snapshot.empty) return null;
+    // Just get seasons with status 'reservation', no orderBy to avoid index requirement
+    const q = query(
+      collection(db, SEASONS_COLLECTION),
+      where('status', '==', 'reservation')
+    );
+    const snapshot = await getDocs(q);
+    console.log('✅ getNextSeason: found', snapshot.docs.length, 'seasons');
 
-  // Find the first season starting in the future
-  const nextSeason = snapshot.docs
-    .map(d => convertSeasonData({ id: d.id, ...d.data() }))
-    .find(s => s.startDate > now);
+    if (snapshot.empty) return null;
 
-  return nextSeason || null;
+    // Find the first season starting in the future, sorted in memory
+    const nextSeason = snapshot.docs
+      .map(d => convertSeasonData({ id: d.id, ...d.data() }))
+      .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
+      .find(s => s.startDate > now);
+
+    console.log('✅ getNextSeason: found next season', nextSeason?.name, 'startDate:', nextSeason?.startDate);
+    return nextSeason || null;
+  } catch (err) {
+    console.error('❌ getNextSeason error:', err);
+    throw err;
+  }
 };
 
 // Check if user can reserve for next season (must be registered in current/previous season)

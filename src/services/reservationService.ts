@@ -71,6 +71,7 @@ export const createReservation = async (
 
   return addDoc(collection(db, RESERVATIONS_COLLECTION), {
     ...data,
+    notes: data.notes || '',
     status: 'pending',
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),

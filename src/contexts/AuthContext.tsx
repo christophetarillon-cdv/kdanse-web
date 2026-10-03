@@ -69,9 +69,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (fbUser) {
         try {
+          console.log('📍 Loading user:', fbUser.uid);
           const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
+          console.log('📍 User doc exists:', userDoc.exists());
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            console.log('📍 User data:', userData);
+            console.log('📍 User roles:', userData.roles);
             setUser({
               id: fbUser.uid,
               email: fbUser.email || '',
@@ -81,10 +85,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               updatedAt: new Date(),
             });
           } else {
+            console.log('❌ User doc does not exist');
             setError('Profil utilisateur non trouvé');
             setUser(null);
           }
         } catch (err) {
+          console.error('❌ Error loading user:', err);
           setError(err instanceof Error ? err.message : 'Erreur de chargement du profil');
           setUser(null);
         }

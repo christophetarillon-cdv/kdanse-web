@@ -4,7 +4,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles;
     }
 
     // Tokens Dropbox partagés : tout utilisateur authentifié

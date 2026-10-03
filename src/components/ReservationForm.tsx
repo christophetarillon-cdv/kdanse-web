@@ -61,8 +61,10 @@ export default function ReservationForm({ currentSeasonId, onSuccess }: Reservat
           }
         }
       } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Une erreur est survenue';
         console.error('Erreur lors du chargement:', err);
-        setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+        console.error('Error details:', errorMsg);
+        setError(errorMsg);
       } finally {
         setIsLoading(false);
       }

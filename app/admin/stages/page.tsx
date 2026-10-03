@@ -353,25 +353,31 @@ export default function AdminStagesPage() {
                 <td className="px-6 py-3">{stage.location}</td>
                 <td className="px-6 py-3 text-sm text-gray-600">
                   {stage.startDate && stage.endDate
-                    ? `${stage.startDate.substring(0, 10)} - ${stage.endDate.substring(0, 10)}`
+                    ? `${(stage.startDate instanceof Date ? stage.startDate : new Date(stage.startDate)).toLocaleDateString('fr-FR')} - ${(stage.endDate instanceof Date ? stage.endDate : new Date(stage.endDate)).toLocaleDateString('fr-FR')}`
                     : 'Non défini'}
                 </td>
                 <td className="px-6 py-3 text-xs text-gray-600">
                   {stage.pricing ? (
                     <div className="space-y-2">
-                      <div>
-                        <p className="font-semibold text-blue-700">Stage:</p>
-                        <p>Solo lic.: {stage.pricing.stage.soloLicensed}€</p>
-                        <p>Solo non lic.: {stage.pricing.stage.soloUnlicensed}€</p>
-                        <p>Couple lic.: {stage.pricing.stage.coupleLicensed}€</p>
-                        <p>Couple non lic.: {stage.pricing.stage.coupleUnlicensed}€</p>
-                        <p>Couple mixte: {stage.pricing.stage.coupleMixed}€</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-green-700">Hébergement:</p>
-                        <p>Solo: {stage.pricing.housing.solo}€</p>
-                        <p>Couple: {stage.pricing.housing.couple}€</p>
-                      </div>
+                      {stage.pricing.stage ? (
+                        <div>
+                          <p className="font-semibold text-blue-700">Stage:</p>
+                          <p>Solo lic.: {stage.pricing.stage.soloLicensed}€</p>
+                          <p>Solo non lic.: {stage.pricing.stage.soloUnlicensed}€</p>
+                          <p>Couple lic.: {stage.pricing.stage.coupleLicensed}€</p>
+                          <p>Couple non lic.: {stage.pricing.stage.coupleUnlicensed}€</p>
+                          <p>Couple mixte: {stage.pricing.stage.coupleMixed}€</p>
+                        </div>
+                      ) : stage.pricing.solo ? (
+                        <p>Solo: {stage.pricing.solo}€, Couple: {stage.pricing.couple}€</p>
+                      ) : null}
+                      {stage.pricing.housing ? (
+                        <div>
+                          <p className="font-semibold text-green-700">Hébergement:</p>
+                          <p>Solo: {stage.pricing.housing.solo}€</p>
+                          <p>Couple: {stage.pricing.housing.couple}€</p>
+                        </div>
+                      ) : null}
                     </div>
                   ) : 'Non défini'}
                 </td>
