@@ -75,16 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (userDoc.exists()) {
             const userData = userDoc.data();
             console.log('📍 User data:', userData);
-            console.log('📍 User roles:', userData.roles);
 
-            // Support both 'role' (string) and 'roles' (array) formats
-            let roles = userData.roles;
-            if (!roles && userData.role) {
-              roles = [userData.role];
-            }
-            if (!roles) {
-              roles = ['user'];
-            }
+            // Use 'role' field and convert to 'roles' array
+            const role = userData.role || 'user';
+            const roles = [role];
 
             console.log('📍 Final roles:', roles);
             setUser({
