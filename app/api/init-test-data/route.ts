@@ -6,7 +6,7 @@ export async function POST() {
   try {
     console.log('🚀 Initialisation des données de test...');
 
-    // 1. Récupérer les IDs des saisons
+    // 1. Récupérer ou créer les saisons
     const seasonsSnapshot = await getDocs(collection(db, 'seasons'));
     let season2024Id = '';
     let season2025Id = '';
@@ -22,6 +22,21 @@ export async function POST() {
         { error: 'Saison 2024-2025 non trouvée' },
         { status: 400 }
       );
+    }
+
+    // Créer la saison 2025-2026 si elle n'existe pas
+    if (!season2025Id) {
+      const season2025Ref = await addDoc(collection(db, 'seasons'), {
+        name: '2025-2026',
+        status: 'reservation',
+        startDate: new Date('2025-05-01'),
+        endDate: new Date('2026-04-30'),
+        reservationStartDate: new Date('2024-12-01'),
+        reservationEndDate: new Date('2025-04-30'),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      season2025Id = season2025Ref.id;
     }
 
     // 2. Créer un stage
