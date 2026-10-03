@@ -51,12 +51,12 @@ export const getUserReservationForSeason = async (
 ): Promise<Reservation | null> => {
   const q = query(
     collection(db, RESERVATIONS_COLLECTION),
-    where('userId', '==', userId),
-    where('seasonId', '==', seasonId)
+    where('userId', '==', userId)
   );
   const snapshot = await getDocs(q);
-  if (snapshot.empty) return null;
-  return convertReservationData({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
+  const reservation = snapshot.docs.find(doc => doc.data().seasonId === seasonId);
+  if (!reservation) return null;
+  return convertReservationData({ id: reservation.id, ...reservation.data() });
 };
 
 // Create reservation
