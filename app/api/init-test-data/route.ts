@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
-import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST() {
   try {
     console.log('🚀 Initialisation des données de test...');
+
+    // Import Firebase dynamiquement pour éviter les erreurs de build
+    const { collection, addDoc, getDocs, serverTimestamp } = await import('firebase/firestore');
+    const { db } = await import('@/lib/firebase');
 
     // 1. Récupérer ou créer les saisons
     const seasonsSnapshot = await getDocs(collection(db, 'seasons'));
