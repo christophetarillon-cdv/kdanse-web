@@ -109,6 +109,17 @@ service cloud.firestore {
     match /config/{document=**} {
       allow read, write: if true;
     }
+
+    // Seasons: everyone can read, authenticated can write
+    match /seasons/{seasonId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Reservations: everyone can read/write for dev
+    match /reservations/{reservationId} {
+      allow read, write: if true;
+    }
   }
 
   function isAuthenticated() {

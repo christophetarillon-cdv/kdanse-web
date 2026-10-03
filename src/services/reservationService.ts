@@ -61,7 +61,7 @@ export const getUserReservationForSeason = async (
 
 // Create reservation
 export const createReservation = async (
-  data: Omit<Reservation, 'id' | 'createdAt' | 'updatedAt'>
+  data: Omit<Reservation, 'id' | 'createdAt' | 'updatedAt' | 'status'>
 ) => {
   // Check if user already has a reservation for this season
   const existing = await getUserReservationForSeason(data.userId, data.seasonId);
