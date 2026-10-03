@@ -77,7 +77,7 @@ export default function CMSPage() {
                         {block.type === 'paragraph' && <div className="text-sm prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: block.text || '' }} />}
                         {block.type === 'heading' && <h2 className={`font-bold ${block.level === 1 ? 'text-3xl' : block.level === 2 ? 'text-2xl' : block.level === 3 ? 'text-xl' : 'text-lg'}`}>{block.text}</h2>}
                         {block.type === 'image' && <img src={block.src || ''} alt={block.alt || 'Image'} className="w-full h-full object-cover" />}
-                        {block.type === 'list' && <ul className="list-disc list-inside space-y-1 text-sm">{block.items?.map((item, i) => <li key={i}>{item}</li>)}</ul>}
+                        {block.type === 'list' && <ul className="list-disc list-inside space-y-1 text-sm">{block.items?.map((item: any, i: number) => <li key={i}>{item}</li>)}</ul>}
                       </div>
                     </div>
                   );
