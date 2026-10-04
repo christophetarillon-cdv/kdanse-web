@@ -85,15 +85,20 @@ export default function AdminPaymentsPage() {
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
 
   return (
-    <div className="space-y-8 p-8">
-      <div>
-        <Link href="/admin/stages" className="text-blue-600 hover:underline">
-          ← Retour à l'admin
+    <div className="space-y-8 p-4 sm:p-8">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">💳 Paiements en attente</h1>
+          <p className="text-gray-600">
+            {memberships.length} paiement(s) en attente de confirmation
+          </p>
+        </div>
+        <Link
+          href="/dashboard"
+          className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-semibold transition whitespace-nowrap"
+        >
+          ← Dashboard
         </Link>
-        <h1 className="text-3xl font-bold mt-4 mb-2">💳 Paiements en attente</h1>
-        <p className="text-gray-600">
-          {memberships.length} paiement(s) en attente de confirmation
-        </p>
       </div>
 
       {memberships.length === 0 ? (
