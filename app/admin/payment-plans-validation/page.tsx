@@ -80,23 +80,36 @@ export default function AdminPaymentPlansValidationPage() {
           throw new Error(`Date invalide pour le paiement: ${inst.dueDate}`);
         }
 
-        // Build update object with only defined values
+        // Build update object with clean values
         const updateData: any = {
-          amount: inst.amount,
+          amount: inst.amount || 0,
           dueDate: dueDateValue,
-          method: inst.method,
+          method: inst.method || 'cheque',
           status: inst.status || 'pending',
           updatedAt: serverTimestamp(),
         };
 
-        // Only add optional fields if they have values
-        if (inst.chequeNumber) updateData.chequeNumber = inst.chequeNumber;
-        if (inst.chequeBank) updateData.chequeBank = inst.chequeBank;
-        if (inst.chequeCity) updateData.chequeCity = inst.chequeCity;
-        if (inst.chequeName) updateData.chequeName = inst.chequeName;
-        if (inst.chequeVacancesCount) updateData.chequeVacancesCount = inst.chequeVacancesCount;
-        if (inst.chequeVacancesSerialNumbers?.length) updateData.chequeVacancesSerialNumbers = inst.chequeVacancesSerialNumbers;
+        // Add cheque fields only if non-empty
+        if (inst.chequeNumber && inst.chequeNumber.trim()) {
+          updateData.chequeNumber = inst.chequeNumber;
+        }
+        if (inst.chequeBank && inst.chequeBank.trim()) {
+          updateData.chequeBank = inst.chequeBank;
+        }
+        if (inst.chequeCity && inst.chequeCity.trim()) {
+          updateData.chequeCity = inst.chequeCity;
+        }
+        if (inst.chequeName && inst.chequeName.trim()) {
+          updateData.chequeName = inst.chequeName;
+        }
+        if (typeof inst.chequeVacancesCount === 'number' && inst.chequeVacancesCount > 0) {
+          updateData.chequeVacancesCount = inst.chequeVacancesCount;
+        }
+        if (Array.isArray(inst.chequeVacancesSerialNumbers) && inst.chequeVacancesSerialNumbers.length > 0) {
+          updateData.chequeVacancesSerialNumbers = inst.chequeVacancesSerialNumbers;
+        }
 
+        console.log('Updating installment', inst.id, 'with data:', updateData);
         await updateDoc(doc(db, 'paymentInstallments', inst.id), updateData);
       }
 
