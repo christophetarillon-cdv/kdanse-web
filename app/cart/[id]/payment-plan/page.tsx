@@ -22,6 +22,13 @@ interface InstallmentConfig {
   chequeVacancesCount?: number;
 }
 
+interface Stats {
+  total: number;
+  allocated: number;
+  remaining: number;
+  isComplete: boolean;
+}
+
 export default function PaymentPlanPage() {
   const params = useParams();
   const cartId = params.id as string;
@@ -31,9 +38,16 @@ export default function PaymentPlanPage() {
   const [settings, setSettings] = useState<PaymentSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [installmentCount, setInstallmentCount] = useState<3 | 4>(3);
+  const [installmentCount, setInstallmentCount] = useState<2 | 3 | 4>(3);
   const [installments, setInstallments] = useState<InstallmentConfig[]>([]);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  const stats: Stats = {
+    total: cart?.totals.total || 0,
+    allocated: installments.reduce((sum, i) => sum + (i.amount || 0), 0),
+    remaining: (cart?.totals.total || 0) - installments.reduce((sum, i) => sum + (i.amount || 0), 0),
+    isComplete: installments.reduce((sum, i) => sum + (i.amount || 0), 0) === (cart?.totals.total || 0) && installments.every(i => i.method),
+  };
 
   useEffect(() => {
     if (!authLoading && !firebaseUser) {
@@ -74,13 +88,13 @@ export default function PaymentPlanPage() {
     }
   };
 
-  const updateInstallmentCount = (count: 3 | 4) => {
+  const updateInstallmentCount = (count: 2 | 3 | 4) => {
     setInstallmentCount(count);
     const amountPerInstallment = (cart?.totals.total || 0) / count;
     const newInstallments: InstallmentConfig[] = Array.from({ length: count }, (_, i) => ({
       id: `inst-${i}`,
       method: installments[i]?.method || 'cheque',
-      amount: amountPerInstallment,
+      amount: i === count - 1 ? (cart?.totals.total || 0) - (amountPerInstallment * (count - 1)) : amountPerInstallment,
       dueDate: installments[i]?.dueDate || new Date(Date.now() + (i + 1) * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     }));
     setInstallments(newInstallments);
@@ -150,10 +164,20 @@ export default function PaymentPlanPage() {
             {/* Nombre d'échéances */}
             <div className="space-y-3">
               <label className="block text-sm font-medium">Nombre d'échéances</label>
-              <div className="flex gap-3">
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => updateInstallmentCount(2)}
+                  className={`flex-1 min-w-[120px] py-2 rounded font-semibold transition ${
+                    installmentCount === 2
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  2 paiements
+                </button>
                 <button
                   onClick={() => updateInstallmentCount(3)}
-                  className={`flex-1 py-2 rounded font-semibold transition ${
+                  className={`flex-1 min-w-[120px] py-2 rounded font-semibold transition ${
                     installmentCount === 3
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -163,7 +187,7 @@ export default function PaymentPlanPage() {
                 </button>
                 <button
                   onClick={() => updateInstallmentCount(4)}
-                  className={`flex-1 py-2 rounded font-semibold transition ${
+                  className={`flex-1 min-w-[120px] py-2 rounded font-semibold transition ${
                     installmentCount === 4
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -173,6 +197,26 @@ export default function PaymentPlanPage() {
                 </button>
               </div>
             </div>
+
+            {/* Montants */}
+            <div className="pt-4 border-t">
+              <div className="grid grid-cols-3 gap-3 text-sm">
+                <div>
+                  <p className="text-gray-600">Total</p>
+                  <p className="text-xl font-bold text-blue-600">{stats.total.toFixed(2)}€</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Alloué</p>
+                  <p className="text-xl font-bold text-green-600">{stats.allocated.toFixed(2)}€</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Restant</p>
+                  <p className={`text-xl font-bold ${stats.remaining === 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                    {stats.remaining.toFixed(2)}€
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Échéances */}
@@ -180,10 +224,33 @@ export default function PaymentPlanPage() {
             <h2 className="text-xl font-semibold text-gray-900">Détails des paiements</h2>
 
             {installments.map((inst, idx) => (
-              <div key={inst.id} className="border border-gray-200 rounded-lg p-6 space-y-4">
+              <div key={inst.id} className={`border-2 rounded-lg p-6 space-y-4 ${
+                inst.amount > 0 ? 'border-green-200 bg-green-50' : 'border-gray-200'
+              }`}>
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="font-semibold text-lg">Paiement {idx + 1}</h3>
-                  <span className="text-2xl font-bold text-blue-600">{inst.amount.toFixed(2)}€</span>
+                  <span className={`text-2xl font-bold ${inst.amount > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                    {inst.amount.toFixed(2)}€
+                  </span>
+                </div>
+
+                {/* Montant */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Montant à payer</label>
+                  <input
+                    type="number"
+                    value={inst.amount || ''}
+                    onChange={(e) => updateInstallment(inst.id, { amount: parseFloat(e.target.value) || 0 })}
+                    className="w-full border rounded px-3 py-2"
+                    min="0"
+                    step="0.01"
+                    max={stats.total}
+                  />
+                  {inst.amount > 0 && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      {((inst.amount / stats.total) * 100).toFixed(0)}% du total
+                    </p>
+                  )}
                 </div>
 
                 {/* Date d'échéance */}
@@ -277,6 +344,24 @@ export default function PaymentPlanPage() {
             ))}
           </div>
 
+          {/* Avertissement montants */}
+          {!stats.isComplete && stats.allocated > 0 && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <p className="text-sm text-orange-900">
+                <strong>⚠️ Montants incomplets:</strong> Vous avez alloué {stats.allocated.toFixed(2)}€ sur {stats.total.toFixed(2)}€.
+                Il reste {stats.remaining.toFixed(2)}€ à répartir.
+              </p>
+            </div>
+          )}
+
+          {stats.allocated === 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-900">
+                <strong>💡 Conseil:</strong> Entrez les montants pour chaque paiement. Le total doit correspondre exactement à {stats.total.toFixed(2)}€.
+              </p>
+            </div>
+          )}
+
           {/* Conditions */}
           <div className="border-t pt-6 space-y-4">
             <label className="flex items-start gap-3 cursor-pointer">
@@ -296,10 +381,14 @@ export default function PaymentPlanPage() {
           <div className="flex gap-3">
             <button
               onClick={handleSubmit}
-              disabled={submitting || !acceptedTerms}
-              className="flex-1 bg-green-600 text-white py-4 rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50"
+              disabled={submitting || !acceptedTerms || !stats.isComplete}
+              className="flex-1 bg-green-600 text-white py-4 rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Création en cours...' : 'Créer le plan de paiement'}
+              {submitting ? 'Création en cours...' : (
+                !stats.isComplete
+                  ? `Montants incomplets (${stats.allocated.toFixed(2)}€ / ${stats.total.toFixed(2)}€)`
+                  : 'Créer le plan de paiement'
+              )}
             </button>
           </div>
         </div>
