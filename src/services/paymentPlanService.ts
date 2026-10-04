@@ -80,14 +80,17 @@ export const createPaymentPlan = async (
     updatedAt: new Date(),
   };
 
-  // Save installments
+  // Save installments (remove undefined values)
   await Promise.all(
-    installmentDocs.map((inst) =>
-      addDoc(collection(db, INSTALLMENTS_COLLECTION), {
-        ...inst,
+    installmentDocs.map((inst) => {
+      const cleanedInst = Object.fromEntries(
+        Object.entries(inst).filter(([, v]) => v !== undefined)
+      );
+      return addDoc(collection(db, INSTALLMENTS_COLLECTION), {
+        ...cleanedInst,
         createdAt: serverTimestamp(),
-      })
-    )
+      });
+    })
   );
 
   return plan;
