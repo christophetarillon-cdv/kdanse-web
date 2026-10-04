@@ -6,12 +6,14 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Membership } from '@/types';
+import { Membership, PaymentPlan } from '@/types';
+import { getPaymentPlan } from '@/services/paymentPlanService';
 
 export default function MembershipsPage() {
   const { firebaseUser, loading: authLoading } = useAuth();
   const router = useRouter();
   const [memberships, setMemberships] = useState<Membership[]>([]);
+  const [paymentPlans, setPaymentPlans] = useState<{ [key: string]: PaymentPlan }>({});
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'paid' | 'pending'>('all');
 
@@ -39,6 +41,23 @@ export default function MembershipsPage() {
         createdAt: doc.data().createdAt?.toDate?.() || new Date(),
         updatedAt: doc.data().updatedAt?.toDate?.() || new Date(),
       })) as Membership[];
+
+      // Fetch payment plans for memberships with pending_plan status
+      const plansMap: { [key: string]: PaymentPlan } = {};
+      for (const membership of data) {
+        if (membership.paymentPlanId) {
+          try {
+            const plan = await getPaymentPlan(membership.paymentPlanId);
+            if (plan) {
+              plansMap[membership.paymentPlanId] = plan;
+            }
+          } catch (error) {
+            console.error('Error fetching payment plan:', error);
+          }
+        }
+      }
+      setPaymentPlans(plansMap);
+
       setMemberships(data.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()));
     } catch (error) {
       console.error('Error fetching memberships:', error);
@@ -205,14 +224,82 @@ export default function MembershipsPage() {
                   </div>
                 )}
 
-                {membership.status === 'pending_plan' && (
-                  <div className="bg-blue-50 border border-blue-200 rounded p-4 text-sm">
-                    <p className="mb-2">
-                      <strong>📋 Plan de paiement en cours</strong>
-                    </p>
-                    <p className="text-blue-900">
-                      Vous avez mis en place un plan de paiement. Veuillez respecter les dates d'échéance et envoyer les paiements selon les modalités convenues. Votre inscription sera confirmée après validation du dernier paiement par l'administrateur.
-                    </p>
+                {membership.status === 'paid' && membership.paymentPlanId && paymentPlans[membership.paymentPlanId] && (
+                  <div className="bg-green-50 border border-green-200 rounded p-4 space-y-4">
+                    <div>
+                      <p className="font-semibold text-green-900 mb-2">📋 Plan de paiement validé</p>
+                    </div>
+
+                    {/* Installments */}
+                    <div className="space-y-3">
+                      {paymentPlans[membership.paymentPlanId].installments.map((inst, idx) => (
+                        <div key={inst.id} className="bg-white p-3 rounded border border-green-100 text-sm">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-semibold">Paiement {idx + 1}</span>
+                            <span className="text-lg font-bold text-green-600">{inst.amount.toFixed(2)}€</span>
+                          </div>
+                          <div className="space-y-1 text-gray-700">
+                            <p><strong>Date:</strong> {new Date(inst.dueDate).toLocaleDateString('fr-FR')}</p>
+                            <p>
+                              <strong>Mode:</strong> {inst.method === 'cheque' ? '💳 Chèque' : inst.method === 'virement' ? '🏦 Virement' : '🎟️ Chèques vacances'}
+                            </p>
+                            <p>
+                              <strong>Statut:</strong>{' '}
+                              <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                                inst.status === 'received' ? 'bg-green-100 text-green-800' :
+                                inst.status === 'pending' ? 'bg-orange-100 text-orange-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {inst.status === 'received' && '✅ Encaissé'}
+                                {inst.status === 'pending' && '⏳ En attente'}
+                                {inst.status === 'cancelled' && '❌ Annulé'}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {membership.status === 'pending_plan' && membership.paymentPlanId && paymentPlans[membership.paymentPlanId] && (
+                  <div className="bg-blue-50 border border-blue-200 rounded p-4 space-y-4">
+                    <div>
+                      <p className="font-semibold text-blue-900 mb-2">📋 Plan de paiement</p>
+                      <p className="text-sm text-blue-900 mb-3">
+                        Veuillez respecter les dates d'échéance et envoyer les paiements selon les modalités convenues.
+                      </p>
+                    </div>
+
+                    {/* Installments */}
+                    <div className="space-y-3">
+                      {paymentPlans[membership.paymentPlanId].installments.map((inst, idx) => (
+                        <div key={inst.id} className="bg-white p-3 rounded border border-blue-100 text-sm">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-semibold">Paiement {idx + 1}</span>
+                            <span className="text-lg font-bold text-blue-600">{inst.amount.toFixed(2)}€</span>
+                          </div>
+                          <div className="space-y-1 text-gray-700">
+                            <p><strong>Date:</strong> {new Date(inst.dueDate).toLocaleDateString('fr-FR')}</p>
+                            <p>
+                              <strong>Mode:</strong> {inst.method === 'cheque' ? '💳 Chèque' : inst.method === 'virement' ? '🏦 Virement' : '🎟️ Chèques vacances'}
+                            </p>
+                            <p>
+                              <strong>Statut:</strong>{' '}
+                              <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                                inst.status === 'received' ? 'bg-green-100 text-green-800' :
+                                inst.status === 'pending' ? 'bg-orange-100 text-orange-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {inst.status === 'received' && '✅ Encaissé'}
+                                {inst.status === 'pending' && '⏳ En attente'}
+                                {inst.status === 'cancelled' && '❌ Annulé'}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
