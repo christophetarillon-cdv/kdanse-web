@@ -132,8 +132,8 @@ export const getPaymentPlan = async (planId: string): Promise<PaymentPlan | null
   );
 
   const installments = installmentsSnap.docs.map((doc) => ({
-    id: doc.id,
     ...doc.data(),
+    id: doc.id,  // Override with correct document ID, not the field id
     dueDate: doc.data().dueDate?.toDate?.() || new Date(doc.data().dueDate),
     createdAt: doc.data().createdAt?.toDate?.() || new Date(),
   })) as PaymentInstallment[];
@@ -226,8 +226,8 @@ export const getPendingInstallments = async (): Promise<PaymentInstallment[]> =>
   const snapshot = await getDocs(q);
 
   return snapshot.docs.map((doc) => ({
-    id: doc.id,
     ...doc.data(),
+    id: doc.id,  // Override with correct document ID
     dueDate: doc.data().dueDate?.toDate?.() || new Date(),
     createdAt: doc.data().createdAt?.toDate?.() || new Date(),
   })) as PaymentInstallment[];
@@ -242,8 +242,8 @@ export const getInstallmentsByPlan = async (planId: string): Promise<PaymentInst
   const snapshot = await getDocs(q);
 
   return snapshot.docs.map((doc) => ({
-    id: doc.id,
     ...doc.data(),
+    id: doc.id,  // Override with correct document ID
     dueDate: doc.data().dueDate?.toDate?.() || new Date(),
     createdAt: doc.data().createdAt?.toDate?.() || new Date(),
   })) as PaymentInstallment[];
