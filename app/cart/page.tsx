@@ -4,15 +4,15 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { getUserCart, removeFromCart, updateCartItem } from '@/services/cartService';
-import { Cart, CartItem } from '@/types/cart';
+import { useCart } from '@/contexts/CartContext';
+import { updateCartItem } from '@/services/cartService';
+import { CartItem } from '@/types/cart';
 
 export default function CartPage() {
   const { firebaseUser, loading: authLoading } = useAuth();
+  const { cart, loading, removeFromCart } = useCart();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [cart, setCart] = useState<Cart | null>(null);
-  const [loading, setLoading] = useState(true);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -20,33 +20,11 @@ export default function CartPage() {
       router.push('/login');
       return;
     }
-
-    if (firebaseUser) {
-      fetchCart();
-    }
   }, [firebaseUser, authLoading, router]);
 
-  const fetchCart = async () => {
-    try {
-      const userCart = await getUserCart(firebaseUser!.uid);
-      setCart(userCart);
-    } catch (error) {
-      console.error('Error fetching cart:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleRemoveItem = async (itemId: string) => {
-    if (!cart) return;
-
     try {
-      const updatedCart = await removeFromCart(cart.id, itemId);
-      if (updatedCart.items.length === 0) {
-        setCart(null);
-      } else {
-        setCart(updatedCart);
-      }
+      await removeFromCart(itemId);
     } catch (error) {
       console.error('Error removing item:', error);
     }

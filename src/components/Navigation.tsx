@@ -40,11 +40,11 @@ export default function Navigation({ menuName, menuId, className = '' }: Navigat
   const renderItem = (item: any) => {
     const isExternal = item.url.startsWith('http');
     const link = isExternal ? (
-      <a href={item.url} className="hover:text-blue-600 transition">
+      <a href={item.url} className="text-xs sm:text-base px-2 py-1 rounded whitespace-nowrap hover:text-blue-600 transition">
         {item.label}
       </a>
     ) : (
-      <Link href={item.url} className="hover:text-blue-600 transition">
+      <Link href={item.url} className="text-xs sm:text-base px-2 py-1 rounded whitespace-nowrap hover:text-blue-600 transition">
         {item.label}
       </Link>
     );

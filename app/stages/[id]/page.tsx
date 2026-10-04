@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/contexts/CartContext';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { addToCart } from '@/services/cartService';
 import { CartItem } from '@/types/cart';
 
 interface Stage {
@@ -49,6 +49,7 @@ export default function StageDetailPage() {
   const params = useParams();
   const stageId = params.id as string;
   const { firebaseUser, loading: authLoading } = useAuth();
+  const { addToCart } = useCart();
   const router = useRouter();
   const [stage, setStage] = useState<Stage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -152,23 +153,16 @@ export default function StageDetailPage() {
   };
 
   const handleAddToCart = async () => {
-    if (!firebaseUser || !stage) return;
+    if (!stage) return;
 
     setSubmitting(true);
     try {
-      console.log('Stage data:', stage);
-      console.log('Stage pricing:', stage.pricing);
-
       if (!stage.pricing) {
         throw new Error('Tarifs non disponibles');
       }
 
-      // Create cart item
-      const itemId = `${stage.id}-${Date.now()}`;
-      console.log('Creating cart item with ID:', itemId);
-
       const cartItem: CartItem = {
-        id: itemId,
+        id: `${stage.id}-${Date.now()}`,
         stageId: stage.id,
         stageName: stage.name,
         configuration: form,
@@ -177,19 +171,10 @@ export default function StageDetailPage() {
         quantity: 1,
       };
 
-      console.log('Cart item:', cartItem);
-
-      // Add to cart
-      console.log('Adding to cart for user:', firebaseUser.uid);
-      const cart = await addToCart(firebaseUser.uid, cartItem);
-
-      console.log('Cart after add:', cart);
-
-      // Redirect to cart
+      await addToCart(cartItem);
       router.push('/cart');
     } catch (error) {
-      console.error('Full error:', error);
-      console.error('Error message:', error instanceof Error ? error.message : String(error));
+      console.error('Error:', error);
       alert(`Erreur lors de l'ajout au panier: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setSubmitting(false);
