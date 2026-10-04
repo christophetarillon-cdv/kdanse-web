@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
@@ -63,7 +63,7 @@ export default function AdminPaymentPlansValidationPage() {
       if (plan?.membership) {
         await updateDoc(doc(db, 'memberships', plan.membership.id), {
           status: 'paid',
-          updatedAt: new Date(),
+          updatedAt: serverTimestamp(),
         });
       }
 
@@ -71,17 +71,21 @@ export default function AdminPaymentPlansValidationPage() {
       const updatedInstallments = editedInstallments[planId] || plan?.installments || [];
 
       for (const inst of updatedInstallments) {
-        const updateData = {
+        const dueDateValue = inst.dueDate instanceof Date ? inst.dueDate : new Date(inst.dueDate);
+        const updateData: any = {
           amount: inst.amount,
-          dueDate: new Date(inst.dueDate),
+          dueDate: dueDateValue,
           method: inst.method,
-          ...(inst.chequeNumber && { chequeNumber: inst.chequeNumber }),
-          ...(inst.chequeBank && { chequeBank: inst.chequeBank }),
-          ...(inst.chequeCity && { chequeCity: inst.chequeCity }),
-          ...(inst.chequeName && { chequeName: inst.chequeName }),
-          ...(inst.chequeVacancesCount && { chequeVacancesCount: inst.chequeVacancesCount }),
-          updatedAt: new Date(),
+          updatedAt: serverTimestamp(),
         };
+
+        // Only add optional cheque fields if they have values
+        if (inst.chequeNumber) updateData.chequeNumber = inst.chequeNumber;
+        if (inst.chequeBank) updateData.chequeBank = inst.chequeBank;
+        if (inst.chequeCity) updateData.chequeCity = inst.chequeCity;
+        if (inst.chequeName) updateData.chequeName = inst.chequeName;
+        if (inst.chequeVacancesCount) updateData.chequeVacancesCount = inst.chequeVacancesCount;
+
         await updateDoc(doc(db, 'paymentInstallments', inst.id), updateData);
       }
 
@@ -105,7 +109,7 @@ export default function AdminPaymentPlansValidationPage() {
       if (plan?.membership) {
         await updateDoc(doc(db, 'memberships', plan.membership.id), {
           status: 'cancelled',
-          updatedAt: new Date(),
+          updatedAt: serverTimestamp(),
         });
       }
 
