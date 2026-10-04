@@ -5,7 +5,7 @@ service cloud.firestore {
     function isAdmin() {
       let userData = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
       return request.auth != null && (
-        'admin' in userData.roles ||
+        userData.roles is list && 'admin' in userData.roles ||
         userData.role == 'admin'
       );
     }
