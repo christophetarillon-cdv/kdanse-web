@@ -73,17 +73,18 @@ export default function AdminPaymentPlansValidationPage() {
         : plan?.installments || [];
 
       for (const inst of updatedInstallments) {
-        await updateDoc(doc(db, 'paymentInstallments', inst.id), {
+        const updateData = {
           amount: inst.amount,
           dueDate: new Date(inst.dueDate),
           method: inst.method,
-          chequeNumber: inst.chequeNumber,
-          chequeBank: inst.chequeBank,
-          chequeCity: inst.chequeCity,
-          chequeName: inst.chequeName,
-          chequeVacancesCount: inst.chequeVacancesCount,
+          ...(inst.chequeNumber && { chequeNumber: inst.chequeNumber }),
+          ...(inst.chequeBank && { chequeBank: inst.chequeBank }),
+          ...(inst.chequeCity && { chequeCity: inst.chequeCity }),
+          ...(inst.chequeName && { chequeName: inst.chequeName }),
+          ...(inst.chequeVacancesCount && { chequeVacancesCount: inst.chequeVacancesCount }),
           updatedAt: new Date(),
-        });
+        };
+        await updateDoc(doc(db, 'paymentInstallments', inst.id), updateData);
       }
 
       setPlans(plans.filter(p => p.id !== planId));
