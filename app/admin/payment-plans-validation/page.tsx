@@ -71,7 +71,16 @@ export default function AdminPaymentPlansValidationPage() {
       const updatedInstallments = editedInstallments[planId] || plan?.installments || [];
 
       for (const inst of updatedInstallments) {
-        const dueDateValue = inst.dueDate instanceof Date ? inst.dueDate : new Date(inst.dueDate);
+        let dueDateValue = inst.dueDate;
+        if (!(inst.dueDate instanceof Date)) {
+          dueDateValue = new Date(inst.dueDate);
+        }
+
+        if (isNaN(dueDateValue.getTime())) {
+          throw new Error(`Date invalide pour le paiement: ${inst.dueDate}`);
+        }
+
+        // Build update object with only defined values
         const updateData: any = {
           amount: inst.amount,
           dueDate: dueDateValue,
@@ -79,12 +88,13 @@ export default function AdminPaymentPlansValidationPage() {
           updatedAt: serverTimestamp(),
         };
 
-        // Only add optional cheque fields if they have values
+        // Only add optional fields if they have values
         if (inst.chequeNumber) updateData.chequeNumber = inst.chequeNumber;
         if (inst.chequeBank) updateData.chequeBank = inst.chequeBank;
         if (inst.chequeCity) updateData.chequeCity = inst.chequeCity;
         if (inst.chequeName) updateData.chequeName = inst.chequeName;
         if (inst.chequeVacancesCount) updateData.chequeVacancesCount = inst.chequeVacancesCount;
+        if (inst.chequeVacancesSerialNumbers?.length) updateData.chequeVacancesSerialNumbers = inst.chequeVacancesSerialNumbers;
 
         await updateDoc(doc(db, 'paymentInstallments', inst.id), updateData);
       }
