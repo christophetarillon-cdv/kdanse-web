@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   addDoc,
+  setDoc,
   updateDoc,
   getDocs,
   getDoc,
@@ -54,7 +55,18 @@ export const createPaymentPlan = async (
     createdAt: new Date(),
   }));
 
-  // Save plan
+  // Save plan (without full installments, they're saved separately)
+  await setDoc(doc(db, PAYMENT_PLANS_COLLECTION, planId), {
+    cartId,
+    userId,
+    totalAmount,
+    installmentCount,
+    status: 'active',
+    acceptedTerms: true,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
   const plan: PaymentPlan = {
     id: planId,
     cartId,
@@ -67,12 +79,6 @@ export const createPaymentPlan = async (
     createdAt: new Date(),
     updatedAt: new Date(),
   };
-
-  await addDoc(collection(db, PAYMENT_PLANS_COLLECTION), {
-    ...plan,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
 
   // Save installments
   await Promise.all(
