@@ -56,11 +56,15 @@ export default function AdminPaymentPlansValidationPage() {
   };
 
   const approvePlan = async (planId: string) => {
+    console.log('approvePlan called with planId:', planId);
     setValidating(planId);
     try {
       // Update membership status to paid
       const plan = plans.find(p => p.id === planId);
+      console.log('Found plan:', plan?.id, 'membership:', plan?.membership?.id);
+
       if (plan?.membership) {
+        console.log('Updating membership to paid');
         await updateDoc(doc(db, 'memberships', plan.membership.id), {
           status: 'paid',
           updatedAt: serverTimestamp(),
@@ -69,6 +73,7 @@ export default function AdminPaymentPlansValidationPage() {
 
       // Update all installments in this plan
       const updatedInstallments = editedInstallments[planId] || plan?.installments || [];
+      console.log('updatedInstallments count:', updatedInstallments.length);
 
       for (const inst of updatedInstallments) {
         let dueDateValue = inst.dueDate;
