@@ -96,12 +96,15 @@ export default function DashboardPage() {
       {isAdmin && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <h2 className="text-xl font-semibold text-yellow-900 mb-4">Admin</h2>
-          <div className="grid md:grid-cols-5 gap-4">
+          <div className="grid md:grid-cols-6 gap-4">
             <Link href="/admin/stages" className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-center">
               Gérer les stages
             </Link>
+            <Link href="/admin/payment-plans-validation" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center font-semibold">
+              📋 Plans validés
+            </Link>
             <Link href="/admin/payments" className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-center font-semibold">
-              💳 Valider paiements
+              💳 Paiements
             </Link>
             <Link href="/admin/pages" className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-center">
               Gérer les pages CMS
