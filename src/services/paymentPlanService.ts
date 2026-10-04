@@ -11,7 +11,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { PaymentPlan, PaymentInstallment, PaymentSettings } from '@/types';
+import { PaymentPlan, PaymentInstallment, PaymentSettings, Cart } from '@/types';
 
 const PAYMENT_PLANS_COLLECTION = 'paymentPlans';
 const INSTALLMENTS_COLLECTION = 'paymentInstallments';
@@ -32,7 +32,8 @@ export const createPaymentPlan = async (
     chequeCity?: string;
     chequeName?: string;
     chequeVacancesCount?: number;
-  }>
+  }>,
+  cart?: Cart
 ): Promise<PaymentPlan> => {
   const planId = doc(collection(db, PAYMENT_PLANS_COLLECTION)).id;
 
@@ -92,6 +93,26 @@ export const createPaymentPlan = async (
       });
     })
   );
+
+  // Create memberships for each item in cart (status: pending_plan)
+  if (cart && cart.items.length > 0) {
+    await Promise.all(
+      cart.items.map((item) =>
+        addDoc(collection(db, 'memberships'), {
+          userId,
+          stageId: item.stageId,
+          stageName: item.stageName,
+          registrationDetails: item.configuration,
+          amount: item.totals?.total || 0,
+          paymentMethod: 'plan',
+          status: 'pending_plan',
+          paymentPlanId: planId,
+          cartId: cart.id,
+          createdAt: serverTimestamp(),
+        })
+      )
+    );
+  }
 
   return plan;
 };

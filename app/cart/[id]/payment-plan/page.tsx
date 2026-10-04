@@ -125,7 +125,8 @@ export default function PaymentPlanPage() {
         firebaseUser.uid,
         cart.totals.total,
         installmentCount,
-        plansData
+        plansData,
+        cart
       );
 
       alert('Plan de paiement créé! Vous recevrez un email de confirmation.');

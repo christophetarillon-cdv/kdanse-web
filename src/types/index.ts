@@ -76,7 +76,7 @@ export interface Membership {
   visibleUserIds?: string[];
   stageId: string;
   stageName: string;
-  status: 'paid' | 'pending_confirmation' | 'cancelled' | 'active' | 'completed';
+  status: 'paid' | 'pending_confirmation' | 'pending_plan' | 'cancelled' | 'active' | 'completed';
   registrationDetails: {
     danceType: 'solo' | 'couple';
     dancers: { licensed: boolean }[];
@@ -85,8 +85,9 @@ export interface Membership {
     housingSolo: number;
     housingCouple: number;
   };
-  paymentMethod?: 'helloasso' | 'virement' | 'cheque';
+  paymentMethod?: 'helloasso' | 'virement' | 'cheque' | 'plan';
   amount: number;
+  paymentPlanId?: string;
   cartId?: string;
   createdAt: Date;
   updatedAt?: Date;

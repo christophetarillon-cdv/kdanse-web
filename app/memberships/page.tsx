@@ -155,11 +155,14 @@ export default function MembershipsPage() {
                         ? 'bg-green-100 text-green-800'
                         : membership.status === 'pending_confirmation'
                         ? 'bg-orange-100 text-orange-800'
+                        : membership.status === 'pending_plan'
+                        ? 'bg-blue-100 text-blue-800'
                         : 'bg-red-100 text-red-800'
                     }`}
                   >
                     {membership.status === 'paid' && '✅ Validée'}
                     {membership.status === 'pending_confirmation' && '⏳ En attente'}
+                    {membership.status === 'pending_plan' && '📋 Plan de paiement'}
                     {membership.status === 'cancelled' && '❌ Annulée'}
                   </span>
                 </div>
@@ -198,6 +201,17 @@ export default function MembershipsPage() {
                     </p>
                     <p className="text-orange-900">
                       Votre inscription est en attente de validation par l'administrateur. Vous serez informé dès que celle-ci sera confirmée.
+                    </p>
+                  </div>
+                )}
+
+                {membership.status === 'pending_plan' && (
+                  <div className="bg-blue-50 border border-blue-200 rounded p-4 text-sm">
+                    <p className="mb-2">
+                      <strong>📋 Plan de paiement en cours</strong>
+                    </p>
+                    <p className="text-blue-900">
+                      Vous avez mis en place un plan de paiement. Veuillez respecter les dates d'échéance et envoyer les paiements selon les modalités convenues. Votre inscription sera confirmée après validation du dernier paiement par l'administrateur.
                     </p>
                   </div>
                 )}
