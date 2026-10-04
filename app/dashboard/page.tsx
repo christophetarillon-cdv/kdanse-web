@@ -47,14 +47,14 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg shadow-lg p-8 flex justify-between items-start">
-        <div>
-          <h1 className="text-4xl font-bold mb-2">Bienvenue, {user?.displayName || user?.email}!</h1>
-          <p className="text-blue-100">Site de réservation et paiement Kdanse</p>
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg shadow-lg p-4 sm:p-8 flex flex-col sm:flex-row justify-between items-start gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-4xl font-bold mb-2 break-words">Bienvenue, {user?.displayName || user?.email}!</h1>
+          <p className="text-sm sm:text-base text-blue-100">Site de réservation et paiement Kdanse</p>
         </div>
         <button
           onClick={handleLogout}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+          className="bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap"
         >
           Déconnexion
         </button>
