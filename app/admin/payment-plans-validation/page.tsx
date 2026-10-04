@@ -85,6 +85,7 @@ export default function AdminPaymentPlansValidationPage() {
           amount: inst.amount,
           dueDate: dueDateValue,
           method: inst.method,
+          status: inst.status || 'pending',
           updatedAt: serverTimestamp(),
         };
 
