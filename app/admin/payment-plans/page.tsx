@@ -59,13 +59,13 @@ export default function AdminPaymentPlansPage() {
     }
   };
 
-  const getMethodLabel = (method: string): string => {
-    const labels: { [key: string]: string } = {
+  const getMethodLabel = (method: 'cheque' | 'virement' | 'cheque_vacances'): string => {
+    const labels: Record<'cheque' | 'virement' | 'cheque_vacances', string> = {
       cheque: '💳 Chèque',
       virement: '🏦 Virement',
       cheque_vacances: '🎟️ Chèques vacances',
     };
-    return labels[method] || method;
+    return labels[method];
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;

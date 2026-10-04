@@ -1,3 +1,5 @@
+export type { Cart, CartItem, CartTotals, RegistrationConfiguration } from './cart';
+
 // Season (Saisons - exemple: 2024-2025)
 export interface Season {
   id: string;
@@ -90,30 +92,6 @@ export interface Membership {
   updatedAt?: Date;
 }
 
-// Payment group (paiements groupés ou échelonnés)
-export interface PaymentGroup {
-  id: string;
-  membershipIds: string[];
-  visibleUserIds: string[];
-  status: 'pending' | 'approved' | 'paid' | 'cancelled';
-  totalAmount: number;
-  paidAmount: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Payment installment (échéancier, chèques, virements)
-export interface PaymentInstallment {
-  id: string;
-  paymentGroupId: string;
-  amount: number;
-  dueDate: Date;
-  status: 'pending' | 'paid' | 'cancelled';
-  method: 'cheque' | 'virement' | 'helloasso';
-  notes: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 // Bank account (nécessaire pour comptabilité)
 export interface BankAccount {
@@ -150,17 +128,14 @@ export interface PaymentInstallment {
   dueDate: Date;
   status: 'pending' | 'received' | 'cancelled';
   method: 'cheque' | 'virement' | 'cheque_vacances';
-  // Pour chèques
   chequeNumber?: string;
   chequeBank?: string;
   chequeCity?: string;
-  chequeName?: string; // Nom sur le chèque si différent
-  // Pour chèques vacances
-  chequeVacancesCount?: number; // Nombre de chèques vacances
-  chequeVacancesSerialNumbers?: string[]; // Numéros de série
-  // Admin validation
+  chequeName?: string;
+  chequeVacancesCount?: number;
+  chequeVacancesSerialNumbers?: string[];
   receivedDate?: Date;
-  confirmedBy?: string; // userId de l'admin
+  confirmedBy?: string;
   notes?: string;
   createdAt: Date;
   updatedAt?: Date;

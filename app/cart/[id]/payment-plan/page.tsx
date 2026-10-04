@@ -97,12 +97,23 @@ export default function PaymentPlanPage() {
 
     setSubmitting(true);
     try {
+      const plansData = installments.map(({ id, ...rest }) => ({
+        method: rest.method as 'cheque' | 'virement' | 'cheque_vacances',
+        amount: rest.amount,
+        dueDate: rest.dueDate,
+        chequeNumber: rest.chequeNumber,
+        chequeBank: rest.chequeBank,
+        chequeCity: rest.chequeCity,
+        chequeName: rest.chequeName,
+        chequeVacancesCount: rest.chequeVacancesCount,
+      }));
+
       await createPaymentPlan(
         cart.id,
         firebaseUser.uid,
         cart.totals.total,
         installmentCount,
-        installments.map(({ id, ...rest }) => rest)
+        plansData
       );
 
       alert('Plan de paiement créé! Vous recevrez un email de confirmation.');

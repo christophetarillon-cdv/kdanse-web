@@ -22,7 +22,16 @@ export const createPaymentPlan = async (
   userId: string,
   totalAmount: number,
   installmentCount: number,
-  installments: Omit<PaymentInstallment, 'id' | 'paymentPlanId' | 'createdAt'>[]
+  installments: Array<{
+    method: 'cheque' | 'virement' | 'cheque_vacances';
+    amount: number;
+    dueDate: string;
+    chequeNumber?: string;
+    chequeBank?: string;
+    chequeCity?: string;
+    chequeName?: string;
+    chequeVacancesCount?: number;
+  }>
 ): Promise<PaymentPlan> => {
   const planId = doc(collection(db, PAYMENT_PLANS_COLLECTION)).id;
 
@@ -30,12 +39,18 @@ export const createPaymentPlan = async (
   const amountPerInstallment = totalAmount / installmentCount;
 
   // Create installment documents
-  const installmentDocs = installments.map((inst, idx) => ({
-    ...inst,
+  const installmentDocs = installments.map((inst) => ({
     id: doc(collection(db, INSTALLMENTS_COLLECTION)).id,
     paymentPlanId: planId,
     amount: inst.amount || amountPerInstallment,
+    dueDate: new Date(inst.dueDate),
+    method: inst.method,
     status: 'pending' as const,
+    chequeNumber: inst.chequeNumber,
+    chequeBank: inst.chequeBank,
+    chequeCity: inst.chequeCity,
+    chequeName: inst.chequeName,
+    chequeVacancesCount: inst.chequeVacancesCount,
     createdAt: new Date(),
   }));
 
