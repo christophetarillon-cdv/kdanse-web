@@ -74,6 +74,32 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
 
+    match /paymentPlans/{document=**} {
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin()
+      );
+      allow create: if request.auth != null;
+    }
+
+    match /paymentInstallments/{document=**} {
+      allow read: if request.auth != null && (
+        isAdmin() ||
+        get(/databases/$(database)/documents/paymentPlans/$(resource.data.paymentPlanId)).data.userId == request.auth.uid
+      );
+      allow write: if isAdmin();
+      allow create: if request.auth != null;
+    }
+
+    match /paymentSettings/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
     // Messages privés : réservés aux 2 participants du canal et aux admins.
     // Les autres types de canal (annonces/général/activité) restent ouverts
     // à tout utilisateur authentifié, comme avant.

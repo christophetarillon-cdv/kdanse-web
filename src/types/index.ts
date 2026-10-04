@@ -120,6 +120,63 @@ export interface BankAccount {
   id: string;
   name: string;
   iban: string;
+  bic?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Payment plan settings (coordonnées Kdanse)
+export interface PaymentSettings {
+  id: string;
+  bankAccount?: {
+    iban: string;
+    bic: string;
+    accountName: string;
+  };
+  postalAddress?: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  updatedAt: Date;
+}
+
+// Payment installment (échéance individuelle)
+export interface PaymentInstallment {
+  id: string;
+  paymentPlanId: string;
+  amount: number;
+  dueDate: Date;
+  status: 'pending' | 'received' | 'cancelled';
+  method: 'cheque' | 'virement' | 'cheque_vacances';
+  // Pour chèques
+  chequeNumber?: string;
+  chequeBank?: string;
+  chequeCity?: string;
+  chequeName?: string; // Nom sur le chèque si différent
+  // Pour chèques vacances
+  chequeVacancesCount?: number; // Nombre de chèques vacances
+  chequeVacancesSerialNumbers?: string[]; // Numéros de série
+  // Admin validation
+  receivedDate?: Date;
+  confirmedBy?: string; // userId de l'admin
+  notes?: string;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+// Payment plan (ensemble des échéances)
+export interface PaymentPlan {
+  id: string;
+  cartId: string;
+  userId: string;
+  membershipIds?: string[];
+  totalAmount: number;
+  installmentCount: number; // 3 ou 4
+  installments: PaymentInstallment[];
+  status: 'draft' | 'active' | 'completed' | 'cancelled';
+  acceptedTerms: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
