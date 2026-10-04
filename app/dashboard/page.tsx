@@ -65,14 +65,9 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-bold text-blue-600 mb-2">📅 Stages</h2>
           <p className="text-gray-600">Découvrez nos stages</p>
         </Link>
-        <Link href="/memberships" className="bg-white rounded-lg shadow hover:shadow-lg transition p-6 relative">
+        <Link href="/memberships" className="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
           <h2 className="text-2xl font-bold text-green-600 mb-2">✓ Mes inscriptions</h2>
-          <p className="text-gray-600">Vos inscriptions</p>
-          {cart && (
-            <div className="absolute top-4 right-4 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-              {cart.items.length}
-            </div>
-          )}
+          <p className="text-gray-600">Vos inscriptions confirmées</p>
         </Link>
         <Link href="/account" className="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
           <h2 className="text-2xl font-bold text-purple-600 mb-2">👤 Mon compte</h2>
