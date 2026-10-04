@@ -71,12 +71,11 @@ export default function PaymentPlanPage() {
       setCart(cartData);
       setSettings(settingsData);
 
-      // Initialize installments
-      const amountPerInstallment = cartData.totals.total / 3;
+      // Initialize installments with empty amounts
       const defaultInstallments: InstallmentConfig[] = Array.from({ length: 3 }, (_, i) => ({
         id: `inst-${i}`,
         method: 'cheque',
-        amount: amountPerInstallment,
+        amount: 0,
         dueDate: new Date(Date.now() + (i + 1) * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       }));
       setInstallments(defaultInstallments);
@@ -90,11 +89,10 @@ export default function PaymentPlanPage() {
 
   const updateInstallmentCount = (count: 2 | 3 | 4) => {
     setInstallmentCount(count);
-    const amountPerInstallment = (cart?.totals.total || 0) / count;
     const newInstallments: InstallmentConfig[] = Array.from({ length: count }, (_, i) => ({
       id: `inst-${i}`,
       method: installments[i]?.method || 'cheque',
-      amount: i === count - 1 ? (cart?.totals.total || 0) - (amountPerInstallment * (count - 1)) : amountPerInstallment,
+      amount: 0,
       dueDate: installments[i]?.dueDate || new Date(Date.now() + (i + 1) * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     }));
     setInstallments(newInstallments);
