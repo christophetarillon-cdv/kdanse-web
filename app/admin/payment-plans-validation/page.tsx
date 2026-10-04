@@ -38,7 +38,7 @@ export default function AdminPaymentPlansValidationPage() {
       const plansData: (PaymentPlan & { membership?: Membership })[] = [];
 
       for (const doc of snapshot.docs) {
-        const membership = doc.data() as Membership;
+        const membership = { id: doc.id, ...doc.data() } as Membership;
         if (membership.paymentPlanId) {
           const plan = await getPaymentPlan(membership.paymentPlanId);
           if (plan) {
