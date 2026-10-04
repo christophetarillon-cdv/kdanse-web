@@ -16,7 +16,7 @@ export default function AdminPaymentPlansValidationPage() {
   const [loading, setLoading] = useState(true);
   const [validating, setValidating] = useState<string | null>(null);
   const [editingPlan, setEditingPlan] = useState<string | null>(null);
-  const [editedInstallments, setEditedInstallments] = useState<{ [key: string]: PaymentInstallment }>({});
+  const [editedInstallments, setEditedInstallments] = useState<{ [key: string]: PaymentInstallment[] }>({});
 
   useEffect(() => {
     if (!authLoading) {
@@ -68,9 +68,7 @@ export default function AdminPaymentPlansValidationPage() {
       }
 
       // Update all installments in this plan
-      const updatedInstallments = editedInstallments[planId]
-        ? Object.values(editedInstallments[planId])
-        : plan?.installments || [];
+      const updatedInstallments = editedInstallments[planId] || plan?.installments || [];
 
       for (const inst of updatedInstallments) {
         const updateData = {
@@ -122,17 +120,18 @@ export default function AdminPaymentPlansValidationPage() {
   };
 
   const updateInstallment = (planId: string, instId: string, updates: Partial<PaymentInstallment>) => {
-    const key = `${planId}-${instId}`;
     const plan = plans.find(p => p.id === planId);
     if (!plan) return;
 
-    const currentInst = plan.installments.find(i => i.id === instId);
-    if (!currentInst) return;
-
-    setEditedInstallments(prev => ({
-      ...prev,
-      [planId]: currentInst ? { ...currentInst, ...updates } : currentInst,
-    }));
+    setEditedInstallments(prev => {
+      const planInstallments = prev[planId] || plan.installments;
+      return {
+        ...prev,
+        [planId]: planInstallments.map(inst =>
+          inst.id === instId ? { ...inst, ...updates } : inst
+        ),
+      };
+    });
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
@@ -285,7 +284,7 @@ export default function AdminPaymentPlansValidationPage() {
                     <button
                       onClick={() => {
                         setEditingPlan(plan.id);
-                        setEditedInstallments(prev => ({ ...prev, [plan.id]: plan.installments[0] }));
+                        setEditedInstallments(prev => ({ ...prev, [plan.id]: plan.installments }));
                       }}
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold"
                     >
