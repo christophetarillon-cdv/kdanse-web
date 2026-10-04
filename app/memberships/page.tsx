@@ -6,36 +6,14 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-
-interface Dancer {
-  licensed: boolean;
-}
-
-interface RegistrationDetails {
-  danceType: 'solo' | 'couple';
-  dancers: Dancer[];
-  accompanists: number;
-  wantHousing: boolean;
-  housingSolo: number;
-  housingCouple: number;
-}
-
-interface Membership {
-  id: string;
-  stageName: string;
-  stageId: string;
-  amount: number;
-  status: string;
-  createdAt: string;
-  registrationDetails?: RegistrationDetails;
-  pricingCategory?: string; // Ancien format, compatibility
-}
+import { Membership } from '@/types';
 
 export default function MembershipsPage() {
   const { firebaseUser, loading: authLoading } = useAuth();
   const router = useRouter();
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'paid' | 'pending'>('all');
 
   useEffect(() => {
     if (!authLoading && !firebaseUser) {
@@ -55,147 +33,179 @@ export default function MembershipsPage() {
         where('userId', '==', firebaseUser!.uid)
       );
       const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(doc => ({
+      const data = snapshot.docs.map((doc) => ({
         id: doc.id,
-        stageName: doc.data().stageName,
-        stageId: doc.data().stageId,
-        amount: doc.data().amount,
-        status: doc.data().status,
-        registrationDetails: doc.data().registrationDetails,
-        pricingCategory: doc.data().pricingCategory,
-        createdAt: doc.data().createdAt?.toDate?.()?.toLocaleDateString('fr-FR') || new Date().toLocaleDateString('fr-FR'),
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+        updatedAt: doc.data().updatedAt?.toDate?.() || new Date(),
       })) as Membership[];
-      setMemberships(data);
+      setMemberships(data.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()));
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching memberships:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const statusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      pending_payment: '⏳ En attente de paiement',
-      paid: '✅ Payé',
-      confirmed: '✅ Confirmé',
-      cancelled: '❌ Annulé',
-    };
-    return labels[status] || status;
-  };
+  const filtered = memberships.filter((m) => {
+    if (filter === 'paid') return m.status === 'paid';
+    if (filter === 'pending') return m.status === 'pending_confirmation';
+    return true;
+  });
 
-  const statusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      pending_payment: 'bg-yellow-50 border-yellow-200',
-      paid: 'bg-green-50 border-green-200',
-      confirmed: 'bg-green-50 border-green-200',
-      cancelled: 'bg-red-50 border-red-200',
-    };
-    return colors[status] || 'bg-gray-50 border-gray-200';
+  const stats = {
+    total: memberships.length,
+    paid: memberships.filter((m) => m.status === 'paid').length,
+    pending: memberships.filter((m) => m.status === 'pending_confirmation').length,
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
   if (!firebaseUser) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <Link href="/dashboard" className="text-blue-600 hover:underline">
-            ← Retour au dashboard
-          </Link>
-          <h1 className="text-4xl font-bold mt-4 mb-2">Mes inscriptions</h1>
-          <p className="text-gray-600">Gérez vos inscriptions aux stages</p>
-        </div>
+    <div className="space-y-8 p-4 sm:p-8">
+      <div>
+        <Link href="/dashboard" className="text-blue-600 hover:underline mb-4 inline-block">
+          ← Retour au dashboard
+        </Link>
+        <h1 className="text-2xl sm:text-4xl font-bold mt-4 mb-2">📋 Mes inscriptions</h1>
+        <p className="text-gray-600">Consultez vos inscriptions à nos stages</p>
+      </div>
 
-        {memberships.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <p className="text-gray-600 mb-6">Vous n'avez pas d'inscriptions pour le moment</p>
-            <Link
-              href="/stages"
-              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
-            >
-              Voir les stages disponibles
+      {/* Statistiques */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+          <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
+          <p className="text-sm text-gray-600">Total</p>
+        </div>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+          <p className="text-2xl font-bold text-green-600">{stats.paid}</p>
+          <p className="text-sm text-gray-600">Validées</p>
+        </div>
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
+          <p className="text-2xl font-bold text-orange-600">{stats.pending}</p>
+          <p className="text-sm text-gray-600">En attente</p>
+        </div>
+      </div>
+
+      {/* Filtres */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={() => setFilter('all')}
+          className={`px-4 py-2 rounded font-semibold transition ${
+            filter === 'all'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Toutes
+        </button>
+        <button
+          onClick={() => setFilter('paid')}
+          className={`px-4 py-2 rounded font-semibold transition ${
+            filter === 'paid'
+              ? 'bg-green-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          ✅ Validées
+        </button>
+        <button
+          onClick={() => setFilter('pending')}
+          className={`px-4 py-2 rounded font-semibold transition ${
+            filter === 'pending'
+              ? 'bg-orange-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          ⏳ En attente
+        </button>
+      </div>
+
+      {/* Liste des inscriptions */}
+      {filtered.length === 0 ? (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+          <p className="text-gray-700 mb-4">
+            {stats.total === 0
+              ? 'Vous n\'avez pas encore d\'inscriptions'
+              : 'Aucune inscription ne correspond à ce filtre'}
+          </p>
+          {stats.total === 0 && (
+            <Link href="/stages" className="text-blue-600 hover:underline font-semibold">
+              Découvrir les stages →
             </Link>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {memberships.map(membership => (
-              <div
-                key={membership.id}
-                className={`border-l-4 rounded-lg p-6 ${statusColor(membership.status)}`}
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">{membership.stageName}</h3>
-                    <p className="text-sm text-gray-600">ID: {membership.id.substring(0, 8)}</p>
-                  </div>
-                  <span className="text-sm font-semibold px-3 py-1 bg-white rounded">
-                    {statusLabel(membership.status)}
+          )}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map((membership) => (
+            <div key={membership.id} className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="p-4 sm:p-6 border-b bg-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                <div>
+                  <h2 className="text-lg sm:text-2xl font-bold text-gray-900">{membership.stageName}</h2>
+                  <p className="text-sm text-gray-600">
+                    {membership.createdAt.toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+                <div className="flex gap-2 items-center">
+                  <span className="text-xl sm:text-2xl font-bold text-blue-600">{membership.amount}€</span>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      membership.status === 'paid'
+                        ? 'bg-green-100 text-green-800'
+                        : membership.status === 'pending_confirmation'
+                        ? 'bg-orange-100 text-orange-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {membership.status === 'paid' && '✅ Validée'}
+                    {membership.status === 'pending_confirmation' && '⏳ En attente'}
+                    {membership.status === 'cancelled' && '❌ Annulée'}
                   </span>
                 </div>
+              </div>
 
-                {/* Détails de l'inscription */}
-                {membership.registrationDetails ? (
-                  <div className="bg-white bg-opacity-50 rounded p-4 mb-4 space-y-3">
-                    <div>
-                      <p className="text-sm text-gray-600">📋 Configuration</p>
-                      <div className="text-sm space-y-1 mt-1">
-                        <p>
-                          <strong>Danseurs:</strong> {membership.registrationDetails.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
-                          {membership.registrationDetails.dancers.some(d => d.licensed) && ' (licencié FFDanse)'}
-                        </p>
-                        {membership.registrationDetails.accompanists > 0 && (
-                          <p><strong>Accompagnateurs:</strong> {membership.registrationDetails.accompanists}</p>
-                        )}
-                        {membership.registrationDetails.wantHousing && (
-                          <p>
-                            <strong>Hébergement:</strong>
-                            {membership.registrationDetails.housingSolo > 0 && ` ${membership.registrationDetails.housingSolo} solo`}
-                            {membership.registrationDetails.housingSolo > 0 && membership.registrationDetails.housingCouple > 0 && ' +'}
-                            {membership.registrationDetails.housingCouple > 0 && ` ${membership.registrationDetails.housingCouple} couple`}
-                          </p>
-                        )}
-                        {!membership.registrationDetails.wantHousing && (
-                          <p><strong>Hébergement:</strong> Aucun</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ) : membership.pricingCategory ? (
-                  <div className="bg-white bg-opacity-50 rounded p-4 mb-4">
-                    <p className="text-sm text-gray-600">Catégorie</p>
-                    <p className="font-semibold capitalize">
-                      {membership.pricingCategory === 'withHousing'
-                        ? 'Avec logement'
-                        : membership.pricingCategory}
+              <div className="p-4 sm:p-6 space-y-4">
+                {/* Détails */}
+                <div className="bg-blue-50 rounded p-4 space-y-2 text-sm">
+                  <p>
+                    <strong>Danseurs:</strong> {membership.registrationDetails.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
+                    {membership.registrationDetails.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}
+                  </p>
+                  {membership.registrationDetails.accompanists > 0 && (
+                    <p>
+                      <strong>Accompagnateurs:</strong> {membership.registrationDetails.accompanists}
                     </p>
-                  </div>
-                ) : null}
-
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600">Montant</p>
-                  <p className="text-2xl font-bold text-blue-600">{membership.amount}€</p>
+                  )}
+                  {membership.registrationDetails.wantHousing && (
+                    <p>
+                      <strong>Hébergement:</strong>
+                      {membership.registrationDetails.housingSolo > 0 && ` ${membership.registrationDetails.housingSolo} solo`}
+                      {membership.registrationDetails.housingSolo > 0 && membership.registrationDetails.housingCouple > 0 && ' +'}
+                      {membership.registrationDetails.housingCouple > 0 && ` ${membership.registrationDetails.housingCouple} couple`}
+                    </p>
+                  )}
                 </div>
 
-                <p className="text-sm text-gray-500">
-                  Inscrit le {membership.createdAt}
-                </p>
-
-                {membership.status === 'pending_payment' && (
-                  <div className="mt-4 pt-4 border-t">
-                    <Link
-                      href={`/memberships/${membership.id}/pay`}
-                      className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    >
-                      Procéder au paiement
-                    </Link>
+                {/* Mode de paiement et statut */}
+                {membership.status === 'pending_confirmation' && (
+                  <div className="bg-orange-50 border border-orange-200 rounded p-4 text-sm">
+                    <p className="mb-2">
+                      <strong>Mode de paiement:</strong>{' '}
+                      {membership.paymentMethod === 'cheque' && '💳 Chèque'}
+                      {membership.paymentMethod === 'virement' && '🏦 Virement'}
+                      {membership.paymentMethod === 'helloasso' && '📱 HelloAsso'}
+                    </p>
+                    <p className="text-orange-900">
+                      Votre inscription est en attente de validation par l'administrateur. Vous serez informé dès que celle-ci sera confirmée.
+                    </p>
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

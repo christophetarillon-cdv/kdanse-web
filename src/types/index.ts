@@ -71,16 +71,23 @@ export interface StagePricing {
 export interface Membership {
   id: string;
   userId: string;
-  visibleUserIds: string[];
+  visibleUserIds?: string[];
   stageId: string;
-  status: 'active' | 'cancelled' | 'completed';
-  options: {
-    housing: boolean;
-    pricingCategory: 'solo' | 'couple' | 'ffdanse';
+  stageName: string;
+  status: 'paid' | 'pending_confirmation' | 'cancelled' | 'active' | 'completed';
+  registrationDetails: {
+    danceType: 'solo' | 'couple';
+    dancers: { licensed: boolean }[];
+    accompanists: number;
+    wantHousing: boolean;
+    housingSolo: number;
+    housingCouple: number;
   };
+  paymentMethod?: 'helloasso' | 'virement' | 'cheque';
   amount: number;
+  cartId?: string;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt?: Date;
 }
 
 // Payment group (paiements groupés ou échelonnés)
