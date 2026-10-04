@@ -10,6 +10,7 @@ import { getCart, clearCart } from '@/services/cartService';
 import { Cart } from '@/types/cart';
 
 type PaymentMethod = 'helloasso' | 'virement' | 'cheque';
+type PaymentOption = 'direct' | 'plan';
 
 export default function CartPaymentPage() {
   const params = useParams();
@@ -20,6 +21,7 @@ export default function CartPaymentPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [method, setMethod] = useState<PaymentMethod>('helloasso');
+  const [paymentOption, setPaymentOption] = useState<PaymentOption | null>(null);
 
   useEffect(() => {
     if (!authLoading && !firebaseUser) {
@@ -56,6 +58,13 @@ export default function CartPaymentPage() {
   const handleSubmitPayment = async () => {
     if (!cart || !firebaseUser) return;
 
+    // Si plan d'échéancier pour chèque/virement
+    if (paymentOption === 'plan' && (method === 'cheque' || method === 'virement')) {
+      router.push(`/cart/${cart.id}/payment-plan`);
+      return;
+    }
+
+    // Sinon, paiement direct
     setSubmitting(true);
     try {
       // Create memberships from cart items
@@ -201,13 +210,73 @@ export default function CartPaymentPage() {
             </div>
           </div>
 
+          {/* Option: Plan d'échéancier pour chèque/virement */}
+          {(method === 'cheque' || method === 'virement') && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4">Mode de paiement</h2>
+              <div className="space-y-3">
+                <div
+                  className={`border-2 rounded-lg p-4 cursor-pointer transition ${
+                    paymentOption === 'direct'
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 hover:border-blue-300'
+                  }`}
+                  onClick={() => setPaymentOption('direct')}
+                >
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="paymentOption"
+                      value="direct"
+                      checked={paymentOption === 'direct'}
+                      onChange={() => setPaymentOption('direct')}
+                      className="w-4 h-4"
+                    />
+                    <div>
+                      <p className="font-semibold">Paiement unique</p>
+                      <p className="text-sm text-gray-600">Envoyez le paiement en une fois</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className={`border-2 rounded-lg p-4 cursor-pointer transition ${
+                    paymentOption === 'plan'
+                      ? 'border-green-600 bg-green-50'
+                      : 'border-gray-200 hover:border-green-300'
+                  }`}
+                  onClick={() => setPaymentOption('plan')}
+                >
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="paymentOption"
+                      value="plan"
+                      checked={paymentOption === 'plan'}
+                      onChange={() => setPaymentOption('plan')}
+                      className="w-4 h-4"
+                    />
+                    <div>
+                      <p className="font-semibold">Plan de paiement (échéancier)</p>
+                      <p className="text-sm text-gray-600">Divisez le paiement en 3 ou 4 échéances</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Bouton paiement */}
           <button
             onClick={handleSubmitPayment}
-            disabled={submitting}
+            disabled={submitting || ((method === 'cheque' || method === 'virement') && !paymentOption)}
             className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 disabled:opacity-50 mb-6"
           >
-            {submitting ? 'Traitement en cours...' : `Confirmer le paiement (${cart.totals.total}€)`}
+            {submitting ? 'Traitement en cours...' : (
+              paymentOption === 'plan'
+                ? 'Créer le plan de paiement'
+                : `Confirmer le paiement (${cart.totals.total}€)`
+            )}
           </button>
 
           {/* Instructions */}
