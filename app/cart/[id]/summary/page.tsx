@@ -96,7 +96,7 @@ export default function CartSummaryPage() {
                     <span className="text-2xl font-bold text-blue-600">{item.totals?.total}€</span>
                   </div>
 
-                  <div className="bg-blue-50 rounded p-4 space-y-2 text-sm">
+                  <div className="bg-blue-50 rounded border border-blue-200 p-4 space-y-2 text-sm">
                     <p>
                       <strong>Danseurs:</strong> {item.configuration.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
                       {item.configuration.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}

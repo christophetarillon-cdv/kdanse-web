@@ -24,3 +24,29 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Improve contrast in colored sections */
+.bg-blue-50 p, .bg-blue-50 span, .bg-blue-50 div {
+  color: #1f2937 !important;
+  font-weight: 500;
+}
+
+.bg-green-50 p, .bg-green-50 span, .bg-green-50 div {
+  color: #1f2937 !important;
+  font-weight: 500;
+}
+
+.bg-orange-50 p, .bg-orange-50 span, .bg-orange-50 div {
+  color: #1f2937 !important;
+  font-weight: 500;
+}
+
+.bg-red-50 p, .bg-red-50 span, .bg-red-50 div {
+  color: #1f2937 !important;
+  font-weight: 500;
+}
+
+.bg-yellow-50 p, .bg-yellow-50 span, .bg-yellow-50 div {
+  color: #1f2937 !important;
+  font-weight: 500;
+}

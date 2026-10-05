@@ -189,7 +189,7 @@ export default function MembershipsPage() {
 
               <div className="p-4 sm:p-6 space-y-4">
                 {/* Détails */}
-                <div className="bg-blue-50 rounded p-4 space-y-2 text-sm">
+                <div className="bg-blue-50 rounded border border-blue-200 p-4 space-y-2 text-sm">
                   <p>
                     <strong>Danseurs:</strong> {membership.registrationDetails.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
                     {membership.registrationDetails.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}
