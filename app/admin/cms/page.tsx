@@ -161,7 +161,7 @@ export default function CMSListPage() {
                 </Link>
                 <p className="text-sm text-gray-900 font-medium">/{page.slug}</p>
                 {page.description && (
-                  <p className="text-sm text-gray-900 font-medium"-800 mt-1">{page.description}</p>
+                  <p className="text-sm text-gray-900 font-medium mt-1">{page.description}</p>
                 )}
               </div>
               <div className="flex gap-2 items-center">

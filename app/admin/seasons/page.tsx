@@ -102,19 +102,19 @@ export default function SeasonsAdminPage() {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-blue-600">{seasons.length}</div>
-            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Saisons au total</div>
+            <div className="text-sm text-gray-900 font-medium mt-1">Saisons au total</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-green-600">
               {seasons.filter(s => s.status === 'active').length}
             </div>
-            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Saisons actives</div>
+            <div className="text-sm text-gray-900 font-medium mt-1">Saisons actives</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-blue-600">
               {seasons.filter(s => s.status === 'reservation').length}
             </div>
-            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Réservations ouvertes</div>
+            <div className="text-sm text-gray-900 font-medium mt-1">Réservations ouvertes</div>
           </div>
         </div>
       </div>

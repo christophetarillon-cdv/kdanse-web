@@ -124,19 +124,19 @@ export default function ReservationsAdminPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-blue-600">{stats.total}</div>
-            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Réservations au total</div>
+            <div className="text-sm text-gray-900 font-medium mt-1">Réservations au total</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
-            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">En attente</div>
+            <div className="text-sm text-gray-900 font-medium mt-1">En attente</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-green-600">{stats.confirmed}</div>
-            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Confirmées</div>
+            <div className="text-sm text-gray-900 font-medium mt-1">Confirmées</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-red-600">{stats.cancelled}</div>
-            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Annulées</div>
+            <div className="text-sm text-gray-900 font-medium mt-1">Annulées</div>
           </div>
         </div>
 
