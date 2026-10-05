@@ -122,8 +122,9 @@ export default function AccountPage() {
           active: formData.licenseActive,
         };
       }
-      if (formData.photoUrl && !photoFile) {
-        // Keep existing photo if no new file
+
+      // Save photo if selected or keep existing
+      if (formData.photoUrl) {
         profileData.photoUrl = formData.photoUrl;
       }
 
@@ -134,6 +135,7 @@ export default function AccountPage() {
       };
 
       await updateUserProfile(firebaseUser!.uid, updatedUser);
+      setPhotoFile(null); // Clear file after save
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -142,6 +144,14 @@ export default function AccountPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleRemovePhoto = () => {
+    setFormData(prev => ({
+      ...prev,
+      photoUrl: '',
+    }));
+    setPhotoFile(null);
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
@@ -178,12 +188,21 @@ export default function AccountPage() {
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2">📸 Photo de profil</label>
             {formData.photoUrl && (
-              <div className="mb-4 flex justify-center">
-                <img
-                  src={formData.photoUrl}
-                  alt="Photo de profil"
-                  className="w-32 h-32 rounded-full object-cover border-2 border-blue-300"
-                />
+              <div className="mb-4">
+                <div className="flex justify-center mb-4">
+                  <img
+                    src={formData.photoUrl}
+                    alt="Photo de profil"
+                    className="w-32 h-32 rounded-full object-cover border-2 border-blue-300"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  className="w-full bg-red-100 hover:bg-red-200 text-red-700 py-2 rounded text-sm font-medium mb-2"
+                >
+                  ✖️ Supprimer la photo
+                </button>
               </div>
             )}
             <input
