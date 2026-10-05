@@ -186,7 +186,7 @@ export default function AccountPage() {
 
           {/* Photo de profil */}
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">📸 Photo de profil</label>
+            <label className="block text-sm font-bold text-gray-900 mb-2">📸 Photo de profil</label>
             {formData.photoUrl && (
               <div className="mb-4">
                 <div className="flex justify-center mb-4">
@@ -210,44 +210,44 @@ export default function AccountPage() {
               name="photo"
               accept="image/*"
               onChange={handleInputChange}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium"
             />
             <p className="text-xs text-gray-500 mt-1">JPG ou PNG, max 5MB</p>
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
+            <label className="block text-sm font-bold text-gray-900 mb-2">Email</label>
             <input
               type="email"
               value={firebaseUser?.email || ''}
-              className="w-full border rounded px-3 py-2 bg-gray-100"
+              className="w-full border-2 border-gray-300 rounded px-3 py-2 bg-white text-gray-900 font-medium"
               disabled
             />
-            <p className="text-xs text-gray-500 mt-1">Non modifiable</p>
+            <p className="text-xs text-gray-600 mt-1">Non modifiable</p>
           </div>
 
           {/* Nom et Prénom séparés */}
           <div className="mt-4 grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Prénom</label>
+              <label className="block text-sm font-bold text-gray-900 mb-2">Prénom</label>
               <input
                 type="text"
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium"
                 placeholder="Christophe"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Nom</label>
+              <label className="block text-sm font-bold text-gray-900 mb-2">Nom</label>
               <input
                 type="text"
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium"
                 placeholder="Tarillon"
               />
             </div>
@@ -260,25 +260,25 @@ export default function AccountPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Téléphone</label>
+              <label className="block text-sm font-bold text-gray-900 mb-2">Téléphone</label>
               <input
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium"
                 placeholder="+33 6 12 34 56 78"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Date de naissance</label>
+              <label className="block text-sm font-bold text-gray-900 mb-2">Date de naissance</label>
               <input
                 type="date"
                 name="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium"
               />
             </div>
           </div>
@@ -290,38 +290,38 @@ export default function AccountPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Rue</label>
+              <label className="block text-sm font-bold text-gray-900 mb-2">Rue</label>
               <input
                 type="text"
                 name="street"
                 value={formData.street}
                 onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium"
                 placeholder="123 Rue de la Danse"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Code postal</label>
+                <label className="block text-sm font-bold text-gray-900 mb-2">Code postal</label>
                 <input
                   type="text"
                   name="postalCode"
                   value={formData.postalCode}
                   onChange={handleInputChange}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium"
                   placeholder="75001"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Ville</label>
+                <label className="block text-sm font-bold text-gray-900 mb-2">Ville</label>
                 <input
                   type="text"
                   name="city"
                   value={formData.city}
                   onChange={handleInputChange}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium"
                   placeholder="Paris"
                 />
               </div>
@@ -335,13 +335,13 @@ export default function AccountPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Numéro de licence</label>
+              <label className="block text-sm font-bold text-gray-900 mb-2">Numéro de licence</label>
               <input
                 type="text"
                 name="licenseNumber"
                 value={formData.licenseNumber}
                 onChange={handleInputChange}
-                className="w-full border rounded px-3 py-2"
+                className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium"
                 placeholder="Ex: 123456789"
               />
             </div>
