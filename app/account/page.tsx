@@ -83,24 +83,29 @@ export default function AccountPage() {
     setSuccess(false);
 
     try {
+      const profileData: any = {};
+
+      // Add optional profile fields only if they have values
+      if (formData.phone) profileData.phone = formData.phone;
+      if (formData.dateOfBirth) profileData.dateOfBirth = new Date(formData.dateOfBirth);
+      if (formData.street || formData.postalCode || formData.city) {
+        profileData.postalAddress = {
+          street: formData.street,
+          postalCode: formData.postalCode,
+          city: formData.city,
+        };
+      }
+      if (formData.licenseNumber) {
+        profileData.license = {
+          number: formData.licenseNumber,
+          federation: 'ffdanse',
+          active: formData.licenseActive,
+        };
+      }
+
       const updatedUser: Partial<User> = {
         displayName: formData.displayName,
-        profile: {
-          phone: formData.phone || undefined,
-          dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined,
-          postalAddress: {
-            street: formData.street,
-            postalCode: formData.postalCode,
-            city: formData.city,
-          },
-          license: formData.licenseNumber
-            ? {
-                number: formData.licenseNumber,
-                federation: 'ffdanse',
-                active: formData.licenseActive,
-              }
-            : undefined,
-        },
+        profile: profileData,
       };
 
       await updateUserProfile(firebaseUser!.uid, updatedUser);
