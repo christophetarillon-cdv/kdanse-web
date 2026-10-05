@@ -164,7 +164,7 @@ export default function AccountPage() {
           ← Retour au dashboard
         </Link>
         <h1 className="text-2xl sm:text-4xl font-bold mt-4 mb-2">👤 Mon compte</h1>
-        <p className="text-gray-600">Gérez vos informations personnelles</p>
+        <p className="text-gray-700 font-medium">Gérez vos informations personnelles</p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6 max-w-2xl">
@@ -182,7 +182,7 @@ export default function AccountPage() {
 
         {/* Infos du compte */}
         <div className="border-b pb-6">
-          <h2 className="text-lg font-semibold mb-4">📧 Infos du compte</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">📧 Infos du compte</h2>
 
           {/* Photo de profil */}
           <div className="mb-4">
@@ -256,7 +256,7 @@ export default function AccountPage() {
 
         {/* Coordonnées */}
         <div className="border-t pt-6">
-          <h2 className="text-lg font-semibold mb-4">📞 Coordonnées</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">📞 Coordonnées</h2>
 
           <div className="space-y-4">
             <div>
@@ -286,7 +286,7 @@ export default function AccountPage() {
 
         {/* Adresse */}
         <div className="border-t pt-6">
-          <h2 className="text-lg font-semibold mb-4">📍 Adresse</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">📍 Adresse</h2>
 
           <div className="space-y-4">
             <div>
@@ -331,7 +331,7 @@ export default function AccountPage() {
 
         {/* Licence FFDanse */}
         <div className="border-t pt-6">
-          <h2 className="text-lg font-semibold mb-4">🎖️ Licence FFDanse</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">🎖️ Licence FFDanse</h2>
 
           <div className="space-y-4">
             <div>
