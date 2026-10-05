@@ -30,11 +30,27 @@ export interface Reservation {
 // User & Auth
 export type UserRole = 'admin' | 'prof' | 'animateur' | 'user';
 
+export interface UserProfile {
+  phone?: string;
+  dateOfBirth?: Date;
+  postalAddress?: {
+    street: string;
+    postalCode: string;
+    city: string;
+  };
+  license?: {
+    number: string;
+    federation: 'ffdanse'; // extensible pour d'autres fédérations
+    active: boolean;
+  };
+}
+
 export interface User {
   id: string;
   email: string;
   displayName: string;
   roles: UserRole[];
+  profile?: UserProfile;
   createdAt: Date;
   updatedAt: Date;
 }
