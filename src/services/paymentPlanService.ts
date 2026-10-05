@@ -11,7 +11,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { PaymentPlan, PaymentInstallment, PaymentSettings, Cart } from '@/types';
+import { PaymentPlan, PaymentInstallment, PaymentSettings, Cart, Membership } from '@/types';
 
 const PAYMENT_PLANS_COLLECTION = 'paymentPlans';
 const INSTALLMENTS_COLLECTION = 'paymentInstallments';
@@ -247,4 +247,37 @@ export const getInstallmentsByPlan = async (planId: string): Promise<PaymentInst
     dueDate: doc.data().dueDate?.toDate?.() || new Date(),
     createdAt: doc.data().createdAt?.toDate?.() || new Date(),
   })) as PaymentInstallment[];
+};
+
+// Get payment plan with associated membership (reusable for admin & danseur space)
+export const getPaymentPlanWithMembership = async (
+  planId: string
+): Promise<(PaymentPlan & { membership?: Membership }) | null> => {
+  // Get the payment plan
+  const plan = await getPaymentPlan(planId);
+  if (!plan) return null;
+
+  // Find the membership associated with this plan
+  const q = query(
+    collection(db, 'memberships'),
+    where('paymentPlanId', '==', planId)
+  );
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    console.warn(`No membership found for planId: ${planId}`);
+    return plan;
+  }
+
+  const membershipDoc = snapshot.docs[0];
+  const membership = {
+    id: membershipDoc.id,
+    ...membershipDoc.data(),
+    createdAt: membershipDoc.data().createdAt?.toDate?.() || new Date(),
+    updatedAt: membershipDoc.data().updatedAt?.toDate?.() || new Date(),
+  } as Membership;
+
+  console.log(`Found membership for planId ${planId}:`, membership.stageName);
+
+  return { ...plan, membership };
 };

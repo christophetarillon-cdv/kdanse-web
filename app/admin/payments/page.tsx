@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Membership, PaymentInstallment } from '@/types';
-import { getPendingInstallments } from '@/services/paymentPlanService';
+import { getPendingInstallments, getPaymentPlanWithMembership } from '@/services/paymentPlanService';
 
 export default function AdminPaymentsConsolidatedPage() {
   const { user, loading: authLoading } = useAuth();
@@ -18,6 +18,9 @@ export default function AdminPaymentsConsolidatedPage() {
 
   // Plan installments
   const [installments, setInstallments] = useState<PaymentInstallment[]>([]);
+
+  // Plan info for display (planId -> membership)
+  const [planMemberships, setPlanMemberships] = useState<{ [key: string]: Membership }>({});
 
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -40,6 +43,22 @@ export default function AdminPaymentsConsolidatedPage() {
       // Fetch pending installments
       const installmentsData = await getPendingInstallments();
       setInstallments(installmentsData);
+
+      // Fetch membership info for each plan (for display labels)
+      const planIds = [...new Set(installmentsData.map(inst => inst.paymentPlanId))];
+      const planMembershipMap: { [key: string]: Membership } = {};
+
+      for (const planId of planIds) {
+        try {
+          const planData = await getPaymentPlanWithMembership(planId);
+          if (planData?.membership) {
+            planMembershipMap[planId] = planData.membership;
+          }
+        } catch (err) {
+          console.error(`Error fetching membership for plan ${planId}:`, err);
+        }
+      }
+      setPlanMemberships(planMembershipMap);
 
       // Fetch pending simple payments
       const q = query(
@@ -126,6 +145,25 @@ export default function AdminPaymentsConsolidatedPage() {
     return labels[method];
   };
 
+  const getPlanLabel = (planId: string, planInstallments: PaymentInstallment[]): string => {
+    const membership = planMemberships[planId];
+    const totalAmount = planInstallments.reduce((sum, inst) => sum + inst.amount, 0).toFixed(2);
+    const installmentCount = planInstallments.length;
+
+    console.log(`getPlanLabel called for planId ${planId}:`, {
+      hasMembergship: !!membership,
+      stageName: membership?.stageName,
+      allPlanIds: Object.keys(planMemberships),
+    });
+
+    if (!membership) {
+      return `Plan de paiement (${totalAmount}€ • ${installmentCount} versements)`;
+    }
+
+    const danceTypeLabel = membership.registrationDetails?.danceType === 'solo' ? '1 danseur' : '2 danseurs';
+    return `${danceTypeLabel} - Inscription au ${membership.stageName} (${totalAmount}€, ${installmentCount} versements)`;
+  };
+
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
 
   const groupedByPlan = installments.reduce(
@@ -197,7 +235,7 @@ export default function AdminPaymentsConsolidatedPage() {
                     onClick={() => setExpandedPlan(expandedPlan === planId ? null : planId)}
                     className="w-full p-6 text-left font-semibold hover:bg-gray-50 flex justify-between items-center"
                   >
-                    <span>Plan de paiement ({planInstallments.reduce((s, i) => s + i.amount, 0).toFixed(2)}€ • {planInstallments.length} versements)</span>
+                    <span>{getPlanLabel(planId, planInstallments)}</span>
                     <span>{expandedPlan === planId ? '▼' : '▶'}</span>
                   </button>
 
