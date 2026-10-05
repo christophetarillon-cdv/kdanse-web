@@ -197,7 +197,7 @@ export default function AdminPaymentsConsolidatedPage() {
                     onClick={() => setExpandedPlan(expandedPlan === planId ? null : planId)}
                     className="w-full p-6 text-left font-semibold hover:bg-gray-50 flex justify-between items-center"
                   >
-                    <span>Plan: {planId.substring(0, 8)}... ({planInstallments.length} paiements)</span>
+                    <span>Plan de paiement ({planInstallments.reduce((s, i) => s + i.amount, 0).toFixed(2)}€ • {planInstallments.length} versements)</span>
                     <span>{expandedPlan === planId ? '▼' : '▶'}</span>
                   </button>
 
