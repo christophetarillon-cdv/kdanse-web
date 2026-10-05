@@ -164,19 +164,19 @@ export default function InitTestDataPage() {
                 <div className="border-t pt-3">
                   <p className="font-medium text-gray-700">Stage Créé</p>
                   <p className="text-gray-600 font-mono text-xs break-all">{result.stageId}</p>
-                  <p className="text-gray-500 text-xs mt-1">Nom: "Stage de Test - Phase 4"</p>
+                  <p className="text-gray-800 text-xs mt-1">Nom: "Stage de Test - Phase 4"</p>
                 </div>
 
                 <div className="border-t pt-3">
                   <p className="font-medium text-gray-700">Membership (Inscription) Créée</p>
                   <p className="text-gray-600 font-mono text-xs break-all">{result.membershipId}</p>
-                  <p className="text-gray-500 text-xs mt-1">Utilisateur: dev-user-123 | Statut: active ✅</p>
+                  <p className="text-gray-800 text-xs mt-1">Utilisateur: dev-user-123 | Statut: active ✅</p>
                 </div>
 
                 <div className="border-t pt-3">
                   <p className="font-medium text-gray-700">Réservation Créée</p>
                   <p className="text-gray-600 font-mono text-xs break-all">{result.reservationId}</p>
-                  <p className="text-gray-500 text-xs mt-1">
+                  <p className="text-gray-800 text-xs mt-1">
                     Utilisateur: dev-user-123 | Statut: pending | Éligibilité: ✅ OUI
                   </p>
                 </div>

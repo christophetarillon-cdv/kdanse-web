@@ -88,7 +88,7 @@ export default function CMSPage() {
         </article>
 
         {/* Metadata info */}
-        <div className="mt-12 pt-8 border-t text-center text-sm text-gray-600">
+        <div className="mt-12 pt-8 border-t text-center text-sm text-gray-800 font-medium">
           <p>
             Dernière modification: {page.updatedAt.toLocaleDateString('fr-FR', {
               year: 'numeric',

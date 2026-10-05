@@ -191,7 +191,7 @@ export default function AdminMenusPage() {
 
             <div className="space-y-2 bg-gray-50 p-4 rounded">
               {menuItems.filter(i => !i.parentId).length === 0 ? (
-                <p className="text-gray-500 text-sm italic">Aucun item. Ajoute-en avec le bouton ci-dessus.</p>
+                <p className="text-gray-800 text-sm italic">Aucun item. Ajoute-en avec le bouton ci-dessus.</p>
               ) : (
                 menuItems.filter(i => !i.parentId).map((item, idx) => {
                   const children = menuItems.filter(i => i.parentId === item.id);

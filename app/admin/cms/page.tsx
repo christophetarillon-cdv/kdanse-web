@@ -145,7 +145,7 @@ export default function CMSListPage() {
 
       <div className="space-y-3">
         {pages.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">Aucune page pour le moment</p>
+          <p className="text-gray-800 text-center py-8">Aucune page pour le moment</p>
         ) : (
           pages.map((page) => (
             <div
@@ -161,7 +161,7 @@ export default function CMSListPage() {
                 </Link>
                 <p className="text-sm text-gray-700 font-medium">/{page.slug}</p>
                 {page.description && (
-                  <p className="text-sm text-gray-500 mt-1">{page.description}</p>
+                  <p className="text-sm text-gray-800 mt-1">{page.description}</p>
                 )}
               </div>
               <div className="flex gap-2 items-center">

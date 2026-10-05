@@ -104,7 +104,7 @@ export default function AdminBankSettingsPage() {
               placeholder="FR1420041010050500013M02606"
               className="w-full border rounded px-4 py-2"
             />
-            <p className="text-xs text-gray-500 mt-1">Format: 27 caractères</p>
+            <p className="text-xs text-gray-800 mt-1">Format: 27 caractères</p>
           </div>
 
           <div>
@@ -124,7 +124,7 @@ export default function AdminBankSettingsPage() {
               placeholder="PCHQFRPP"
               className="w-full border rounded px-4 py-2"
             />
-            <p className="text-xs text-gray-500 mt-1">Code SWIFT/BIC (8 caractères)</p>
+            <p className="text-xs text-gray-800 mt-1">Code SWIFT/BIC (8 caractères)</p>
           </div>
 
           <div>

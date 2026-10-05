@@ -331,7 +331,7 @@ export default function AdminPagesPage() {
 
             <div className="space-y-3 bg-gray-50 p-4 rounded">
               {content.filter(b => !b.parentLayoutId).length === 0 ? (
-                <p className="text-gray-500 text-sm italic">Aucun bloc. Ajoute du contenu avec les boutons ci-dessus.</p>
+                <p className="text-gray-800 text-sm italic">Aucun bloc. Ajoute du contenu avec les boutons ci-dessus.</p>
               ) : (
                 content.filter(b => !b.parentLayoutId).map((block, idx) => (
                   <div key={block.id} className="bg-white border rounded p-3 space-y-2">

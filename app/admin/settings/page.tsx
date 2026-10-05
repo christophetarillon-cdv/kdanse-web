@@ -97,7 +97,7 @@ export default function AdminSettingsPage() {
                 </option>
               ))}
             </select>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-800 mt-2">
               Ce menu s'affichera dans le header du site
             </p>
           </div>
@@ -118,7 +118,7 @@ export default function AdminSettingsPage() {
                 </option>
               ))}
             </select>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-800 mt-2">
               Ce menu s'affichera dans le footer du site
             </p>
           </div>

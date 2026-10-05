@@ -212,7 +212,7 @@ export default function AccountPage() {
               onChange={handleInputChange}
               className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium"
             />
-            <p className="text-xs text-gray-500 mt-1">JPG ou PNG, max 5MB</p>
+            <p className="text-xs text-gray-800 mt-1">JPG ou PNG, max 5MB</p>
           </div>
 
           {/* Email */}
