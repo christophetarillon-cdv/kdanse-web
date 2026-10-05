@@ -121,7 +121,7 @@ export default function AdminPaymentPlansPage() {
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h3 className="font-bold text-lg">{getMethodLabel(inst.method)}</h3>
-                          <p className="text-sm text-gray-900 font-medium"-900 font-medium">
+                          <p className="text-sm text-gray-900 font-medium">
                             Échéance: {new Date(inst.dueDate).toLocaleDateString('fr-FR')}
                           </p>
                         </div>

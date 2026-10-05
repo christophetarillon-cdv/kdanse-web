@@ -201,11 +201,11 @@ export default function AdminPaymentPlansValidationPage() {
                     <h2 className="text-xl font-bold text-gray-900">
                       {plan.membership?.stageName}
                     </h2>
-                    <p className="text-sm text-gray-900 font-medium"-900 font-medium">Plan ID: {plan.id.substring(0, 8)}...</p>
+                    <p className="text-sm text-gray-900 font-medium">Plan ID: {plan.id.substring(0, 8)}...</p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-blue-600">{plan.totalAmount.toFixed(2)}€</p>
-                    <p className="text-sm text-gray-900 font-medium"-900 font-medium">{plan.installmentCount} paiements</p>
+                    <p className="text-sm text-gray-900 font-medium">{plan.installmentCount} paiements</p>
                   </div>
                 </div>
               </div>

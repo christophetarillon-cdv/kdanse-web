@@ -112,11 +112,11 @@ export default function AdminPaymentsPage() {
               <div className="p-6 border-b bg-gray-50 flex justify-between items-start">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">{membership.stageName}</h2>
-                  <p className="text-sm text-gray-900 font-medium"-900 font-medium">ID: {membership.id}</p>
+                  <p className="text-sm text-gray-900 font-medium">ID: {membership.id}</p>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-bold text-orange-600">{membership.amount}€</span>
-                  <p className="text-sm text-gray-900 font-medium"-900 font-medium">
+                  <p className="text-sm text-gray-900 font-medium">
                     {membership.paymentMethod === 'cheque' && '💳 Chèque'}
                     {membership.paymentMethod === 'virement' && '🏦 Virement'}
                     {membership.paymentMethod === 'helloasso' && '📱 HelloAsso'}

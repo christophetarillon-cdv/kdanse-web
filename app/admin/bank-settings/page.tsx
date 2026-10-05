@@ -245,7 +245,7 @@ export default function AdminBankSettingsPage() {
           </div>
 
           <div>
-            <p className="text-sm text-gray-900 font-medium"-900 font-medium">Adresse (affichée pour l'envoi de chèques):</p>
+            <p className="text-sm text-gray-900 font-medium">Adresse (affichée pour l'envoi de chèques):</p>
             <div className="mt-2 bg-white p-3 rounded border border-gray-200 text-sm">
               <p>{settings.postalAddress?.street || '-'}</p>
               <p>{settings.postalAddress?.postalCode || '-'} {settings.postalAddress?.city || '-'}</p>
