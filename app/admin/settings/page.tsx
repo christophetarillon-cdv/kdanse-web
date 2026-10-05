@@ -74,7 +74,7 @@ export default function AdminSettingsPage() {
           ← Retour admin
         </Link>
         <h1 className="text-3xl font-bold mb-2">Paramètres du site</h1>
-        <p className="text-gray-700 font-medium">Configurez les menus et les éléments globaux</p>
+        <p className="text-gray-900 font-medium">Configurez les menus et les éléments globaux</p>
       </div>
 
       {/* Formulaire */}
@@ -97,7 +97,7 @@ export default function AdminSettingsPage() {
                 </option>
               ))}
             </select>
-            <p className="text-sm text-gray-800 mt-2">
+            <p className="text-sm text-gray-900 font-medium"-800 mt-2">
               Ce menu s'affichera dans le header du site
             </p>
           </div>
@@ -118,7 +118,7 @@ export default function AdminSettingsPage() {
                 </option>
               ))}
             </select>
-            <p className="text-sm text-gray-800 mt-2">
+            <p className="text-sm text-gray-900 font-medium"-800 mt-2">
               Ce menu s'affichera dans le footer du site
             </p>
           </div>

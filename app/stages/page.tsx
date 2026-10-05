@@ -67,7 +67,7 @@ export default function StagesPage() {
               <div key={stage.id} className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-2xl font-bold mb-2">{stage.name}</h2>
                 <p className="text-gray-600 mb-4">{stage.description}</p>
-                <p className="text-gray-700 mb-4"><strong>Lieu :</strong> {stage.location}</p>
+                <p className="text-gray-900 mb-4"><strong>Lieu :</strong> {stage.location}</p>
                 <Link href={`/stages/${stage.id}`} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                   Voir détails
                 </Link>

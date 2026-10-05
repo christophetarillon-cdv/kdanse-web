@@ -124,7 +124,7 @@ export default function AdminStagesPage() {
     <div className="space-y-8 p-8">
       <div>
         <h1 className="text-3xl font-bold mb-2">Gestion des Stages</h1>
-        <p className="text-gray-700 font-medium">Créez et gérez les stages Kdanse</p>
+        <p className="text-gray-900 font-medium">Créez et gérez les stages Kdanse</p>
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
@@ -181,7 +181,7 @@ export default function AdminStagesPage() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Solo licencié</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Solo licencié</label>
                   <input
                     type="number"
                     value={form.pricing.stage.soloLicensed || ''}
@@ -198,7 +198,7 @@ export default function AdminStagesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Solo non licencié</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Solo non licencié</label>
                   <input
                     type="number"
                     value={form.pricing.stage.soloUnlicensed || ''}
@@ -215,7 +215,7 @@ export default function AdminStagesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Couple non licencié</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Couple non licencié</label>
                   <input
                     type="number"
                     value={form.pricing.stage.coupleUnlicensed || ''}
@@ -232,7 +232,7 @@ export default function AdminStagesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Couple licencié</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Couple licencié</label>
                   <input
                     type="number"
                     value={form.pricing.stage.coupleLicensed || ''}
@@ -249,7 +249,7 @@ export default function AdminStagesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Couple mixte (1 lic. + 1 non lic.)</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Couple mixte (1 lic. + 1 non lic.)</label>
                   <input
                     type="number"
                     value={form.pricing.stage.coupleMixed || ''}
@@ -278,7 +278,7 @@ export default function AdminStagesPage() {
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hébergement solo (par place)</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Hébergement solo (par place)</label>
                   <input
                     type="number"
                     value={form.pricing.housing.solo || ''}
@@ -295,7 +295,7 @@ export default function AdminStagesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hébergement couple (lit double, 2 places)</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Hébergement couple (lit double, 2 places)</label>
                   <input
                     type="number"
                     value={form.pricing.housing.couple || ''}
@@ -351,12 +351,12 @@ export default function AdminStagesPage() {
               <tr key={stage.id} className="border-b hover:bg-gray-50">
                 <td className="px-6 py-3 font-semibold">{stage.name}</td>
                 <td className="px-6 py-3">{stage.location}</td>
-                <td className="px-6 py-3 text-sm text-gray-700 font-medium">
+                <td className="px-6 py-3 text-sm text-gray-900 font-medium">
                   {stage.startDate && stage.endDate
                     ? `${new Date(stage.startDate).toLocaleDateString('fr-FR')} - ${new Date(stage.endDate).toLocaleDateString('fr-FR')}`
                     : 'Non défini'}
                 </td>
-                <td className="px-6 py-3 text-xs text-gray-700 font-medium">
+                <td className="px-6 py-3 text-xs text-gray-900 font-medium">
                   {stage.pricing?.stage ? (
                     <div className="space-y-2">
                       <div>

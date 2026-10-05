@@ -72,7 +72,7 @@ export default function AdminBankSettingsPage() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">🏦 Paramètres bancaires</h1>
-          <p className="text-gray-700 font-medium">Configurez les coordonnées pour les virements et adresse pour les chèques</p>
+          <p className="text-gray-900 font-medium">Configurez les coordonnées pour les virements et adresse pour les chèques</p>
         </div>
         <Link
           href="/admin/payment-plans"
@@ -236,7 +236,7 @@ export default function AdminBankSettingsPage() {
           <h3 className="font-semibold text-gray-900">📋 Aperçu</h3>
 
           <div>
-            <p className="text-sm text-gray-700 font-medium">Compte bancaire (affiché aux clients pour virements):</p>
+            <p className="text-sm text-gray-900 font-medium"-900 font-medium">Compte bancaire (affiché aux clients pour virements):</p>
             <div className="mt-2 bg-white p-3 rounded border border-gray-200 text-sm">
               <p><strong>Titulaire:</strong> {settings.bankAccount?.accountName || '-'}</p>
               <p><strong>IBAN:</strong> {settings.bankAccount?.iban || '-'}</p>
@@ -245,7 +245,7 @@ export default function AdminBankSettingsPage() {
           </div>
 
           <div>
-            <p className="text-sm text-gray-700 font-medium">Adresse (affichée pour l'envoi de chèques):</p>
+            <p className="text-sm text-gray-900 font-medium"-900 font-medium">Adresse (affichée pour l'envoi de chèques):</p>
             <div className="mt-2 bg-white p-3 rounded border border-gray-200 text-sm">
               <p>{settings.postalAddress?.street || '-'}</p>
               <p>{settings.postalAddress?.postalCode || '-'} {settings.postalAddress?.city || '-'}</p>

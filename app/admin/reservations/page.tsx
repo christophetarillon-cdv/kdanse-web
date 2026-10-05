@@ -115,7 +115,7 @@ export default function ReservationsAdminPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Réservations</h1>
-          <p className="text-gray-700 font-medium">
+          <p className="text-gray-900 font-medium">
             Saison active: <span className="font-bold">{season.name}</span>
           </p>
         </div>
@@ -124,19 +124,19 @@ export default function ReservationsAdminPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-blue-600">{stats.total}</div>
-            <div className="text-sm text-gray-800 font-medium mt-1">Réservations au total</div>
+            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Réservations au total</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
-            <div className="text-sm text-gray-800 font-medium mt-1">En attente</div>
+            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">En attente</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-green-600">{stats.confirmed}</div>
-            <div className="text-sm text-gray-800 font-medium mt-1">Confirmées</div>
+            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Confirmées</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-red-600">{stats.cancelled}</div>
-            <div className="text-sm text-gray-800 font-medium mt-1">Annulées</div>
+            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Annulées</div>
           </div>
         </div>
 
@@ -150,25 +150,25 @@ export default function ReservationsAdminPage() {
             <table className="w-full">
               <thead className="bg-gray-100 border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     Utilisateur
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     Éligibilité
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     Notes
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     Statut
                   </th>
-                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">
+                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">
                     Actions
                   </th>
                 </tr>
@@ -179,8 +179,8 @@ export default function ReservationsAdminPage() {
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <div className="font-medium">{reservation.userId}</div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">(À récupérer)</td>
-                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
+                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">(À récupérer)</td>
+                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">
                       {reservation.createdAt.toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-6 py-4 text-sm">
@@ -198,7 +198,7 @@ export default function ReservationsAdminPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
+                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">
                       <div className="max-w-xs truncate">{reservation.notes || '—'}</div>
                     </td>
                     <td className="px-6 py-4">

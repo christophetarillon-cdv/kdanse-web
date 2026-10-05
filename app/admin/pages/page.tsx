@@ -223,7 +223,7 @@ export default function AdminPagesPage() {
           ← Retour admin
         </Link>
         <h1 className="text-3xl font-bold mb-2">Gestion des pages CMS</h1>
-        <p className="text-gray-700 font-medium">Créez et gérez les pages statiques</p>
+        <p className="text-gray-900 font-medium">Créez et gérez les pages statiques</p>
       </div>
 
       {/* Formulaire + Preview */}
@@ -453,7 +453,7 @@ export default function AdminPagesPage() {
                           </div>
                         )}
                         <div>
-                          <label className="text-xs text-gray-700 font-medium">Upload image</label>
+                          <label className="text-xs text-gray-900 font-medium">Upload image</label>
                           <input
                             type="file"
                             accept="image/*"
@@ -494,7 +494,7 @@ export default function AdminPagesPage() {
               onChange={(e) => setForm({ ...form, published: e.target.checked })}
               className="w-5 h-5"
             />
-            <label className="font-medium text-gray-700">Publier cette page</label>
+            <label className="font-medium text-gray-900">Publier cette page</label>
           </div>
 
           <div className="flex gap-2 flex-wrap">
@@ -552,7 +552,7 @@ export default function AdminPagesPage() {
             {pages.map((page) => (
               <tr key={page.id} className="border-b hover:bg-gray-50">
                 <td className="px-6 py-3 font-semibold">{page.title}</td>
-                <td className="px-6 py-3 text-sm text-gray-700 font-medium">/{page.slug}</td>
+                <td className="px-6 py-3 text-sm text-gray-900 font-medium">/{page.slug}</td>
                 <td className="px-6 py-3">
                   <span className={`px-3 py-1 rounded text-sm font-semibold ${
                     page.published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
@@ -560,7 +560,7 @@ export default function AdminPagesPage() {
                     {page.published ? 'Publié' : 'Brouillon'}
                   </span>
                 </td>
-                <td className="px-6 py-3 text-sm text-gray-700 font-medium">
+                <td className="px-6 py-3 text-sm text-gray-900 font-medium">
                   {page.updatedAt.toLocaleDateString('fr-FR')}
                 </td>
                 <td className="px-6 py-3 space-x-2">

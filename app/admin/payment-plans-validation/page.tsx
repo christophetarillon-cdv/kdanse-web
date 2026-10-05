@@ -174,7 +174,7 @@ export default function AdminPaymentPlansValidationPage() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">📋 Plans de paiement à valider</h1>
-          <p className="text-gray-700 font-medium">
+          <p className="text-gray-900 font-medium">
             {plans.length} plan(s) en attente de validation
           </p>
         </div>
@@ -188,7 +188,7 @@ export default function AdminPaymentPlansValidationPage() {
 
       {plans.length === 0 ? (
         <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-          <p className="text-gray-700">Aucun plan en attente ✅</p>
+          <p className="text-gray-900">Aucun plan en attente ✅</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -201,11 +201,11 @@ export default function AdminPaymentPlansValidationPage() {
                     <h2 className="text-xl font-bold text-gray-900">
                       {plan.membership?.stageName}
                     </h2>
-                    <p className="text-sm text-gray-700 font-medium">Plan ID: {plan.id.substring(0, 8)}...</p>
+                    <p className="text-sm text-gray-900 font-medium"-900 font-medium">Plan ID: {plan.id.substring(0, 8)}...</p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-blue-600">{plan.totalAmount.toFixed(2)}€</p>
-                    <p className="text-sm text-gray-700 font-medium">{plan.installmentCount} paiements</p>
+                    <p className="text-sm text-gray-900 font-medium"-900 font-medium">{plan.installmentCount} paiements</p>
                   </div>
                 </div>
               </div>

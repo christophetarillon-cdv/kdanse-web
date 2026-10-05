@@ -50,7 +50,7 @@ export default function SeasonsAdminPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Saisons</h1>
-          <p className="text-gray-700 font-medium">
+          <p className="text-gray-900 font-medium">
             Créez et gérez les saisons de danse, définissez les périodes de réservation
           </p>
         </div>
@@ -102,19 +102,19 @@ export default function SeasonsAdminPage() {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-blue-600">{seasons.length}</div>
-            <div className="text-sm text-gray-800 font-medium mt-1">Saisons au total</div>
+            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Saisons au total</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-green-600">
               {seasons.filter(s => s.status === 'active').length}
             </div>
-            <div className="text-sm text-gray-800 font-medium mt-1">Saisons actives</div>
+            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Saisons actives</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-3xl font-bold text-blue-600">
               {seasons.filter(s => s.status === 'reservation').length}
             </div>
-            <div className="text-sm text-gray-800 font-medium mt-1">Réservations ouvertes</div>
+            <div className="text-sm text-gray-900 font-medium"-800 font-medium mt-1">Réservations ouvertes</div>
           </div>
         </div>
       </div>

@@ -64,7 +64,7 @@ export default function CMSListPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="text-gray-700 font-medium">Chargement...</div>
+        <div className="text-gray-900 font-medium">Chargement...</div>
       </div>
     );
   }
@@ -91,7 +91,7 @@ export default function CMSListPage() {
         <form onSubmit={handleCreatePage} className="mb-8 p-6 bg-white border rounded-lg shadow">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Titre</label>
+              <label className="block text-sm font-medium text-gray-900 mb-1">Titre</label>
               <input
                 type="text"
                 value={newPageForm.title}
@@ -102,7 +102,7 @@ export default function CMSListPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+              <label className="block text-sm font-medium text-gray-900 mb-1">Slug</label>
               <input
                 type="text"
                 value={newPageForm.slug}
@@ -113,7 +113,7 @@ export default function CMSListPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-900 mb-1">Description</label>
               <input
                 type="text"
                 value={newPageForm.description}
@@ -134,7 +134,7 @@ export default function CMSListPage() {
               <button
                 type="button"
                 onClick={() => setShowNewForm(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                className="px-4 py-2 bg-gray-300 text-gray-900 rounded hover:bg-gray-400"
               >
                 Annuler
               </button>
@@ -155,13 +155,13 @@ export default function CMSListPage() {
               <div className="flex-1">
                 <Link
                   href={`/admin/cms/edit/${page.id}`}
-                  className="text-lg font-semibold text-blue-600 hover:underline"
+                  className="text-lg font-bold text-gray-900 text-blue-600 hover:underline"
                 >
                   {page.title}
                 </Link>
-                <p className="text-sm text-gray-700 font-medium">/{page.slug}</p>
+                <p className="text-sm text-gray-900 font-medium"-900 font-medium">/{page.slug}</p>
                 {page.description && (
-                  <p className="text-sm text-gray-800 mt-1">{page.description}</p>
+                  <p className="text-sm text-gray-900 font-medium"-800 mt-1">{page.description}</p>
                 )}
               </div>
               <div className="flex gap-2 items-center">

@@ -162,7 +162,7 @@ export default function AdminMenusPage() {
           ← Retour admin
         </Link>
         <h1 className="text-3xl font-bold mb-2">Gestion des menus</h1>
-        <p className="text-gray-700 font-medium">Créez et gérez les menus de navigation</p>
+        <p className="text-gray-900 font-medium">Créez et gérez les menus de navigation</p>
       </div>
 
       {/* Formulaire */}
@@ -269,7 +269,7 @@ export default function AdminMenusPage() {
                           {children.map((child, childIdx) => (
                             <div key={child.id} className="bg-blue-50 border border-blue-200 rounded p-2 space-y-1">
                               <div className="flex justify-between items-center">
-                                <span className="text-xs font-semibold text-gray-700 font-medium">Sous-menu {childIdx + 1}</span>
+                                <span className="text-xs font-semibold text-gray-900 font-medium">Sous-menu {childIdx + 1}</span>
                                 <div className="flex gap-1">
                                   <button
                                     type="button"
@@ -372,7 +372,7 @@ export default function AdminMenusPage() {
             {menus.map((menu) => (
               <tr key={menu.id} className="border-b hover:bg-gray-50">
                 <td className="px-6 py-3 font-semibold">{menu.name}</td>
-                <td className="px-6 py-3 text-sm text-gray-700 font-medium">{menu.items.length} items</td>
+                <td className="px-6 py-3 text-sm text-gray-900 font-medium">{menu.items.length} items</td>
                 <td className="px-6 py-3 space-x-2">
                   <button
                     onClick={() => handleEdit(menu)}

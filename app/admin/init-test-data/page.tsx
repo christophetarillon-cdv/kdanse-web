@@ -118,7 +118,7 @@ export default function InitTestDataPage() {
           <p className="text-gray-600 mb-8">Phase 4 - Gestion des Accès</p>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <h2 className="text-lg font-semibold text-blue-900 mb-3">📋 Ce qui sera créé:</h2>
+            <h2 className="text-lg font-bold text-gray-900 text-blue-900 mb-3">📋 Ce qui sera créé:</h2>
             <ul className="space-y-2 text-sm text-blue-800">
               <li>✅ <span className="font-medium">1 Stage</span> - "Stage de Test - Phase 4" pour saison 2024-2025</li>
               <li>✅ <span className="font-medium">1 Membership</span> - Inscription de l'utilisateur dev au stage</li>
@@ -146,35 +146,35 @@ export default function InitTestDataPage() {
 
           {result && !result.error && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-6 space-y-4">
-              <h2 className="text-lg font-semibold text-green-900">📊 Résultats</h2>
+              <h2 className="text-lg font-bold text-gray-900 text-green-900">📊 Résultats</h2>
 
               <div className="space-y-3 text-sm">
                 <div>
-                  <p className="font-medium text-gray-700">Saison 2024-2025 (Actuelle)</p>
+                  <p className="font-medium text-gray-900">Saison 2024-2025 (Actuelle)</p>
                   <p className="text-gray-600 font-mono text-xs break-all">{result.season2024Id}</p>
                 </div>
 
                 {result.season2025Id && (
                   <div>
-                    <p className="font-medium text-gray-700">Saison 2025-2026 (Prochaine)</p>
+                    <p className="font-medium text-gray-900">Saison 2025-2026 (Prochaine)</p>
                     <p className="text-gray-600 font-mono text-xs break-all">{result.season2025Id}</p>
                   </div>
                 )}
 
                 <div className="border-t pt-3">
-                  <p className="font-medium text-gray-700">Stage Créé</p>
+                  <p className="font-medium text-gray-900">Stage Créé</p>
                   <p className="text-gray-600 font-mono text-xs break-all">{result.stageId}</p>
                   <p className="text-gray-800 text-xs mt-1">Nom: "Stage de Test - Phase 4"</p>
                 </div>
 
                 <div className="border-t pt-3">
-                  <p className="font-medium text-gray-700">Membership (Inscription) Créée</p>
+                  <p className="font-medium text-gray-900">Membership (Inscription) Créée</p>
                   <p className="text-gray-600 font-mono text-xs break-all">{result.membershipId}</p>
                   <p className="text-gray-800 text-xs mt-1">Utilisateur: dev-user-123 | Statut: active ✅</p>
                 </div>
 
                 <div className="border-t pt-3">
-                  <p className="font-medium text-gray-700">Réservation Créée</p>
+                  <p className="font-medium text-gray-900">Réservation Créée</p>
                   <p className="text-gray-600 font-mono text-xs break-all">{result.reservationId}</p>
                   <p className="text-gray-800 text-xs mt-1">
                     Utilisateur: dev-user-123 | Statut: pending | Éligibilité: ✅ OUI
@@ -184,7 +184,7 @@ export default function InitTestDataPage() {
 
               <div className="border-t pt-4 mt-4">
                 <h3 className="font-semibold text-gray-900 mb-3">🧪 Prêt pour tester:</h3>
-                <ul className="space-y-2 text-sm text-gray-700">
+                <ul className="space-y-2 text-sm text-gray-900">
                   <li>
                     📍 <a href="/admin/reservations" className="text-blue-600 hover:underline">
                       /admin/reservations
@@ -210,14 +210,14 @@ export default function InitTestDataPage() {
 
           {result?.error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-red-900 mb-3">❌ Erreur</h2>
+              <h2 className="text-lg font-bold text-gray-900 text-red-900 mb-3">❌ Erreur</h2>
               <p className="text-red-800 text-sm">{result.error}</p>
             </div>
           )}
 
           <div className="border-t mt-8 pt-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">ℹ️ Informations</h2>
-            <div className="space-y-3 text-sm text-gray-700 font-medium">
+            <h2 className="text-lg font-bold text-gray-900 text-gray-900 mb-4">ℹ️ Informations</h2>
+            <div className="space-y-3 text-sm text-gray-900 font-medium">
               <p>
                 <span className="font-medium">Utilisateur de test:</span> dev-user-123 (localhost dev mode)
               </p>

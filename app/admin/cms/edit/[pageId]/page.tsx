@@ -65,7 +65,7 @@ export default function CMSEditPage() {
       <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-          <p className="mt-4 text-gray-700 font-medium">Chargement de la page...</p>
+          <p className="mt-4 text-gray-900 font-medium">Chargement de la page...</p>
         </div>
       </div>
     );

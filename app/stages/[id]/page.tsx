@@ -201,14 +201,14 @@ export default function StageDetailPage() {
           <div className="p-8 space-y-8">
             <div>
               <h2 className="text-2xl font-semibold mb-4">À propos</h2>
-              <p className="text-gray-700 mb-4">{stage.description}</p>
+              <p className="text-gray-900 mb-4">{stage.description}</p>
               {stage.startDate && stage.endDate && (
-                <p className="text-gray-700 font-medium">
+                <p className="text-gray-900 font-medium">
                   <strong>Dates :</strong> {stage.startDate} - {stage.endDate}
                 </p>
               )}
               {stage.maxParticipants && (
-                <p className="text-gray-700 font-medium">
+                <p className="text-gray-900 font-medium">
                   <strong>Places :</strong> {stage.maxParticipants}
                 </p>
               )}
@@ -257,7 +257,7 @@ export default function StageDetailPage() {
                 <div className="space-y-3">
                   {form.dancers.map((dancer, idx) => (
                     <div key={idx} className="flex items-center gap-4 p-3 bg-white rounded border">
-                      <label className="flex-1 font-medium text-gray-700">
+                      <label className="flex-1 font-medium text-gray-900">
                         {form.danceType === 'solo' ? 'Vous êtes' : `Danseur${idx + 1}`}
                       </label>
                       <div className="flex gap-3">
@@ -270,7 +270,7 @@ export default function StageDetailPage() {
                           className={`px-4 py-2 rounded font-semibold transition ${
                             !dancer.licensed
                               ? 'bg-purple-600 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
                           }`}
                         >
                           Non licencié
@@ -284,7 +284,7 @@ export default function StageDetailPage() {
                           className={`px-4 py-2 rounded font-semibold transition ${
                             dancer.licensed
                               ? 'bg-purple-600 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
                           }`}
                         >
                           Licencié FFDanse
@@ -302,7 +302,7 @@ export default function StageDetailPage() {
                   Accompagnateurs
                 </h3>
                 <div className="flex items-center gap-4 p-3 bg-white rounded border">
-                  <label className="flex-1 font-medium text-gray-700">
+                  <label className="flex-1 font-medium text-gray-900">
                     Nombre d'accompagnateurs
                   </label>
                   <div className="flex items-center gap-3">
@@ -345,7 +345,7 @@ export default function StageDetailPage() {
                     })}
                     className="w-5 h-5 cursor-pointer"
                   />
-                  <label className="font-semibold text-gray-700 cursor-pointer flex-1">
+                  <label className="font-semibold text-gray-900 cursor-pointer flex-1">
                     Je souhaite un hébergement
                   </label>
                 </div>
@@ -358,7 +358,7 @@ export default function StageDetailPage() {
 
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block font-medium text-gray-700 mb-3">
+                        <label className="block font-medium text-gray-900 mb-3">
                           Chambres solo ({stage?.pricing?.housing.solo}€ chacune)
                         </label>
                         <div className="flex items-center gap-3">
@@ -384,7 +384,7 @@ export default function StageDetailPage() {
                         </div>
                       </div>
                       <div>
-                        <label className="block font-medium text-gray-700 mb-3">
+                        <label className="block font-medium text-gray-900 mb-3">
                           Lits couples ({stage?.pricing?.housing.couple}€ chacun)
                         </label>
                         <div className="flex items-center gap-3">
