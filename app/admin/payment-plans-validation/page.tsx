@@ -179,10 +179,10 @@ export default function AdminPaymentPlansValidationPage() {
           </p>
         </div>
         <Link
-          href="/admin/payment-plans"
+          href="/dashboard"
           className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-semibold transition whitespace-nowrap"
         >
-          ← Paiements individuels
+          ← Dashboard
         </Link>
       </div>
 
