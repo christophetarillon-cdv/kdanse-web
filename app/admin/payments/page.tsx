@@ -184,7 +184,7 @@ export default function AdminPaymentsConsolidatedPage() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">💰 Gestion des paiements</h1>
-          <p className="text-gray-600">
+          <p className="text-gray-700 font-medium">
             {totalPendingPayments} paiement(s) en attente
           </p>
         </div>
@@ -246,7 +246,7 @@ export default function AdminPaymentsConsolidatedPage() {
                           <div className="flex justify-between items-start mb-4">
                             <div>
                               <h3 className="font-bold text-lg">{getMethodLabel(inst.method)}</h3>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-gray-700 font-medium">
                                 Échéance: {new Date(inst.dueDate).toLocaleDateString('fr-FR')}
                               </p>
                             </div>
@@ -315,11 +315,11 @@ export default function AdminPaymentsConsolidatedPage() {
                   <div className="p-6 border-b bg-gray-50 flex justify-between items-start">
                     <div>
                       <h2 className="text-xl font-bold text-gray-900">{membership.stageName}</h2>
-                      <p className="text-sm text-gray-600">ID: {membership.id}</p>
+                      <p className="text-sm text-gray-700 font-medium">ID: {membership.id}</p>
                     </div>
                     <div className="text-right">
                       <span className="text-2xl font-bold text-orange-600">{membership.amount}€</span>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-700 font-medium">
                         {membership.paymentMethod === 'cheque' && '💳 Chèque'}
                         {membership.paymentMethod === 'virement' && '🏦 Virement'}
                         {membership.paymentMethod === 'helloasso' && '📱 HelloAsso'}

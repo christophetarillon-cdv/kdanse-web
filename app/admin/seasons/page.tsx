@@ -50,7 +50,7 @@ export default function SeasonsAdminPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Saisons</h1>
-          <p className="text-gray-600">
+          <p className="text-gray-700 font-medium">
             Créez et gérez les saisons de danse, définissez les périodes de réservation
           </p>
         </div>
@@ -91,7 +91,7 @@ export default function SeasonsAdminPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Saisons</h2>
           {isLoading ? (
             <div className="bg-white rounded-lg shadow p-8 text-center">
-              <p className="text-gray-500">Chargement des saisons...</p>
+              <p className="text-gray-600">Chargement des saisons...</p>
             </div>
           ) : (
             <SeasonList seasons={seasons} onEdit={handleEdit} onRefresh={loadSeasons} />

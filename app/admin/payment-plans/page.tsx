@@ -86,7 +86,7 @@ export default function AdminPaymentPlansPage() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">💰 Plans de paiement</h1>
-          <p className="text-gray-600">
+          <p className="text-gray-700 font-medium">
             {installments.length} paiement(s) en attente de validation
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function AdminPaymentPlansPage() {
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h3 className="font-bold text-lg">{getMethodLabel(inst.method)}</h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-700 font-medium">
                             Échéance: {new Date(inst.dueDate).toLocaleDateString('fr-FR')}
                           </p>
                         </div>

@@ -115,7 +115,7 @@ export default function ReservationsAdminPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Réservations</h1>
-          <p className="text-gray-600">
+          <p className="text-gray-700 font-medium">
             Saison active: <span className="font-bold">{season.name}</span>
           </p>
         </div>
@@ -143,7 +143,7 @@ export default function ReservationsAdminPage() {
         {/* Reservations Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {reservations.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-600">
               <p>Aucune réservation pour le moment</p>
             </div>
           ) : (
@@ -179,8 +179,8 @@ export default function ReservationsAdminPage() {
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <div className="font-medium">{reservation.userId}</div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">(À récupérer)</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">(À récupérer)</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
                       {reservation.createdAt.toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-6 py-4 text-sm">
@@ -198,7 +198,7 @@ export default function ReservationsAdminPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
                       <div className="max-w-xs truncate">{reservation.notes || '—'}</div>
                     </td>
                     <td className="px-6 py-4">

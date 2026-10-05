@@ -50,7 +50,7 @@ export default function CMSPage() {
           <h1>{page.title}</h1>
 
           {page.description && (
-            <p className="text-lg text-gray-600">{page.description}</p>
+            <p className="text-lg text-gray-700 font-medium">{page.description}</p>
           )}
 
           {/* Render content blocks with absolute positioning */}
@@ -88,7 +88,7 @@ export default function CMSPage() {
         </article>
 
         {/* Metadata info */}
-        <div className="mt-12 pt-8 border-t text-center text-sm text-gray-500">
+        <div className="mt-12 pt-8 border-t text-center text-sm text-gray-600">
           <p>
             Dernière modification: {page.updatedAt.toLocaleDateString('fr-FR', {
               year: 'numeric',

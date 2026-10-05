@@ -51,7 +51,7 @@ export default function CartPage() {
             ← Retour aux stages
           </Link>
           <h1 className="text-4xl font-bold mt-4 mb-2">🛒 Mon panier</h1>
-          <p className="text-gray-600">Vérifiez vos inscriptions avant paiement</p>
+          <p className="text-gray-700 font-medium">Vérifiez vos inscriptions avant paiement</p>
         </div>
 
         {!cart || cart.items.length === 0 ? (
@@ -81,7 +81,7 @@ export default function CartPage() {
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-900">{item.stageName}</h3>
-                        <p className="text-sm text-gray-500">ID article: {item.id.substring(0, 8)}</p>
+                        <p className="text-sm text-gray-600">ID article: {item.id.substring(0, 8)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-2xl font-bold text-blue-600">{item.totals?.total || 0}€</p>
@@ -98,7 +98,7 @@ export default function CartPage() {
                         {item.configuration.accompanists > 0 && ` + ${item.configuration.accompanists} acc.`}
                         {item.configuration.wantHousing && ' + logement'}
                       </span>
-                      <span className="text-gray-500">
+                      <span className="text-gray-600">
                         {expandedItems.has(item.id) ? '▼' : '▶'}
                       </span>
                     </button>

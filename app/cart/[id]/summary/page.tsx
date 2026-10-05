@@ -76,7 +76,7 @@ export default function CartSummaryPage() {
             ← Retour au panier
           </Link>
           <h1 className="text-4xl font-bold mt-4 mb-2">📋 Résumé de votre commande</h1>
-          <p className="text-gray-600">Vérifiez tous les détails avant de payer</p>
+          <p className="text-gray-700 font-medium">Vérifiez tous les détails avant de payer</p>
         </div>
 
         <div className="space-y-6">

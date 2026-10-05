@@ -63,15 +63,15 @@ export default function DashboardPage() {
       <div className="grid md:grid-cols-3 gap-6">
         <Link href="/stages" className="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
           <h2 className="text-2xl font-bold text-blue-600 mb-2">📅 Stages</h2>
-          <p className="text-gray-600">Découvrez nos stages</p>
+          <p className="text-gray-700 font-medium">Découvrez nos stages</p>
         </Link>
         <Link href="/memberships" className="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
           <h2 className="text-2xl font-bold text-green-600 mb-2">✓ Mes inscriptions</h2>
-          <p className="text-gray-600">Vos inscriptions confirmées</p>
+          <p className="text-gray-700 font-medium">Vos inscriptions confirmées</p>
         </Link>
         <Link href="/account" className="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
           <h2 className="text-2xl font-bold text-purple-600 mb-2">👤 Mon compte</h2>
-          <p className="text-gray-600">Informations personnelles</p>
+          <p className="text-gray-700 font-medium">Informations personnelles</p>
         </Link>
       </div>
 

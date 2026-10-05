@@ -74,7 +74,7 @@ export default function AdminSettingsPage() {
           ← Retour admin
         </Link>
         <h1 className="text-3xl font-bold mb-2">Paramètres du site</h1>
-        <p className="text-gray-600">Configurez les menus et les éléments globaux</p>
+        <p className="text-gray-700 font-medium">Configurez les menus et les éléments globaux</p>
       </div>
 
       {/* Formulaire */}

@@ -223,7 +223,7 @@ export default function AdminPagesPage() {
           ← Retour admin
         </Link>
         <h1 className="text-3xl font-bold mb-2">Gestion des pages CMS</h1>
-        <p className="text-gray-600">Créez et gérez les pages statiques</p>
+        <p className="text-gray-700 font-medium">Créez et gérez les pages statiques</p>
       </div>
 
       {/* Formulaire + Preview */}
@@ -441,7 +441,7 @@ export default function AdminPagesPage() {
                           onChange={(e) => updateBlock(block.id, { text: e.target.value })}
                           className="border rounded px-2 py-1 w-full text-sm mb-2"
                         />
-                        <p className="text-xs text-gray-500">Les sections peuvent contenir du texte via Firestore directement.</p>
+                        <p className="text-xs text-gray-600">Les sections peuvent contenir du texte via Firestore directement.</p>
                       </div>
                     )}
 
@@ -453,7 +453,7 @@ export default function AdminPagesPage() {
                           </div>
                         )}
                         <div>
-                          <label className="text-xs text-gray-600">Upload image</label>
+                          <label className="text-xs text-gray-700 font-medium">Upload image</label>
                           <input
                             type="file"
                             accept="image/*"
@@ -461,7 +461,7 @@ export default function AdminPagesPage() {
                             disabled={uploading === block.id}
                             className="border rounded px-2 py-1 w-full text-sm disabled:bg-gray-100"
                           />
-                          {uploading === block.id && <p className="text-xs text-gray-500">Upload en cours...</p>}
+                          {uploading === block.id && <p className="text-xs text-gray-600">Upload en cours...</p>}
                         </div>
                         <input
                           type="text"
@@ -552,7 +552,7 @@ export default function AdminPagesPage() {
             {pages.map((page) => (
               <tr key={page.id} className="border-b hover:bg-gray-50">
                 <td className="px-6 py-3 font-semibold">{page.title}</td>
-                <td className="px-6 py-3 text-sm text-gray-600">/{page.slug}</td>
+                <td className="px-6 py-3 text-sm text-gray-700 font-medium">/{page.slug}</td>
                 <td className="px-6 py-3">
                   <span className={`px-3 py-1 rounded text-sm font-semibold ${
                     page.published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
@@ -560,7 +560,7 @@ export default function AdminPagesPage() {
                     {page.published ? 'Publié' : 'Brouillon'}
                   </span>
                 </td>
-                <td className="px-6 py-3 text-sm text-gray-600">
+                <td className="px-6 py-3 text-sm text-gray-700 font-medium">
                   {page.updatedAt.toLocaleDateString('fr-FR')}
                 </td>
                 <td className="px-6 py-3 space-x-2">
@@ -590,7 +590,7 @@ export default function AdminPagesPage() {
           </tbody>
         </table>
         {pages.length === 0 && (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-gray-600">
             Aucune page créée. Créez-en une avec le formulaire ci-dessus.
           </div>
         )}

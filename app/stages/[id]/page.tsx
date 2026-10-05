@@ -203,12 +203,12 @@ export default function StageDetailPage() {
               <h2 className="text-2xl font-semibold mb-4">À propos</h2>
               <p className="text-gray-700 mb-4">{stage.description}</p>
               {stage.startDate && stage.endDate && (
-                <p className="text-gray-600">
+                <p className="text-gray-700 font-medium">
                   <strong>Dates :</strong> {stage.startDate} - {stage.endDate}
                 </p>
               )}
               {stage.maxParticipants && (
-                <p className="text-gray-600">
+                <p className="text-gray-700 font-medium">
                   <strong>Places :</strong> {stage.maxParticipants}
                 </p>
               )}

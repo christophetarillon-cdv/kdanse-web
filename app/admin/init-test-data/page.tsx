@@ -217,7 +217,7 @@ export default function InitTestDataPage() {
 
           <div className="border-t mt-8 pt-8">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">ℹ️ Informations</h2>
-            <div className="space-y-3 text-sm text-gray-600">
+            <div className="space-y-3 text-sm text-gray-700 font-medium">
               <p>
                 <span className="font-medium">Utilisateur de test:</span> dev-user-123 (localhost dev mode)
               </p>

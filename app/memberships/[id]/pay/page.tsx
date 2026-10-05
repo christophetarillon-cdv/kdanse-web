@@ -139,7 +139,7 @@ export default function PaymentPage() {
                   />
                   <div>
                     <p className="font-semibold">HelloAsso</p>
-                    <p className="text-sm text-gray-600">Paiement sécurisé en ligne (CB, Paypal, etc.)</p>
+                    <p className="text-sm text-gray-700 font-medium">Paiement sécurisé en ligne (CB, Paypal, etc.)</p>
                   </div>
                 </div>
               </div>
@@ -164,7 +164,7 @@ export default function PaymentPage() {
                   />
                   <div>
                     <p className="font-semibold">Virement bancaire</p>
-                    <p className="text-sm text-gray-600">Vous recevrez les coordonnées bancaires</p>
+                    <p className="text-sm text-gray-700 font-medium">Vous recevrez les coordonnées bancaires</p>
                   </div>
                 </div>
               </div>
@@ -189,7 +189,7 @@ export default function PaymentPage() {
                   />
                   <div>
                     <p className="font-semibold">Chèque</p>
-                    <p className="text-sm text-gray-600">À envoyer à Kdanse</p>
+                    <p className="text-sm text-gray-700 font-medium">À envoyer à Kdanse</p>
                   </div>
                 </div>
               </div>

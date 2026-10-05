@@ -64,7 +64,7 @@ export default function CMSListPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="text-gray-600">Chargement...</div>
+        <div className="text-gray-700 font-medium">Chargement...</div>
       </div>
     );
   }
@@ -159,7 +159,7 @@ export default function CMSListPage() {
                 >
                   {page.title}
                 </Link>
-                <p className="text-sm text-gray-600">/{page.slug}</p>
+                <p className="text-sm text-gray-700 font-medium">/{page.slug}</p>
                 {page.description && (
                   <p className="text-sm text-gray-500 mt-1">{page.description}</p>
                 )}

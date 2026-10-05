@@ -152,7 +152,7 @@ export default function PaymentPlanPage() {
         <div className="bg-white rounded-lg shadow-lg p-8 space-y-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">📋 Plan de paiement</h1>
-            <p className="text-gray-600">Configurez vos échéances de paiement</p>
+            <p className="text-gray-700 font-medium">Configurez vos échéances de paiement</p>
           </div>
 
           {/* Résumé */}
@@ -201,15 +201,15 @@ export default function PaymentPlanPage() {
             <div className="pt-4 border-t">
               <div className="grid grid-cols-3 gap-3 text-sm">
                 <div>
-                  <p className="text-gray-600">Total</p>
+                  <p className="text-gray-700 font-medium">Total</p>
                   <p className="text-xl font-bold text-blue-600">{stats.total.toFixed(2)}€</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Alloué</p>
+                  <p className="text-gray-700 font-medium">Alloué</p>
                   <p className="text-xl font-bold text-green-600">{stats.allocated.toFixed(2)}€</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Restant</p>
+                  <p className="text-gray-700 font-medium">Restant</p>
                   <p className={`text-xl font-bold ${stats.remaining === 0 ? 'text-green-600' : 'text-orange-600'}`}>
                     {stats.remaining.toFixed(2)}€
                   </p>
@@ -334,7 +334,7 @@ export default function PaymentPlanPage() {
                       className="w-full border rounded px-3 py-2"
                       min="1"
                     />
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-700 font-medium">
                       💡 Vous pouvez combiner les chèques vacances avec d'autres modes de paiement
                     </p>
                   </div>

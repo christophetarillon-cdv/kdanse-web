@@ -124,7 +124,7 @@ export default function AdminStagesPage() {
     <div className="space-y-8 p-8">
       <div>
         <h1 className="text-3xl font-bold mb-2">Gestion des Stages</h1>
-        <p className="text-gray-600">Créez et gérez les stages Kdanse</p>
+        <p className="text-gray-700 font-medium">Créez et gérez les stages Kdanse</p>
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
@@ -351,12 +351,12 @@ export default function AdminStagesPage() {
               <tr key={stage.id} className="border-b hover:bg-gray-50">
                 <td className="px-6 py-3 font-semibold">{stage.name}</td>
                 <td className="px-6 py-3">{stage.location}</td>
-                <td className="px-6 py-3 text-sm text-gray-600">
+                <td className="px-6 py-3 text-sm text-gray-700 font-medium">
                   {stage.startDate && stage.endDate
                     ? `${new Date(stage.startDate).toLocaleDateString('fr-FR')} - ${new Date(stage.endDate).toLocaleDateString('fr-FR')}`
                     : 'Non défini'}
                 </td>
-                <td className="px-6 py-3 text-xs text-gray-600">
+                <td className="px-6 py-3 text-xs text-gray-700 font-medium">
                   {stage.pricing?.stage ? (
                     <div className="space-y-2">
                       <div>
@@ -396,7 +396,7 @@ export default function AdminStagesPage() {
           </tbody>
         </table>
         {stages.length === 0 && (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-gray-600">
             Aucun stage créé. Créez-en un avec le formulaire ci-dessus.
           </div>
         )}

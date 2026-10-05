@@ -153,7 +153,7 @@ export default function CartPaymentPage() {
                   />
                   <div>
                     <p className="font-semibold">HelloAsso</p>
-                    <p className="text-sm text-gray-600">Paiement sécurisé en ligne (CB, PayPal, etc.)</p>
+                    <p className="text-sm text-gray-700 font-medium">Paiement sécurisé en ligne (CB, PayPal, etc.)</p>
                   </div>
                 </div>
               </div>
@@ -178,7 +178,7 @@ export default function CartPaymentPage() {
                   />
                   <div>
                     <p className="font-semibold">Virement bancaire</p>
-                    <p className="text-sm text-gray-600">Vous recevrez les coordonnées bancaires</p>
+                    <p className="text-sm text-gray-700 font-medium">Vous recevrez les coordonnées bancaires</p>
                   </div>
                 </div>
               </div>
@@ -203,7 +203,7 @@ export default function CartPaymentPage() {
                   />
                   <div>
                     <p className="font-semibold">Chèque</p>
-                    <p className="text-sm text-gray-600">À envoyer à Kdanse</p>
+                    <p className="text-sm text-gray-700 font-medium">À envoyer à Kdanse</p>
                   </div>
                 </div>
               </div>
@@ -234,7 +234,7 @@ export default function CartPaymentPage() {
                     />
                     <div>
                       <p className="font-semibold">Paiement unique</p>
-                      <p className="text-sm text-gray-600">Envoyez le paiement en une fois</p>
+                      <p className="text-sm text-gray-700 font-medium">Envoyez le paiement en une fois</p>
                     </div>
                   </div>
                 </div>
@@ -258,7 +258,7 @@ export default function CartPaymentPage() {
                     />
                     <div>
                       <p className="font-semibold">Plan de paiement (échéancier)</p>
-                      <p className="text-sm text-gray-600">Divisez le paiement en 3 ou 4 échéances</p>
+                      <p className="text-sm text-gray-700 font-medium">Divisez le paiement en 3 ou 4 échéances</p>
                     </div>
                   </div>
                 </div>

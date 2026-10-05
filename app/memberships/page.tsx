@@ -88,22 +88,22 @@ export default function MembershipsPage() {
           ← Retour au dashboard
         </Link>
         <h1 className="text-2xl sm:text-4xl font-bold mt-4 mb-2">📋 Mes inscriptions</h1>
-        <p className="text-gray-600">Consultez vos inscriptions à nos stages</p>
+        <p className="text-gray-700 font-medium">Consultez vos inscriptions à nos stages</p>
       </div>
 
       {/* Statistiques */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
           <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
-          <p className="text-sm text-gray-600">Total</p>
+          <p className="text-sm text-gray-700 font-medium">Total</p>
         </div>
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
           <p className="text-2xl font-bold text-green-600">{stats.paid}</p>
-          <p className="text-sm text-gray-600">Validées</p>
+          <p className="text-sm text-gray-700 font-medium">Validées</p>
         </div>
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
           <p className="text-2xl font-bold text-orange-600">{stats.pending}</p>
-          <p className="text-sm text-gray-600">En attente</p>
+          <p className="text-sm text-gray-700 font-medium">En attente</p>
         </div>
       </div>
 
@@ -162,7 +162,7 @@ export default function MembershipsPage() {
               <div className="p-4 sm:p-6 border-b bg-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                 <div>
                   <h2 className="text-lg sm:text-2xl font-bold text-gray-900">{membership.stageName}</h2>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-700 font-medium">
                     {membership.createdAt.toLocaleDateString('fr-FR')}
                   </p>
                 </div>

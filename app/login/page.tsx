@@ -52,7 +52,7 @@ export default function LoginPage() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Kdanse
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-gray-700 font-medium">
             Connectez-vous pour accéder à votre compte
           </p>
         </div>
