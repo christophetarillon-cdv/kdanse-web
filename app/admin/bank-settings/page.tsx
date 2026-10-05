@@ -236,7 +236,7 @@ export default function AdminBankSettingsPage() {
           <h3 className="font-semibold text-gray-900">📋 Aperçu</h3>
 
           <div>
-            <p className="text-sm text-gray-900 font-medium"-900 font-medium">Compte bancaire (affiché aux clients pour virements):</p>
+            <p className="text-sm text-gray-900 font-medium">Compte bancaire (affiché aux clients pour virements):</p>
             <div className="mt-2 bg-white p-3 rounded border border-gray-200 text-sm">
               <p><strong>Titulaire:</strong> {settings.bankAccount?.accountName || '-'}</p>
               <p><strong>IBAN:</strong> {settings.bankAccount?.iban || '-'}</p>
