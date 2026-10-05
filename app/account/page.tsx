@@ -17,7 +17,8 @@ export default function AccountPage() {
   const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
-    displayName: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     dateOfBirth: '',
     street: '',
@@ -25,7 +26,10 @@ export default function AccountPage() {
     city: '',
     licenseNumber: '',
     licenseActive: false,
+    photoUrl: '',
   });
+
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (!authLoading && !firebaseUser) {
@@ -42,12 +46,9 @@ export default function AccountPage() {
     try {
       const userData = await getUserProfile(firebaseUser!.uid);
       if (userData) {
-        // Combine nom/prenom if available, otherwise use displayName
-        const displayName = userData.displayName ||
-          `${(userData as any).nom || ''} ${(userData as any).prenom || ''}`.trim();
-
         setFormData({
-          displayName,
+          firstName: userData.profile?.firstName || (userData as any).prenom || '',
+          lastName: userData.profile?.lastName || (userData as any).nom || '',
           phone: userData.profile?.phone || '',
           dateOfBirth: userData.profile?.dateOfBirth
             ? new Date(userData.profile.dateOfBirth).toISOString().split('T')[0]
@@ -57,6 +58,7 @@ export default function AccountPage() {
           city: userData.profile?.postalAddress?.city || '',
           licenseNumber: userData.profile?.license?.number || '',
           licenseActive: userData.profile?.license?.active || false,
+          photoUrl: userData.profile?.photoUrl || (userData as any).photo || '',
         });
       }
     } catch (err) {
@@ -68,11 +70,25 @@ export default function AccountPage() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    const { name, value, type, checked, files } = e.target;
+
+    if (type === 'file' && files) {
+      setPhotoFile(files[0]);
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        setFormData(prev => ({
+          ...prev,
+          photoUrl: reader.result as string,
+        }));
+      };
+      reader.readAsDataURL(files[0]);
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value,
+      }));
+    }
     setError(null);
   };
 
@@ -84,6 +100,10 @@ export default function AccountPage() {
 
     try {
       const profileData: any = {};
+
+      // Add name fields
+      if (formData.firstName) profileData.firstName = formData.firstName;
+      if (formData.lastName) profileData.lastName = formData.lastName;
 
       // Add optional profile fields only if they have values
       if (formData.phone) profileData.phone = formData.phone;
@@ -102,9 +122,14 @@ export default function AccountPage() {
           active: formData.licenseActive,
         };
       }
+      if (formData.photoUrl && !photoFile) {
+        // Keep existing photo if no new file
+        profileData.photoUrl = formData.photoUrl;
+      }
 
+      const displayName = `${formData.firstName} ${formData.lastName}`.trim();
       const updatedUser: Partial<User> = {
-        displayName: formData.displayName,
+        displayName,
         profile: profileData,
       };
 
@@ -149,6 +174,29 @@ export default function AccountPage() {
         <div className="border-b pb-6">
           <h2 className="text-lg font-semibold mb-4">📧 Infos du compte</h2>
 
+          {/* Photo de profil */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">📸 Photo de profil</label>
+            {formData.photoUrl && (
+              <div className="mb-4 flex justify-center">
+                <img
+                  src={formData.photoUrl}
+                  alt="Photo de profil"
+                  className="w-32 h-32 rounded-full object-cover border-2 border-blue-300"
+                />
+              </div>
+            )}
+            <input
+              type="file"
+              name="photo"
+              accept="image/*"
+              onChange={handleInputChange}
+              className="w-full border rounded px-3 py-2"
+            />
+            <p className="text-xs text-gray-500 mt-1">JPG ou PNG, max 5MB</p>
+          </div>
+
+          {/* Email */}
           <div>
             <label className="block text-sm font-medium mb-2">Email</label>
             <input
@@ -160,17 +208,30 @@ export default function AccountPage() {
             <p className="text-xs text-gray-500 mt-1">Non modifiable</p>
           </div>
 
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-2">Nom d'affichage</label>
-            <input
-              type="text"
-              name="displayName"
-              value={formData.displayName}
-              onChange={handleInputChange}
-              className="w-full border rounded px-3 py-2"
-              placeholder="Votre nom complet"
-              required
-            />
+          {/* Nom et Prénom séparés */}
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Prénom</label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                className="w-full border rounded px-3 py-2"
+                placeholder="Christophe"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Nom</label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                className="w-full border rounded px-3 py-2"
+                placeholder="Tarillon"
+              />
+            </div>
           </div>
         </div>
 

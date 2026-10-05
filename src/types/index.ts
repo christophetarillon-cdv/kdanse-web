@@ -31,6 +31,8 @@ export interface Reservation {
 export type UserRole = 'admin' | 'prof' | 'animateur' | 'user';
 
 export interface UserProfile {
+  firstName?: string;
+  lastName?: string;
   phone?: string;
   dateOfBirth?: Date;
   postalAddress?: {
@@ -43,6 +45,7 @@ export interface UserProfile {
     federation: 'ffdanse'; // extensible pour d'autres fédérations
     active: boolean;
   };
+  photoUrl?: string; // Profile photo from app or uploaded
 }
 
 export interface User {
