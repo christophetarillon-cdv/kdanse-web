@@ -50,19 +50,3 @@ body {
   color: #1f2937 !important;
   font-weight: 500;
 }
-
-/* Dark mode text contrast - ensure readability on dark backgrounds */
-@media (prefers-color-scheme: dark) {
-  .text-gray-900 {
-    color: #ffffff !important;
-  }
-  .text-gray-700 {
-    color: #f3f4f6 !important;
-  }
-  .text-gray-600 {
-    color: #e5e7eb !important;
-  }
-  .font-medium, .font-semibold, .font-bold {
-    color: #ffffff !important;
-  }
-}
