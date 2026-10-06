@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { getCart, submitCart } from '@/services/cartService';
 import { Cart } from '@/types/cart';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export default function CartSummaryPage() {
   const params = useParams();
@@ -30,7 +32,7 @@ export default function CartSummaryPage() {
     if (!authLoading && cartId) {
       fetchCart();
     }
-  }, [authLoading, cartId]);
+  }, [authLoading, cartId, firebaseUser]);
 
   const fetchCart = async () => {
     try {
@@ -49,12 +51,55 @@ export default function CartSummaryPage() {
       // Initialiser les infos des danseurs à partir du cart
       if (cartData.items && cartData.items.length > 0) {
         const allDancers = cartData.items.flatMap((item) => item.configuration.dancers || []);
-        setDancersInfo(allDancers.map((d: any) => ({
+        let dancersToSet = allDancers.map((d: any) => ({
           ...d,
           dateOfBirth: '',
           postalAddress: { street: '', postalCode: '', city: '' },
           license: { number: '', federation: 'ffdanse', active: false },
-        })));
+        }));
+
+        // Si l'utilisateur est connecté, charger ses données existantes
+        if (firebaseUser) {
+          try {
+            const membershipsRef = collection(db, 'memberships');
+            const q = query(membershipsRef, where('userId', '==', firebaseUser.uid));
+            const snapshot = await getDocs(q);
+
+            if (!snapshot.empty) {
+              const userMemberships = snapshot.docs.map(doc => doc.data());
+              const commonAddress = userMemberships.length > 0 ? userMemberships[0].postalAddress : null;
+
+              // Comparer et pré-remplir avec les données existantes
+              dancersToSet = dancersToSet.map((dancer) => {
+                // Chercher un membership avec le même nom/prénom
+                const existingMembership = userMemberships.find(m =>
+                  m.firstName === dancer.firstName && m.lastName === dancer.lastName
+                );
+
+                if (existingMembership) {
+                  return {
+                    ...dancer,
+                    dateOfBirth: existingMembership.dateOfBirth || '',
+                    postalAddress: existingMembership.postalAddress || { street: '', postalCode: '', city: '' },
+                    license: existingMembership.license || { number: '', federation: 'ffdanse', active: false },
+                  };
+                }
+
+                // Sinon, utiliser l'adresse commune
+                return {
+                  ...dancer,
+                  dateOfBirth: '',
+                  postalAddress: commonAddress || { street: '', postalCode: '', city: '' },
+                  license: { number: '', federation: 'ffdanse', active: false },
+                };
+              });
+            }
+          } catch (error) {
+            console.error('Error loading user memberships:', error);
+          }
+        }
+
+        setDancersInfo(dancersToSet);
       }
 
       // Pré-remplir email si user connecté
@@ -180,6 +225,11 @@ export default function CartSummaryPage() {
             <div className="p-6 border-b bg-gray-50">
               <h2 className="text-xl font-bold text-gray-900">📝 Informations des danseurs</h2>
               <p className="text-sm text-gray-700 mt-1">Complétez les informations avant de payer</p>
+              {firebaseUser && (
+                <p className="text-sm text-blue-700 mt-2 font-medium">
+                  ✓ Vos données ont été pré-remplies à partir de votre compte existant
+                </p>
+              )}
             </div>
 
             <div className="p-6 space-y-6">
