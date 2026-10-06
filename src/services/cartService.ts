@@ -263,3 +263,51 @@ export const submitCart = async (cartId: string): Promise<Cart> => {
 export const clearCart = async (cartId: string): Promise<void> => {
   await deleteDoc(doc(db, CART_COLLECTION, cartId));
 };
+
+export const mergeGuestCartWithUserCart = async (
+  guestCartId: string,
+  authenticatedUserId: string
+): Promise<Cart> => {
+  // Get guest cart
+  const guestCart = await getUserCart(guestCartId);
+  if (!guestCart) {
+    throw new Error('Guest cart not found');
+  }
+
+  // Get or create user's authenticated cart
+  let userCart = await getUserCart(authenticatedUserId);
+
+  if (!userCart) {
+    // Create new cart for authenticated user with guest items
+    return createCart(authenticatedUserId, guestCart.items[0], guestCart.items.slice(1));
+  }
+
+  // Merge items: add guest items to user cart (avoid duplicates for same stage)
+  for (const guestItem of guestCart.items) {
+    const existingItemIndex = userCart.items.findIndex((i) => i.stageId === guestItem.stageId);
+
+    if (existingItemIndex >= 0) {
+      // Replace with guest item (newer data)
+      userCart.items[existingItemIndex] = guestItem;
+    } else {
+      // Add guest item
+      userCart.items.push(guestItem);
+    }
+  }
+
+  // Recalculate totals
+  userCart.totals = calculateCartTotals(userCart.items);
+  userCart.updatedAt = new Date();
+
+  // Update user cart in Firestore
+  await updateDoc(doc(db, CART_COLLECTION, userCart.id), {
+    items: userCart.items,
+    totals: userCart.totals,
+    updatedAt: userCart.updatedAt,
+  });
+
+  // Delete guest cart
+  await clearCart(guestCart.id);
+
+  return userCart;
+};

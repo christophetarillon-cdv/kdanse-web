@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { getUserCart, addToCart as addToCartService, removeFromCart as removeFromCartService } from '@/services/cartService';
+import { getUserCart, addToCart as addToCartService, removeFromCart as removeFromCartService, mergeGuestCartWithUserCart } from '@/services/cartService';
 import { Cart, CartItem } from '@/types/cart';
 
 interface CartContextType {
@@ -54,13 +54,36 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [firebaseUser, guestCartId]);
 
+  // Fusionner les carts quand l'utilisateur se connecte
   useEffect(() => {
-    // Réinitialiser le guestCartId quand l'utilisateur se connecte
-    if (firebaseUser) {
-      setGuestCartId(null);
-    }
-    refreshCart();
-  }, [firebaseUser, refreshCart]);
+    const mergeCartIfNeeded = async () => {
+      if (firebaseUser && guestCartId) {
+        try {
+          const mergedCart = await mergeGuestCartWithUserCart(guestCartId, firebaseUser.uid);
+          setCart(mergedCart);
+          setGuestCartId(null);
+          setLoading(false);
+        } catch (error) {
+          console.error('Error merging carts:', error);
+          // Charger le cart de l'utilisateur connecté si la fusion échoue
+          setGuestCartId(null);
+          setLoading(false);
+        }
+      } else if (firebaseUser && !guestCartId) {
+        // Utilisateur connecté sans guest cart - charger son cart
+        try {
+          const userCart = await getUserCart(firebaseUser.uid);
+          setCart(userCart);
+        } catch (error) {
+          console.error('Error fetching user cart:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    mergeCartIfNeeded();
+  }, [firebaseUser, guestCartId]);
 
   const addToCart = async (item: CartItem): Promise<Cart> => {
     // Permettre l'ajout au panier sans authentification
