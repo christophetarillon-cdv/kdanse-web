@@ -59,6 +59,7 @@ export default function CartSummaryPage() {
         const allDancers = cartData.items.flatMap((item) => item.configuration.dancers || []);
         let dancersToSet = allDancers.map((d: any) => ({
           ...d,
+          email: '',
           dateOfBirth: '',
           postalAddress: { street: '', postalCode: '', city: '' },
           license: { number: '', federation: 'ffdanse', active: false },
@@ -114,6 +115,7 @@ export default function CartSummaryPage() {
                     ...dancer,
                     firstName: selectedDancer.firstName,
                     lastName: selectedDancer.lastName,
+                    email: selectedDancer.email || firebaseUser?.email || '',
                     dateOfBirth: selectedDancer.dateOfBirth || '',
                     postalAddress: selectedDancer.postalAddress || { street: '', postalCode: '', city: '' },
                     license: selectedDancer.license || { number: '', federation: 'ffdanse', active: false },
@@ -127,6 +129,7 @@ export default function CartSummaryPage() {
                     ...dancer,
                     firstName: dancer.firstName,
                     lastName: dancer.lastName,
+                    email: firebaseUser?.email || '',
                     dateOfBirth: userProfile.dateOfBirth ?
                       new Date(userProfile.dateOfBirth.seconds * 1000).toISOString().split('T')[0] : '',
                     postalAddress: userProfile.postalAddress || { street: '', postalCode: '', city: '' },
@@ -192,6 +195,7 @@ export default function CartSummaryPage() {
         const dancersToSave = dancersInfo.map(d => ({
           firstName: d.firstName,
           lastName: d.lastName,
+          email: d.email,
           dateOfBirth: d.dateOfBirth,
           postalAddress: d.postalAddress,
           license: d.license,
@@ -349,6 +353,7 @@ export default function CartSummaryPage() {
                               ...newDancers[idx],
                               firstName: selectedDancer.firstName,
                               lastName: selectedDancer.lastName,
+                              email: selectedDancer.email || firebaseUser?.email || '',
                               dateOfBirth: selectedDancer.dateOfBirth || '',
                               postalAddress: selectedDancer.postalAddress || { street: '', postalCode: '', city: '' },
                               license: selectedDancer.license || { number: '', federation: 'ffdanse', active: false },
@@ -360,6 +365,7 @@ export default function CartSummaryPage() {
                               ...newDancers[idx],
                               firstName: '',
                               lastName: '',
+                              email: firebaseUser?.email || '',
                               dateOfBirth: '',
                               postalAddress: { street: '', postalCode: '', city: '' },
                               license: { number: '', federation: 'ffdanse', active: false },
@@ -425,6 +431,21 @@ export default function CartSummaryPage() {
                         className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900"
                       />
                     </div>
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-2">Email*</label>
+                    <input
+                      type="email"
+                      value={dancer.email || ''}
+                      onChange={(e) => {
+                        const newDancers = [...dancersInfo];
+                        newDancers[idx].email = e.target.value;
+                        setDancersInfo(newDancers);
+                      }}
+                      className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900"
+                    />
                   </div>
 
                   {/* Date de naissance */}
