@@ -183,7 +183,7 @@ export default function AdminPaymentsConsolidatedPage() {
     <div className="min-h-screen bg-white space-y-8 p-4 sm:p-8">
       <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">💰 Gestion des paiements</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">💰 Gestion des paiements</h1>
           <p className="text-gray-900 font-medium">
             {totalPendingPayments} paiement(s) en attente
           </p>

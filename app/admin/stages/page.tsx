@@ -123,12 +123,12 @@ export default function AdminStagesPage() {
   return (
     <div className="min-h-screen bg-white space-y-8 p-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Gestion des Stages</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Stages</h1>
         <p className="text-gray-900 font-medium">Créez et gérez les stages Kdanse</p>
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4">{editing ? 'Modifier' : 'Créer'} un stage</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">{editing ? 'Modifier' : 'Créer'} un stage</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <input
