@@ -184,6 +184,10 @@ export default function CartSummaryPage() {
       if (firebaseUser) {
         const userRef = doc(db, 'users', firebaseUser.uid);
 
+        // Charger les danseurs existants
+        const userDoc = await getDoc(userRef);
+        const existingDancers = userDoc.data()?.profile?.dancers || [];
+
         // Transformer dancersInfo pour la sauvegarde
         const dancersToSave = dancersInfo.map(d => ({
           firstName: d.firstName,
@@ -193,9 +197,27 @@ export default function CartSummaryPage() {
           license: d.license,
         }));
 
+        // Fusionner: ajouter les nouveaux danseurs qui ne sont pas dans la liste existante
+        const allDancers = [...existingDancers];
+
+        for (const newDancer of dancersToSave) {
+          // Chercher si ce danseur existe déjà (même nom et prénom)
+          const existingIndex = allDancers.findIndex(
+            (d: any) => d.firstName === newDancer.firstName && d.lastName === newDancer.lastName
+          );
+
+          if (existingIndex >= 0) {
+            // Mettre à jour le danseur existant
+            allDancers[existingIndex] = newDancer;
+          } else {
+            // Ajouter le nouveau danseur
+            allDancers.push(newDancer);
+          }
+        }
+
         // Sauvegarder dans le profil utilisateur
         await updateDoc(userRef, {
-          'profile.dancers': dancersToSave,
+          'profile.dancers': allDancers,
           'profile.lastUpdated': new Date(),
         });
       }
