@@ -50,10 +50,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [firebaseUser, refreshCart]);
 
   const addToCart = async (item: CartItem): Promise<Cart> => {
-    if (!firebaseUser) throw new Error('User not authenticated');
+    // Permettre l'ajout au panier sans authentification
+    // Pour les utilisateurs non-authentifiés, créer un cart ID temporaire
+    const userId = firebaseUser?.uid || `guest-${Date.now()}`;
 
     try {
-      const updatedCart = await addToCartService(firebaseUser.uid, item);
+      const updatedCart = await addToCartService(userId, item);
       setCart(updatedCart);
       return updatedCart;
     } catch (error) {
