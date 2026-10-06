@@ -21,15 +21,10 @@ export default function StagesPage() {
   const [stagesLoading, setStagesLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading && !firebaseUser) {
-      router.push('/login');
-      return;
-    }
-
-    if (firebaseUser) {
+    if (!loading) {
       fetchStages();
     }
-  }, [loading, firebaseUser, router]);
+  }, [loading]);
 
   const fetchStages = async () => {
     try {
@@ -49,7 +44,6 @@ export default function StagesPage() {
   };
 
   if (loading || stagesLoading) return <div className="p-8">Chargement...</div>;
-  if (!firebaseUser) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
