@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { getCart, submitCart } from '@/services/cartService';
 import { Cart } from '@/types/cart';
-import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, getDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export default function CartSummaryPage() {
@@ -132,6 +132,26 @@ export default function CartSummaryPage() {
 
     setSubmitting(true);
     try {
+      // Sauvegarder les données des danseurs si l'utilisateur est connecté
+      if (firebaseUser) {
+        const userRef = doc(db, 'users', firebaseUser.uid);
+
+        // Transformer dancersInfo pour la sauvegarde
+        const dancersToSave = dancersInfo.map(d => ({
+          firstName: d.firstName,
+          lastName: d.lastName,
+          dateOfBirth: d.dateOfBirth,
+          postalAddress: d.postalAddress,
+          license: d.license,
+        }));
+
+        // Sauvegarder dans le profil utilisateur
+        await updateDoc(userRef, {
+          'profile.dancers': dancersToSave,
+          'profile.lastUpdated': new Date(),
+        });
+      }
+
       // Mark cart as submitted
       await submitCart(cart.id);
       // Redirect to payment page
