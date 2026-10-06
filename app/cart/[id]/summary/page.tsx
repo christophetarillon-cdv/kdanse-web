@@ -17,15 +17,10 @@ export default function CartSummaryPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !firebaseUser) {
-      router.push('/login');
-      return;
-    }
-
-    if (firebaseUser && cartId) {
+    if (!authLoading && cartId) {
       fetchCart();
     }
-  }, [firebaseUser, authLoading, cartId, router]);
+  }, [authLoading, cartId]);
 
   const fetchCart = async () => {
     try {
@@ -34,8 +29,8 @@ export default function CartSummaryPage() {
         router.push('/cart');
         return;
       }
-      // Verify ownership
-      if (cartData.userId !== firebaseUser!.uid) {
+      // Verify ownership only if user is connected
+      if (firebaseUser && cartData.userId !== firebaseUser.uid) {
         router.push('/cart');
         return;
       }
@@ -66,7 +61,7 @@ export default function CartSummaryPage() {
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
-  if (!firebaseUser || !cart) return null;
+  if (!cart) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
