@@ -55,6 +55,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [firebaseUser, guestCartId]);
 
   useEffect(() => {
+    // Réinitialiser le guestCartId quand l'utilisateur se connecte
+    if (firebaseUser) {
+      setGuestCartId(null);
+    }
     refreshCart();
   }, [firebaseUser, refreshCart]);
 
