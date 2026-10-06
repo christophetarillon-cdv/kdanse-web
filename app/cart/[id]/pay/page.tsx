@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { getCart, clearCart } from '@/services/cartService';
@@ -67,20 +67,39 @@ export default function CartPaymentPage() {
     // Sinon, paiement direct
     setSubmitting(true);
     try {
+      // Load user profile to get dancer emails
+      const userRef = doc(db, 'users', firebaseUser.uid);
+      const userDoc = await getDoc(userRef);
+      const profileDancers = userDoc.data()?.profile?.dancers || [];
+
       // Create memberships from cart items
-      const membershipPromises = cart.items.map((item) =>
-        addDoc(collection(db, 'memberships'), {
+      const membershipPromises = cart.items.map((item) => {
+        // Enrich dancers with email and stageName
+        const enrichedDancers = item.configuration.dancers.map((dancer: any, index: number) => {
+          // Try to find matching dancer from profile
+          const profileDancer = profileDancers[index];
+          return {
+            ...dancer,
+            email: profileDancer?.email || '',
+            stageName: item.stageName,
+          };
+        });
+
+        return addDoc(collection(db, 'memberships'), {
           userId: firebaseUser.uid,
           stageId: item.stageId,
           stageName: item.stageName,
-          registrationDetails: item.configuration,
+          registrationDetails: {
+            ...item.configuration,
+            dancers: enrichedDancers,
+          },
           amount: item.totals?.total || 0,
           paymentMethod: method,
           status: method === 'helloasso' ? 'paid' : 'pending_confirmation',
           cartId: cart.id,
           createdAt: new Date(),
-        })
-      );
+        });
+      });
 
       await Promise.all(membershipPromises);
 
