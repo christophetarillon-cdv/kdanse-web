@@ -115,7 +115,7 @@ export default function InitTestDataPage() {
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Initialisation des Données de Test</h1>
-          <p className="text-gray-600 mb-8">Phase 4 - Gestion des Accès</p>
+          <p className="text-gray-900 font-medium mb-8">Phase 4 - Gestion des Accès</p>
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
             <h2 className="text-lg font-bold text-gray-900 text-blue-900 mb-3">📋 Ce qui sera créé:</h2>
@@ -151,31 +151,31 @@ export default function InitTestDataPage() {
               <div className="space-y-3 text-sm">
                 <div>
                   <p className="font-medium text-gray-900">Saison 2024-2025 (Actuelle)</p>
-                  <p className="text-gray-600 font-mono text-xs break-all">{result.season2024Id}</p>
+                  <p className="text-gray-900 font-medium font-mono text-xs break-all">{result.season2024Id}</p>
                 </div>
 
                 {result.season2025Id && (
                   <div>
                     <p className="font-medium text-gray-900">Saison 2025-2026 (Prochaine)</p>
-                    <p className="text-gray-600 font-mono text-xs break-all">{result.season2025Id}</p>
+                    <p className="text-gray-900 font-medium font-mono text-xs break-all">{result.season2025Id}</p>
                   </div>
                 )}
 
                 <div className="border-t pt-3">
                   <p className="font-medium text-gray-900">Stage Créé</p>
-                  <p className="text-gray-600 font-mono text-xs break-all">{result.stageId}</p>
+                  <p className="text-gray-900 font-medium font-mono text-xs break-all">{result.stageId}</p>
                   <p className="text-gray-800 text-xs mt-1">Nom: "Stage de Test - Phase 4"</p>
                 </div>
 
                 <div className="border-t pt-3">
                   <p className="font-medium text-gray-900">Membership (Inscription) Créée</p>
-                  <p className="text-gray-600 font-mono text-xs break-all">{result.membershipId}</p>
+                  <p className="text-gray-900 font-medium font-mono text-xs break-all">{result.membershipId}</p>
                   <p className="text-gray-800 text-xs mt-1">Utilisateur: dev-user-123 | Statut: active ✅</p>
                 </div>
 
                 <div className="border-t pt-3">
                   <p className="font-medium text-gray-900">Réservation Créée</p>
-                  <p className="text-gray-600 font-mono text-xs break-all">{result.reservationId}</p>
+                  <p className="text-gray-900 font-medium font-mono text-xs break-all">{result.reservationId}</p>
                   <p className="text-gray-800 text-xs mt-1">
                     Utilisateur: dev-user-123 | Statut: pending | Éligibilité: ✅ OUI
                   </p>

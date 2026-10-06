@@ -39,7 +39,7 @@ export default function ReservationsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
         <div className="text-center">
           <div className="animate-spin inline-block w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-          <p className="text-gray-600 mt-4">Chargement...</p>
+          <p className="text-gray-900 font-medium mt-4">Chargement...</p>
         </div>
       </div>
     );

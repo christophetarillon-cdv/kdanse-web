@@ -203,7 +203,7 @@ export default function AdminPaymentsConsolidatedPage() {
           className={`px-4 py-3 font-semibold border-b-2 transition ${
             tab === 'installments'
               ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
+              : 'border-transparent text-gray-900 font-medium hover:text-gray-900'
           }`}
         >
           📋 Paiements échelonnés ({installments.length})
@@ -213,7 +213,7 @@ export default function AdminPaymentsConsolidatedPage() {
           className={`px-4 py-3 font-semibold border-b-2 transition ${
             tab === 'simple'
               ? 'border-orange-600 text-orange-600'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
+              : 'border-transparent text-gray-900 font-medium hover:text-gray-900'
           }`}
         >
           💳 Paiements simples ({memberships.length})

@@ -169,7 +169,7 @@ export default function CMSListPage() {
                   className={`text-xs px-2 py-1 rounded ${
                     page.published
                       ? 'bg-green-100 text-green-700'
-                      : 'bg-gray-100 text-gray-600'
+                      : 'bg-gray-100 text-gray-900 font-medium'
                   }`}
                 >
                   {page.published ? 'Publiée' : 'Brouillon'}

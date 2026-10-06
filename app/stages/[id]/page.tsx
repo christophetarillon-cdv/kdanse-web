@@ -436,7 +436,7 @@ export default function StageDetailPage() {
                   {form.accompanists > 0 && (
                     <p><strong>Accompagnateurs:</strong> {form.accompanists}</p>
                   )}
-                  <p className="text-gray-600 italic">
+                  <p className="text-gray-900 font-medium italic">
                     Total: {getTotalPersons()} personne(s)
                   </p>
                   {form.wantHousing && (
@@ -445,7 +445,7 @@ export default function StageDetailPage() {
                       {form.housingCouple > 0 && <p><strong>Hébergement couple:</strong> {form.housingCouple} lit(s)</p>}
                     </>
                   )}
-                  {!form.wantHousing && <p className="text-gray-600 italic">Pas d'hébergement</p>}
+                  {!form.wantHousing && <p className="text-gray-900 font-medium italic">Pas d'hébergement</p>}
                 </div>
                 <div className="text-3xl font-bold text-orange-600">
                   Total: {calculatePrice()}€

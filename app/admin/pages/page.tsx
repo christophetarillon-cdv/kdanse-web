@@ -441,7 +441,7 @@ export default function AdminPagesPage() {
                           onChange={(e) => updateBlock(block.id, { text: e.target.value })}
                           className="border rounded px-2 py-1 w-full text-sm mb-2"
                         />
-                        <p className="text-xs text-gray-600">Les sections peuvent contenir du texte via Firestore directement.</p>
+                        <p className="text-xs text-gray-900 font-medium">Les sections peuvent contenir du texte via Firestore directement.</p>
                       </div>
                     )}
 
@@ -461,7 +461,7 @@ export default function AdminPagesPage() {
                             disabled={uploading === block.id}
                             className="border rounded px-2 py-1 w-full text-sm disabled:bg-gray-100"
                           />
-                          {uploading === block.id && <p className="text-xs text-gray-600">Upload en cours...</p>}
+                          {uploading === block.id && <p className="text-xs text-gray-900 font-medium">Upload en cours...</p>}
                         </div>
                         <input
                           type="text"
@@ -590,7 +590,7 @@ export default function AdminPagesPage() {
           </tbody>
         </table>
         {pages.length === 0 && (
-          <div className="p-8 text-center text-gray-600">
+          <div className="p-8 text-center text-gray-900 font-medium">
             Aucune page créée. Créez-en une avec le formulaire ci-dessus.
           </div>
         )}

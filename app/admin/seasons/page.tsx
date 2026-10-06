@@ -91,7 +91,7 @@ export default function SeasonsAdminPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Saisons</h2>
           {isLoading ? (
             <div className="bg-white rounded-lg shadow p-8 text-center">
-              <p className="text-gray-600">Chargement des saisons...</p>
+              <p className="text-gray-900 font-medium">Chargement des saisons...</p>
             </div>
           ) : (
             <SeasonList seasons={seasons} onEdit={handleEdit} onRefresh={loadSeasons} />

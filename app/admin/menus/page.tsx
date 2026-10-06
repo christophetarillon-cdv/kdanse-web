@@ -392,7 +392,7 @@ export default function AdminMenusPage() {
           </tbody>
         </table>
         {menus.length === 0 && (
-          <div className="p-8 text-center text-gray-600">Aucun menu créé.</div>
+          <div className="p-8 text-center text-gray-900 font-medium">Aucun menu créé.</div>
         )}
       </div>
     </div>

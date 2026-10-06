@@ -396,7 +396,7 @@ export default function AdminStagesPage() {
           </tbody>
         </table>
         {stages.length === 0 && (
-          <div className="p-8 text-center text-gray-600">
+          <div className="p-8 text-center text-gray-900 font-medium">
             Aucun stage créé. Créez-en un avec le formulaire ci-dessus.
           </div>
         )}

@@ -246,7 +246,7 @@ export default function PaymentPlanPage() {
                     max={stats.total}
                   />
                   {inst.amount > 0 && (
-                    <p className="text-xs text-gray-600 mt-1">
+                    <p className="text-xs text-gray-900 font-medium mt-1">
                       {((inst.amount / stats.total) * 100).toFixed(0)}% du total
                     </p>
                   )}
@@ -318,7 +318,7 @@ export default function PaymentPlanPage() {
                     <p><strong>IBAN:</strong> {settings.bankAccount.iban}</p>
                     <p><strong>BIC:</strong> {settings.bankAccount.bic}</p>
                     <p><strong>Titulaire:</strong> {settings.bankAccount.accountName}</p>
-                    <p className="text-gray-600 mt-3">Référence: {cart.id.substring(0, 8)}</p>
+                    <p className="text-gray-900 font-medium mt-3">Référence: {cart.id.substring(0, 8)}</p>
                   </div>
                 )}
 

@@ -56,7 +56,7 @@ export default function CartPage() {
 
         {!cart || cart.items.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
-            <p className="text-gray-600 mb-6">Votre panier est vide</p>
+            <p className="text-gray-900 font-medium mb-6">Votre panier est vide</p>
             <Link
               href="/stages"
               className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
@@ -98,7 +98,7 @@ export default function CartPage() {
                         {item.configuration.accompanists > 0 && ` + ${item.configuration.accompanists} acc.`}
                         {item.configuration.wantHousing && ' + logement'}
                       </span>
-                      <span className="text-gray-600">
+                      <span className="text-gray-900 font-medium">
                         {expandedItems.has(item.id) ? '▼' : '▶'}
                       </span>
                     </button>

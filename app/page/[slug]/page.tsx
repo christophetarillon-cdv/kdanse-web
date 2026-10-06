@@ -58,7 +58,7 @@ export default function CMSPage() {
             const contentArray = Array.isArray(page.content) ? page.content : (page.content ? Object.values(page.content) : []);
             const blocks = contentArray.filter((b: any) => b && !b.parentLayoutId);
             if (blocks.length === 0) {
-              return <p className="text-gray-600 italic mt-8">Aucun contenu pour cette page.</p>;
+              return <p className="text-gray-900 font-medium italic mt-8">Aucun contenu pour cette page.</p>;
             }
             const maxBottom = Math.max(800, ...blocks.map((b: any) => (b.positionY || 0) + (b.height || 150)));
 

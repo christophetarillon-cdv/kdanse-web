@@ -90,7 +90,7 @@ export default function ReservationsAdminPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
         <div className="text-center">
           <div className="animate-spin inline-block w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-          <p className="text-gray-600 mt-4">Chargement des réservations...</p>
+          <p className="text-gray-900 font-medium mt-4">Chargement des réservations...</p>
         </div>
       </div>
     );
@@ -143,7 +143,7 @@ export default function ReservationsAdminPage() {
         {/* Reservations Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {reservations.length === 0 ? (
-            <div className="p-8 text-center text-gray-600">
+            <div className="p-8 text-center text-gray-900 font-medium">
               <p>Aucune réservation pour le moment</p>
             </div>
           ) : (

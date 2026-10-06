@@ -224,7 +224,7 @@ export default function AccountPage() {
               className="w-full border-2 border-gray-300 rounded px-3 py-2 bg-white text-gray-900 font-medium"
               disabled
             />
-            <p className="text-xs text-gray-600 mt-1">Non modifiable</p>
+            <p className="text-xs text-gray-900 font-medium mt-1">Non modifiable</p>
           </div>
 
           {/* Nom et Prénom séparés */}
