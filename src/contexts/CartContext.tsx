@@ -57,28 +57,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Fusionner les carts quand l'utilisateur se connecte
   useEffect(() => {
     const mergeCartIfNeeded = async () => {
-      if (firebaseUser && guestCartId) {
-        try {
+      try {
+        if (firebaseUser && guestCartId) {
+          // Utilisateur connecté avec guest cart - fusionner
           const mergedCart = await mergeGuestCartWithUserCart(guestCartId, firebaseUser.uid);
           setCart(mergedCart);
           setGuestCartId(null);
-          setLoading(false);
-        } catch (error) {
-          console.error('Error merging carts:', error);
-          // Charger le cart de l'utilisateur connecté si la fusion échoue
-          setGuestCartId(null);
-          setLoading(false);
-        }
-      } else if (firebaseUser && !guestCartId) {
-        // Utilisateur connecté sans guest cart - charger son cart
-        try {
+        } else if (firebaseUser && !guestCartId) {
+          // Utilisateur connecté sans guest cart - charger son cart
           const userCart = await getUserCart(firebaseUser.uid);
           setCart(userCart);
-        } catch (error) {
-          console.error('Error fetching user cart:', error);
-        } finally {
-          setLoading(false);
+        } else if (!firebaseUser && guestCartId) {
+          // Guest user - charger le guest cart
+          const guestCart = await getUserCart(guestCartId);
+          setCart(guestCart);
+        } else {
+          // Pas d'utilisateur et pas de guest cart
+          setCart(null);
         }
+      } catch (error) {
+        console.error('Error loading cart:', error);
+        setCart(null);
+      } finally {
+        setLoading(false);
       }
     };
 
