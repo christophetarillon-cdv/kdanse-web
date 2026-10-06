@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { getCart, submitCart } from '@/services/cartService';
 import { Cart } from '@/types/cart';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export default function CartSummaryPage() {
@@ -61,12 +61,25 @@ export default function CartSummaryPage() {
         // Si l'utilisateur est connecté, charger ses données existantes
         if (firebaseUser) {
           try {
-            const membershipsRef = collection(db, 'memberships');
-            const q = query(membershipsRef, where('userId', '==', firebaseUser.uid));
-            const snapshot = await getDocs(q);
+            // Essayer d'abord la collection 'profiles' (nouveau système)
+            let userProfiles: any[] = [];
 
-            if (!snapshot.empty) {
-              const userMemberships = snapshot.docs.map(doc => doc.data());
+            const profileRef = doc(db, 'profiles', firebaseUser.uid);
+            const profileDoc = await getDoc(profileRef);
+            if (profileDoc.exists()) {
+              userProfiles = [profileDoc.data()];
+            } else {
+              // Fallback à 'memberships' (ancien système)
+              const membershipsRef = collection(db, 'memberships');
+              const q = query(membershipsRef, where('userId', '==', firebaseUser.uid));
+              const snapshot = await getDocs(q);
+              if (!snapshot.empty) {
+                userProfiles = snapshot.docs.map(doc => doc.data());
+              }
+            }
+
+            if (userProfiles.length > 0) {
+              const userMemberships = userProfiles;
               const commonAddress = userMemberships.length > 0 ? userMemberships[0].postalAddress : null;
 
               // Comparer et pré-remplir avec les données existantes
