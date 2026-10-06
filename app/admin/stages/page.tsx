@@ -121,7 +121,7 @@ export default function AdminStagesPage() {
   if (loading) return <div className="p-8">Chargement...</div>;
 
   return (
-    <div className="space-y-8 p-8">
+    <div className="min-h-screen bg-white space-y-8 p-8">
       <div>
         <h1 className="text-3xl font-bold mb-2">Gestion des Stages</h1>
         <p className="text-gray-900 font-medium">Créez et gérez les stages Kdanse</p>
