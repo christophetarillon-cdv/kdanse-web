@@ -79,41 +79,18 @@ export default function CartSummaryPage() {
             }
 
             if (userProfiles.length > 0) {
-              const userMemberships = userProfiles;
-              const commonAddress = userMemberships.length > 0 ? userMemberships[0].postalAddress : null;
+              const userData = userProfiles[0];
+              const userProfile = userData.profile || {};
+              const commonAddress = userProfile.postalAddress || null;
 
-              // Comparer et pré-remplir avec les données existantes
-              dancersToSet = dancersToSet.map((dancer, idx) => {
-                // Chercher un membership avec le même nom/prénom
-                let existingMembership = userMemberships.find(m =>
-                  m.firstName === dancer.firstName && m.lastName === dancer.lastName
-                );
-
-                // Si pas de match exact, utiliser le membership à l'index correspondant
-                if (!existingMembership && userMemberships[idx]) {
-                  existingMembership = userMemberships[idx];
-                }
-
-                // Si toujours pas de membership, utiliser le premier
-                if (!existingMembership && userMemberships.length > 0) {
-                  existingMembership = userMemberships[0];
-                }
-
-                if (existingMembership) {
-                  return {
-                    ...dancer,
-                    dateOfBirth: existingMembership.dateOfBirth || '',
-                    postalAddress: existingMembership.postalAddress || { street: '', postalCode: '', city: '' },
-                    license: existingMembership.license || { number: '', federation: 'ffdanse', active: false },
-                  };
-                }
-
-                // Fallback: utiliser l'adresse commune
+              // Pré-remplir avec les données du profil utilisateur
+              dancersToSet = dancersToSet.map((dancer) => {
                 return {
                   ...dancer,
-                  dateOfBirth: '',
-                  postalAddress: commonAddress || { street: '', postalCode: '', city: '' },
-                  license: { number: '', federation: 'ffdanse', active: false },
+                  dateOfBirth: userProfile.dateOfBirth ?
+                    new Date(userProfile.dateOfBirth.seconds * 1000).toISOString().split('T')[0] : '',
+                  postalAddress: userProfile.postalAddress || { street: '', postalCode: '', city: '' },
+                  license: userProfile.license || { number: '', federation: 'ffdanse', active: false },
                 };
               });
             }
