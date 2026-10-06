@@ -70,11 +70,21 @@ export default function CartSummaryPage() {
               const commonAddress = userMemberships.length > 0 ? userMemberships[0].postalAddress : null;
 
               // Comparer et pré-remplir avec les données existantes
-              dancersToSet = dancersToSet.map((dancer) => {
+              dancersToSet = dancersToSet.map((dancer, idx) => {
                 // Chercher un membership avec le même nom/prénom
-                const existingMembership = userMemberships.find(m =>
+                let existingMembership = userMemberships.find(m =>
                   m.firstName === dancer.firstName && m.lastName === dancer.lastName
                 );
+
+                // Si pas de match exact, utiliser le membership à l'index correspondant
+                if (!existingMembership && userMemberships[idx]) {
+                  existingMembership = userMemberships[idx];
+                }
+
+                // Si toujours pas de membership, utiliser le premier
+                if (!existingMembership && userMemberships.length > 0) {
+                  existingMembership = userMemberships[0];
+                }
 
                 if (existingMembership) {
                   return {
@@ -85,7 +95,7 @@ export default function CartSummaryPage() {
                   };
                 }
 
-                // Sinon, utiliser l'adresse commune
+                // Fallback: utiliser l'adresse commune
                 return {
                   ...dancer,
                   dateOfBirth: '',

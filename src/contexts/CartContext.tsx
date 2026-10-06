@@ -27,17 +27,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { firebaseUser } = useAuth();
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
+  const [guestCartId, setGuestCartId] = useState<string | null>(null);
 
   const refreshCart = useCallback(async () => {
     let userId: string | null = null;
 
     if (firebaseUser) {
       userId = firebaseUser.uid;
-    } else {
-      // Check for guest cart ID in localStorage
-      if (typeof window !== 'undefined') {
-        userId = localStorage.getItem('guestCartId');
-      }
+    } else if (guestCartId) {
+      userId = guestCartId;
     }
 
     if (!userId) {
@@ -54,7 +52,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [firebaseUser]);
+  }, [firebaseUser, guestCartId]);
 
   useEffect(() => {
     refreshCart();
@@ -66,12 +64,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     let userId = firebaseUser?.uid;
 
     if (!userId) {
-      if (typeof window !== 'undefined') {
-        userId = localStorage.getItem('guestCartId') || `guest-${Date.now()}`;
-        localStorage.setItem('guestCartId', userId);
-      } else {
-        userId = `guest-${Date.now()}`;
-      }
+      userId = guestCartId || `guest-${Date.now()}`;
+      setGuestCartId(userId);
     }
 
     try {
