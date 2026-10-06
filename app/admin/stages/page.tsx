@@ -339,18 +339,18 @@ export default function AdminStagesPage() {
         <table className="w-full">
           <thead className="bg-gray-100 border-b">
             <tr>
-              <th className="px-6 py-3 text-left font-semibold">Nom</th>
-              <th className="px-6 py-3 text-left font-semibold">Lieu</th>
-              <th className="px-6 py-3 text-left font-semibold">Dates</th>
-              <th className="px-6 py-3 text-left font-semibold">Tarifs</th>
-              <th className="px-6 py-3 text-left font-semibold">Actions</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-900">Nom</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-900">Lieu</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-900">Dates</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-900">Tarifs</th>
+              <th className="px-6 py-3 text-left font-semibold text-gray-900">Actions</th>
             </tr>
           </thead>
           <tbody>
             {stages.map(stage => (
               <tr key={stage.id} className="border-b hover:bg-gray-50">
-                <td className="px-6 py-3 font-semibold">{stage.name}</td>
-                <td className="px-6 py-3">{stage.location}</td>
+                <td className="px-6 py-3 font-semibold text-gray-900">{stage.name}</td>
+                <td className="px-6 py-3 text-gray-900">{stage.location}</td>
                 <td className="px-6 py-3 text-sm text-gray-900 font-medium">
                   {stage.startDate && stage.endDate
                     ? `${new Date(stage.startDate).toLocaleDateString('fr-FR')} - ${new Date(stage.endDate).toLocaleDateString('fr-FR')}`
@@ -361,17 +361,17 @@ export default function AdminStagesPage() {
                     <div className="space-y-2">
                       <div>
                         <p className="font-semibold text-blue-700">Stage:</p>
-                        <p>Solo lic.: {stage.pricing.stage.soloLicensed}€</p>
-                        <p>Solo non lic.: {stage.pricing.stage.soloUnlicensed}€</p>
-                        <p>Couple lic.: {stage.pricing.stage.coupleLicensed}€</p>
-                        <p>Couple non lic.: {stage.pricing.stage.coupleUnlicensed}€</p>
-                        <p>Couple mixte: {stage.pricing.stage.coupleMixed}€</p>
+                        <p className="text-gray-900">Solo lic.: {stage.pricing.stage.soloLicensed}€</p>
+                        <p className="text-gray-900">Solo non lic.: {stage.pricing.stage.soloUnlicensed}€</p>
+                        <p className="text-gray-900">Couple lic.: {stage.pricing.stage.coupleLicensed}€</p>
+                        <p className="text-gray-900">Couple non lic.: {stage.pricing.stage.coupleUnlicensed}€</p>
+                        <p className="text-gray-900">Couple mixte: {stage.pricing.stage.coupleMixed}€</p>
                       </div>
                       {stage.pricing.housing && (
                         <div>
                           <p className="font-semibold text-green-700">Hébergement:</p>
-                          <p>Solo: {stage.pricing.housing.solo}€</p>
-                          <p>Couple: {stage.pricing.housing.couple}€</p>
+                          <p className="text-gray-900">Solo: {stage.pricing.housing.solo}€</p>
+                          <p className="text-gray-900">Couple: {stage.pricing.housing.couple}€</p>
                         </div>
                       )}
                     </div>
