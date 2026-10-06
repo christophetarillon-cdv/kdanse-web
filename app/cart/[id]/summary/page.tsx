@@ -16,6 +16,16 @@ export default function CartSummaryPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  // Infos danseurs complètes (Phase 2b validation)
+  const [dancersInfo, setDancersInfo] = useState<any[]>([]);
+
+  // Infos compte si nouvel utilisateur
+  const [accountInfo, setAccountInfo] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+
   useEffect(() => {
     if (!authLoading && cartId) {
       fetchCart();
@@ -35,6 +45,22 @@ export default function CartSummaryPage() {
         return;
       }
       setCart(cartData);
+
+      // Initialiser les infos des danseurs à partir du cart
+      if (cartData.items && cartData.items.length > 0) {
+        const allDancers = cartData.items.flatMap((item) => item.configuration.dancers || []);
+        setDancersInfo(allDancers.map((d: any) => ({
+          ...d,
+          dateOfBirth: '',
+          postalAddress: { street: '', postalCode: '', city: '' },
+          license: { number: '', federation: 'ffdanse', active: false },
+        })));
+      }
+
+      // Pré-remplir email si user connecté
+      if (firebaseUser?.email) {
+        setAccountInfo((prev) => ({ ...prev, email: firebaseUser.email }));
+      }
     } catch (error) {
       console.error('Error fetching cart:', error);
       router.push('/cart');
@@ -45,6 +71,22 @@ export default function CartSummaryPage() {
 
   const handleContinueToPayment = async () => {
     if (!cart) return;
+
+    // Valider que tous les champs danseurs sont remplis
+    for (const dancer of dancersInfo) {
+      if (!dancer.dateOfBirth || !dancer.postalAddress?.street || !dancer.postalAddress?.postalCode || !dancer.postalAddress?.city) {
+        alert('Veuillez remplir toutes les informations des danseurs');
+        return;
+      }
+    }
+
+    // Si pas connecté, valider compte
+    if (!firebaseUser) {
+      if (!accountInfo.email || !accountInfo.password || accountInfo.password !== accountInfo.confirmPassword) {
+        alert('Veuillez remplir les informations de compte correctement');
+        return;
+      }
+    }
 
     setSubmitting(true);
     try {
@@ -132,6 +174,159 @@ export default function CartSummaryPage() {
               ))}
             </div>
           </div>
+
+          {/* Section validation infos danseurs */}
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="p-6 border-b bg-gray-50">
+              <h2 className="text-xl font-bold text-gray-900">📝 Informations des danseurs</h2>
+              <p className="text-sm text-gray-700 mt-1">Complétez les informations avant de payer</p>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {dancersInfo.map((dancer, idx) => (
+                <div key={idx} className="border rounded-lg p-6 space-y-4">
+                  <h3 className="font-bold text-lg text-gray-900">
+                    Danseur {idx + 1}: {dancer.firstName} {dancer.lastName}
+                  </h3>
+
+                  {/* Date de naissance */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-2">Date de naissance*</label>
+                    <input
+                      type="date"
+                      value={dancer.dateOfBirth}
+                      onChange={(e) => {
+                        const newDancers = [...dancersInfo];
+                        newDancers[idx].dateOfBirth = e.target.value;
+                        setDancersInfo(newDancers);
+                      }}
+                      className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900"
+                    />
+                  </div>
+
+                  {/* Adresse */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-2">Rue*</label>
+                    <input
+                      type="text"
+                      value={dancer.postalAddress?.street || ''}
+                      onChange={(e) => {
+                        const newDancers = [...dancersInfo];
+                        newDancers[idx].postalAddress.street = e.target.value;
+                        setDancersInfo(newDancers);
+                      }}
+                      placeholder="123 Rue de la Danse"
+                      className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">Code postal*</label>
+                      <input
+                        type="text"
+                        value={dancer.postalAddress?.postalCode || ''}
+                        onChange={(e) => {
+                          const newDancers = [...dancersInfo];
+                          newDancers[idx].postalAddress.postalCode = e.target.value;
+                          setDancersInfo(newDancers);
+                        }}
+                        placeholder="75001"
+                        className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">Ville*</label>
+                      <input
+                        type="text"
+                        value={dancer.postalAddress?.city || ''}
+                        onChange={(e) => {
+                          const newDancers = [...dancersInfo];
+                          newDancers[idx].postalAddress.city = e.target.value;
+                          setDancersInfo(newDancers);
+                        }}
+                        placeholder="Paris"
+                        className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Licence FFDanse */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 mb-2">Licence FFDanse (optionnel)</label>
+                    <input
+                      type="text"
+                      value={dancer.license?.number || ''}
+                      onChange={(e) => {
+                        const newDancers = [...dancersInfo];
+                        newDancers[idx].license.number = e.target.value;
+                        setDancersInfo(newDancers);
+                      }}
+                      placeholder="Numéro de licence"
+                      className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-500 mb-2"
+                    />
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={dancer.license?.active || false}
+                        onChange={(e) => {
+                          const newDancers = [...dancersInfo];
+                          newDancers[idx].license.active = e.target.checked;
+                          setDancersInfo(newDancers);
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm font-medium text-gray-900">Licence active</span>
+                    </label>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Section compte si pas connecté */}
+          {!firebaseUser && (
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="p-6 border-b bg-gray-50">
+                <h2 className="text-xl font-bold text-gray-900">🔐 Créer votre compte</h2>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">Email*</label>
+                  <input
+                    type="email"
+                    value={accountInfo.email}
+                    onChange={(e) => setAccountInfo({ ...accountInfo, email: e.target.value })}
+                    placeholder="votre@email.com"
+                    className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">Mot de passe*</label>
+                  <input
+                    type="password"
+                    value={accountInfo.password}
+                    onChange={(e) => setAccountInfo({ ...accountInfo, password: e.target.value })}
+                    placeholder="Au moins 6 caractères"
+                    className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">Confirmer mot de passe*</label>
+                  <input
+                    type="password"
+                    value={accountInfo.confirmPassword}
+                    onChange={(e) => setAccountInfo({ ...accountInfo, confirmPassword: e.target.value })}
+                    placeholder="Confirmer le mot de passe"
+                    className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-500"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Totals */}
           <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6">
