@@ -49,12 +49,12 @@ export default function CartPage() {
         </div>
 
         {/* Option de connexion si pas connecté */}
-        {!firebaseUser && (
+        {!firebaseUser && cart && (
           <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8">
             <p className="text-gray-900 font-medium mb-4">Vous avez déjà un compte?</p>
             <div className="flex gap-3">
               <Link
-                href="/login"
+                href={`/login?redirect=/cart/${cart.id}/summary`}
                 className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white py-3 rounded font-semibold transition"
               >
                 Se connecter

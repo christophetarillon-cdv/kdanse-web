@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (user) {
@@ -22,9 +23,11 @@ export default function LoginPage() {
         localStorage.removeItem('justLoggedOut');
         return;
       }
-      router.push('/dashboard');
+      // Rediriger vers le panier si on vient de là, sinon vers dashboard
+      const redirect = searchParams.get('redirect');
+      router.push(redirect || '/dashboard');
     }
-  }, [user, router]);
+  }, [user, router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +36,8 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/dashboard');
+      const redirect = searchParams.get('redirect');
+      router.push(redirect || '/dashboard');
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);

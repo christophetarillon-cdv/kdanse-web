@@ -29,14 +29,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshCart = useCallback(async () => {
-    if (!firebaseUser) {
+    let userId: string | null = null;
+
+    if (firebaseUser) {
+      userId = firebaseUser.uid;
+    } else {
+      // Check for guest cart ID in localStorage
+      if (typeof window !== 'undefined') {
+        userId = localStorage.getItem('guestCartId');
+      }
+    }
+
+    if (!userId) {
       setCart(null);
       setLoading(false);
       return;
     }
 
     try {
-      const userCart = await getUserCart(firebaseUser.uid);
+      const userCart = await getUserCart(userId);
       setCart(userCart);
     } catch (error) {
       console.error('Error fetching cart:', error);
@@ -52,7 +63,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = async (item: CartItem): Promise<Cart> => {
     // Permettre l'ajout au panier sans authentification
     // Pour les utilisateurs non-authentifiés, créer un cart ID temporaire
-    const userId = firebaseUser?.uid || `guest-${Date.now()}`;
+    let userId = firebaseUser?.uid;
+
+    if (!userId) {
+      if (typeof window !== 'undefined') {
+        userId = localStorage.getItem('guestCartId') || `guest-${Date.now()}`;
+        localStorage.setItem('guestCartId', userId);
+      } else {
+        userId = `guest-${Date.now()}`;
+      }
+    }
 
     try {
       const updatedCart = await addToCartService(userId, item);
