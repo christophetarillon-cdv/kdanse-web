@@ -233,7 +233,7 @@ export default function AdminPaymentsConsolidatedPage() {
                 <div key={planId} className="bg-white rounded-lg shadow overflow-hidden">
                   <button
                     onClick={() => setExpandedPlan(expandedPlan === planId ? null : planId)}
-                    className="w-full p-6 text-left font-semibold hover:bg-gray-50 flex justify-between items-center"
+                    className="w-full p-6 text-left font-semibold text-gray-900 hover:bg-gray-50 flex justify-between items-center"
                   >
                     <span>{getPlanLabel(planId, planInstallments)}</span>
                     <span>{expandedPlan === planId ? '▼' : '▶'}</span>
@@ -245,7 +245,7 @@ export default function AdminPaymentsConsolidatedPage() {
                         <div key={inst.id} className="p-6 space-y-4">
                           <div className="flex justify-between items-start mb-4">
                             <div>
-                              <h3 className="font-bold text-lg">{getMethodLabel(inst.method)}</h3>
+                              <h3 className="font-bold text-lg text-gray-900">{getMethodLabel(inst.method)}</h3>
                               <p className="text-sm text-gray-900 font-medium">
                                 Échéance: {new Date(inst.dueDate).toLocaleDateString('fr-FR')}
                               </p>
@@ -257,14 +257,14 @@ export default function AdminPaymentsConsolidatedPage() {
                           <div className="bg-gray-50 p-4 rounded space-y-2 text-sm">
                             {inst.method === 'cheque' && (
                               <>
-                                {inst.chequeNumber && <p><strong>N° chèque:</strong> {inst.chequeNumber}</p>}
-                                {inst.chequeBank && <p><strong>Banque:</strong> {inst.chequeBank}</p>}
-                                {inst.chequeCity && <p><strong>Ville:</strong> {inst.chequeCity}</p>}
-                                {inst.chequeName && <p><strong>Nom:</strong> {inst.chequeName}</p>}
+                                {inst.chequeNumber && <p className="text-gray-900"><strong>N° chèque:</strong> {inst.chequeNumber}</p>}
+                                {inst.chequeBank && <p className="text-gray-900"><strong>Banque:</strong> {inst.chequeBank}</p>}
+                                {inst.chequeCity && <p className="text-gray-900"><strong>Ville:</strong> {inst.chequeCity}</p>}
+                                {inst.chequeName && <p className="text-gray-900"><strong>Nom:</strong> {inst.chequeName}</p>}
                               </>
                             )}
                             {inst.method === 'cheque_vacances' && (
-                              <p><strong>Nombre de chèques:</strong> {inst.chequeVacancesCount || 'N/A'}</p>
+                              <p className="text-gray-900"><strong>Nombre de chèques:</strong> {inst.chequeVacancesCount || 'N/A'}</p>
                             )}
                           </div>
 
@@ -330,17 +330,17 @@ export default function AdminPaymentsConsolidatedPage() {
                   <div className="p-6 space-y-4">
                     {/* Détails de l'inscription */}
                     <div className="bg-blue-50 rounded border border-blue-200 p-4 space-y-2 text-sm">
-                      <p>
+                      <p className="text-gray-900">
                         <strong>Danseurs:</strong> {membership.registrationDetails.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
                         {membership.registrationDetails.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}
                       </p>
                       {membership.registrationDetails.accompanists > 0 && (
-                        <p>
+                        <p className="text-gray-900">
                           <strong>Accompagnateurs:</strong> {membership.registrationDetails.accompanists}
                         </p>
                       )}
                       {membership.registrationDetails.wantHousing && (
-                        <p>
+                        <p className="text-gray-900">
                           <strong>Hébergement:</strong>
                           {membership.registrationDetails.housingSolo > 0 && ` ${membership.registrationDetails.housingSolo} solo`}
                           {membership.registrationDetails.housingSolo > 0 && membership.registrationDetails.housingCouple > 0 && ' +'}
