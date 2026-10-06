@@ -15,12 +15,7 @@ export default function CartPage() {
   const searchParams = useSearchParams();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    if (!authLoading && !firebaseUser) {
-      router.push('/login');
-      return;
-    }
-  }, [firebaseUser, authLoading, router]);
+  // Pas besoin de redirection - permettre l'accès au panier sans connexion
 
   const handleRemoveItem = async (itemId: string) => {
     try {
@@ -41,7 +36,6 @@ export default function CartPage() {
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
-  if (!firebaseUser) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
