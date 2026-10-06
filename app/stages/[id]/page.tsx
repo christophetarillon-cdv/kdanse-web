@@ -33,7 +33,21 @@ interface Stage {
 }
 
 interface Dancer {
+  firstName: string;
+  lastName: string;
   licensed: boolean;
+  // Remplis en Phase 2 avant paiement
+  dateOfBirth?: string;
+  postalAddress?: {
+    street: string;
+    postalCode: string;
+    city: string;
+  };
+  license?: {
+    number: string;
+    federation: 'ffdanse';
+    active: boolean;
+  };
 }
 
 interface RegistrationForm {
@@ -56,7 +70,7 @@ export default function StageDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState<RegistrationForm>({
     danceType: 'solo',
-    dancers: [{ licensed: false }],
+    dancers: [{ firstName: '', lastName: '', licensed: false }],
     accompanists: 0,
     wantHousing: false,
     housingSolo: 0,
@@ -64,15 +78,10 @@ export default function StageDetailPage() {
   });
 
   useEffect(() => {
-    if (!authLoading && !firebaseUser) {
-      router.push('/login');
-      return;
-    }
-
-    if (firebaseUser && stageId) {
+    if (!authLoading && stageId) {
       fetchStage();
     }
-  }, [firebaseUser, authLoading, stageId, router]);
+  }, [authLoading, stageId]);
 
   const fetchStage = async () => {
     try {
@@ -155,6 +164,12 @@ export default function StageDetailPage() {
   const handleAddToCart = async () => {
     if (!stage) return;
 
+    // Valider que tous les noms/prénoms sont remplis
+    if (form.dancers.some(d => !d.firstName.trim() || !d.lastName.trim())) {
+      alert('Veuillez remplir les noms et prénoms de tous les danseurs');
+      return;
+    }
+
     setSubmitting(true);
     try {
       if (!stage.pricing) {
@@ -182,7 +197,6 @@ export default function StageDetailPage() {
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
-  if (!firebaseUser) return null;
   if (!stage) return <div className="p-8">Stage non trouvé</div>;
 
   return (
@@ -226,7 +240,7 @@ export default function StageDetailPage() {
                 </h3>
                 <div className="flex gap-4">
                   <button
-                    onClick={() => setForm({ ...form, danceType: 'solo', dancers: [{ licensed: false }] })}
+                    onClick={() => setForm({ ...form, danceType: 'solo', dancers: [{ firstName: '', lastName: '', licensed: false }] })}
                     className={`flex-1 p-4 border-2 rounded-lg font-semibold transition ${
                       form.danceType === 'solo'
                         ? 'border-blue-600 bg-blue-100 text-blue-900'
@@ -236,7 +250,7 @@ export default function StageDetailPage() {
                     🧑‍🎤 Solo
                   </button>
                   <button
-                    onClick={() => setForm({ ...form, danceType: 'couple', dancers: [{ licensed: false }, { licensed: false }] })}
+                    onClick={() => setForm({ ...form, danceType: 'couple', dancers: [{ firstName: '', lastName: '', licensed: false }, { firstName: '', lastName: '', licensed: false }] })}
                     className={`flex-1 p-4 border-2 rounded-lg font-semibold transition ${
                       form.danceType === 'couple'
                         ? 'border-blue-600 bg-blue-100 text-blue-900'
@@ -245,6 +259,44 @@ export default function StageDetailPage() {
                   >
                     👥 Couple
                   </button>
+                </div>
+              </div>
+
+              {/* Étape 1b: Noms et prénoms des danseurs */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+                <h3 className="font-semibold text-green-900 mb-4 flex items-center">
+                  <span className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">1b</span>
+                  Noms et prénoms
+                </h3>
+                <div className="space-y-4">
+                  {form.dancers.map((dancer, idx) => (
+                    <div key={idx} className="grid grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        placeholder="Prénom"
+                        value={dancer.firstName}
+                        onChange={(e) => {
+                          const newDancers = [...form.dancers];
+                          newDancers[idx].firstName = e.target.value;
+                          setForm({ ...form, dancers: newDancers });
+                        }}
+                        className="border-2 border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-500 font-medium"
+                        required
+                      />
+                      <input
+                        type="text"
+                        placeholder="Nom"
+                        value={dancer.lastName}
+                        onChange={(e) => {
+                          const newDancers = [...form.dancers];
+                          newDancers[idx].lastName = e.target.value;
+                          setForm({ ...form, dancers: newDancers });
+                        }}
+                        className="border-2 border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-500 font-medium"
+                        required
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
 
