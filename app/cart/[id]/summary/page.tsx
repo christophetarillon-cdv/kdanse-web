@@ -90,7 +90,7 @@ export default function CartSummaryPage() {
 
                 // D'abord chercher une correspondance de nom exact
                 const matchingIndex = accountDancers.findIndex(
-                  (d) => d.firstName === dancer.firstName && d.lastName === dancer.lastName
+                  (d: any) => d.firstName === dancer.firstName && d.lastName === dancer.lastName
                 );
 
                 if (matchingIndex >= 0) {
