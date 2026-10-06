@@ -61,25 +61,12 @@ export default function CartSummaryPage() {
         // Si l'utilisateur est connecté, charger ses données existantes
         if (firebaseUser) {
           try {
-            // Essayer d'abord la collection 'profiles' (nouveau système)
-            let userProfiles: any[] = [];
+            // Charger depuis la collection 'users'
+            const userRef = doc(db, 'users', firebaseUser.uid);
+            const userDoc = await getDoc(userRef);
 
-            const profileRef = doc(db, 'profiles', firebaseUser.uid);
-            const profileDoc = await getDoc(profileRef);
-            if (profileDoc.exists()) {
-              userProfiles = [profileDoc.data()];
-            } else {
-              // Fallback à 'memberships' (ancien système)
-              const membershipsRef = collection(db, 'memberships');
-              const q = query(membershipsRef, where('userId', '==', firebaseUser.uid));
-              const snapshot = await getDocs(q);
-              if (!snapshot.empty) {
-                userProfiles = snapshot.docs.map(doc => doc.data());
-              }
-            }
-
-            if (userProfiles.length > 0) {
-              const userData = userProfiles[0];
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
               const userProfile = userData.profile || {};
               const commonAddress = userProfile.postalAddress || null;
 
