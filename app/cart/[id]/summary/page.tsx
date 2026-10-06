@@ -305,10 +305,10 @@ export default function CartSummaryPage() {
                   </h3>
 
                   {/* Sélecteur de danseur du compte */}
-                  {firebaseUser && profileDancers.length > 0 && (
+                  {firebaseUser && (
                     <div>
                       <label className="block text-sm font-bold text-gray-900 mb-2">
-                        Utiliser un danseur de mon compte
+                        Danseur du compte
                       </label>
                       <select
                         value={selectedDancerIndices[idx] ?? -1}
@@ -318,10 +318,11 @@ export default function CartSummaryPage() {
                           newIndices[idx] = selectedIndex;
                           setSelectedDancerIndices(newIndices);
 
+                          const newDancers = [...dancersInfo];
+
                           // Pré-remplir les données du danseur sélectionné
                           if (selectedIndex >= 0) {
                             const selectedDancer = profileDancers[selectedIndex];
-                            const newDancers = [...dancersInfo];
                             newDancers[idx] = {
                               ...newDancers[idx],
                               firstName: selectedDancer.firstName,
@@ -331,8 +332,20 @@ export default function CartSummaryPage() {
                               license: selectedDancer.license || { number: '', federation: 'ffdanse', active: false },
                               selectedDancerIndex: selectedIndex,
                             };
-                            setDancersInfo(newDancers);
+                          } else if (selectedIndex === -2) {
+                            // Nouveau danseur: vider les champs
+                            newDancers[idx] = {
+                              ...newDancers[idx],
+                              firstName: '',
+                              lastName: '',
+                              dateOfBirth: '',
+                              postalAddress: { street: '', postalCode: '', city: '' },
+                              license: { number: '', federation: 'ffdanse', active: false },
+                              selectedDancerIndex: -2,
+                            };
                           }
+
+                          setDancersInfo(newDancers);
                         }}
                         className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900"
                       >
@@ -342,6 +355,7 @@ export default function CartSummaryPage() {
                             {d.firstName} {d.lastName}
                           </option>
                         ))}
+                        <option value={-2}>➕ Ajouter un nouveau danseur</option>
                       </select>
                     </div>
                   )}
