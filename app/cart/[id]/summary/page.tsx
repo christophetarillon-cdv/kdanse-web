@@ -70,25 +70,47 @@ export default function CartSummaryPage() {
               const userProfile = userData.profile || {};
               const commonAddress = userProfile.postalAddress || null;
 
-              // Pré-remplir avec les données du profil utilisateur
-              dancersToSet = dancersToSet.map((dancer) => {
-                // Vérifier si les noms/prénoms correspondent
-                const hasNameMismatch =
-                  (userData.prenom !== dancer.firstName || userData.nom !== dancer.lastName);
+              // Pré-remplir avec les données des danseurs du profil utilisateur
+              const profileDancers = userProfile.dancers || [];
 
-                return {
-                  ...dancer,
-                  // Garder les noms/prénoms du cart si différents (pour permettre la saisie)
-                  firstName: dancer.firstName,
-                  lastName: dancer.lastName,
-                  dateOfBirth: userProfile.dateOfBirth ?
-                    new Date(userProfile.dateOfBirth.seconds * 1000).toISOString().split('T')[0] : '',
-                  postalAddress: userProfile.postalAddress || { street: '', postalCode: '', city: '' },
-                  license: userProfile.license || { number: '', federation: 'ffdanse', active: false },
-                  hasNameMismatch, // Flag pour afficher un message
-                  accountFirstName: userData.prenom,
-                  accountLastName: userData.nom,
-                };
+              dancersToSet = dancersToSet.map((dancer, dancerIndex) => {
+                // Prendre le danseur à cet index si disponible dans profile.dancers
+                const savedDancer = profileDancers[dancerIndex];
+
+                if (savedDancer) {
+                  // Vérifier si les noms/prénoms correspondent
+                  const hasNameMismatch =
+                    (savedDancer.firstName !== dancer.firstName || savedDancer.lastName !== dancer.lastName);
+
+                  return {
+                    ...dancer,
+                    firstName: savedDancer.firstName,
+                    lastName: savedDancer.lastName,
+                    dateOfBirth: savedDancer.dateOfBirth || '',
+                    postalAddress: savedDancer.postalAddress || { street: '', postalCode: '', city: '' },
+                    license: savedDancer.license || { number: '', federation: 'ffdanse', active: false },
+                    hasNameMismatch,
+                    accountFirstName: savedDancer.firstName,
+                    accountLastName: savedDancer.lastName,
+                  };
+                } else {
+                  // Fallback au profil principal si pas de danseur trouvé au bon index
+                  const hasNameMismatch =
+                    (userData.prenom !== dancer.firstName || userData.nom !== dancer.lastName);
+
+                  return {
+                    ...dancer,
+                    firstName: dancer.firstName,
+                    lastName: dancer.lastName,
+                    dateOfBirth: userProfile.dateOfBirth ?
+                      new Date(userProfile.dateOfBirth.seconds * 1000).toISOString().split('T')[0] : '',
+                    postalAddress: userProfile.postalAddress || { street: '', postalCode: '', city: '' },
+                    license: userProfile.license || { number: '', federation: 'ffdanse', active: false },
+                    hasNameMismatch,
+                    accountFirstName: userData.prenom,
+                    accountLastName: userData.nom,
+                  };
+                }
               });
             }
           } catch (error) {
