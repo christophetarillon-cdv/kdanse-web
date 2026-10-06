@@ -21,6 +21,12 @@ export default function CartSummaryPage() {
   // Infos danseurs complètes (Phase 2b validation)
   const [dancersInfo, setDancersInfo] = useState<any[]>([]);
 
+  // Danseurs disponibles du compte utilisateur
+  const [profileDancers, setProfileDancers] = useState<any[]>([]);
+
+  // Index du danseur du compte sélectionné pour chaque danseur du panier
+  const [selectedDancerIndices, setSelectedDancerIndices] = useState<(number | null)[]>([]);
+
   // Infos compte si nouvel utilisateur
   const [accountInfo, setAccountInfo] = useState({
     email: '',
@@ -68,33 +74,52 @@ export default function CartSummaryPage() {
             if (userDoc.exists()) {
               const userData = userDoc.data();
               const userProfile = userData.profile || {};
-              const commonAddress = userProfile.postalAddress || null;
+              const accountDancers = userProfile.dancers || [];
+
+              // Stocker les danseurs du compte pour le sélecteur
+              setProfileDancers(accountDancers);
+
+              // Initialiser les indices sélectionnés (par défaut: -1 = aucun sélectionné)
+              setSelectedDancerIndices(new Array(dancersToSet.length).fill(-1));
 
               // Pré-remplir avec les données des danseurs du profil utilisateur
-              const profileDancers = userProfile.dancers || [];
-
               dancersToSet = dancersToSet.map((dancer, dancerIndex) => {
-                // Prendre le danseur à cet index si disponible dans profile.dancers
-                const savedDancer = profileDancers[dancerIndex];
+                // Chercher un danseur du compte qui correspond au nom du panier
+                let selectedIndex = -1;
+                let selectedDancer = null;
 
-                if (savedDancer) {
-                  // Vérifier si les noms/prénoms correspondent
-                  const hasNameMismatch =
-                    (savedDancer.firstName !== dancer.firstName || savedDancer.lastName !== dancer.lastName);
+                // D'abord chercher une correspondance de nom exact
+                const matchingIndex = accountDancers.findIndex(
+                  (d) => d.firstName === dancer.firstName && d.lastName === dancer.lastName
+                );
 
+                if (matchingIndex >= 0) {
+                  selectedIndex = matchingIndex;
+                  selectedDancer = accountDancers[matchingIndex];
+                } else if (accountDancers.length > 0) {
+                  // Sinon prendre le premier danseur du compte
+                  selectedIndex = 0;
+                  selectedDancer = accountDancers[0];
+                }
+
+                // Mettre à jour l'indice sélectionné
+                setSelectedDancerIndices((prev) => {
+                  const newIndices = [...prev];
+                  newIndices[dancerIndex] = selectedIndex;
+                  return newIndices;
+                });
+
+                if (selectedDancer) {
                   return {
                     ...dancer,
-                    firstName: savedDancer.firstName,
-                    lastName: savedDancer.lastName,
-                    dateOfBirth: savedDancer.dateOfBirth || '',
-                    postalAddress: savedDancer.postalAddress || { street: '', postalCode: '', city: '' },
-                    license: savedDancer.license || { number: '', federation: 'ffdanse', active: false },
-                    hasNameMismatch,
-                    accountFirstName: savedDancer.firstName,
-                    accountLastName: savedDancer.lastName,
+                    firstName: selectedDancer.firstName,
+                    lastName: selectedDancer.lastName,
+                    dateOfBirth: selectedDancer.dateOfBirth || '',
+                    postalAddress: selectedDancer.postalAddress || { street: '', postalCode: '', city: '' },
+                    license: selectedDancer.license || { number: '', federation: 'ffdanse', active: false },
+                    selectedDancerIndex: selectedIndex,
                   };
                 } else {
-                  // Fallback au profil principal si pas de danseur trouvé au bon index
                   const hasNameMismatch =
                     (userData.prenom !== dancer.firstName || userData.nom !== dancer.lastName);
 
@@ -109,6 +134,7 @@ export default function CartSummaryPage() {
                     hasNameMismatch,
                     accountFirstName: userData.prenom,
                     accountLastName: userData.nom,
+                    selectedDancerIndex: -1,
                   };
                 }
               });
@@ -277,6 +303,48 @@ export default function CartSummaryPage() {
                   <h3 className="font-bold text-lg text-gray-900">
                     Danseur {idx + 1}: {dancer.firstName} {dancer.lastName}
                   </h3>
+
+                  {/* Sélecteur de danseur du compte */}
+                  {firebaseUser && profileDancers.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">
+                        Utiliser un danseur de mon compte
+                      </label>
+                      <select
+                        value={selectedDancerIndices[idx] ?? -1}
+                        onChange={(e) => {
+                          const selectedIndex = parseInt(e.target.value);
+                          const newIndices = [...selectedDancerIndices];
+                          newIndices[idx] = selectedIndex;
+                          setSelectedDancerIndices(newIndices);
+
+                          // Pré-remplir les données du danseur sélectionné
+                          if (selectedIndex >= 0) {
+                            const selectedDancer = profileDancers[selectedIndex];
+                            const newDancers = [...dancersInfo];
+                            newDancers[idx] = {
+                              ...newDancers[idx],
+                              firstName: selectedDancer.firstName,
+                              lastName: selectedDancer.lastName,
+                              dateOfBirth: selectedDancer.dateOfBirth || '',
+                              postalAddress: selectedDancer.postalAddress || { street: '', postalCode: '', city: '' },
+                              license: selectedDancer.license || { number: '', federation: 'ffdanse', active: false },
+                              selectedDancerIndex: selectedIndex,
+                            };
+                            setDancersInfo(newDancers);
+                          }
+                        }}
+                        className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900"
+                      >
+                        <option value={-1}>-- Choisir un danseur --</option>
+                        {profileDancers.map((d, idx) => (
+                          <option key={idx} value={idx}>
+                            {d.firstName} {d.lastName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   {/* Alerte si les noms ne correspondent pas */}
                   {dancer.hasNameMismatch && (
