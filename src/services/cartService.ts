@@ -278,8 +278,16 @@ export const mergeGuestCartWithUserCart = async (
   let userCart = await getUserCart(authenticatedUserId);
 
   if (!userCart) {
-    // Create new cart for authenticated user with guest items
-    return createCart(authenticatedUserId, guestCart.items[0], guestCart.items.slice(1));
+    // Create new cart for authenticated user with first guest item
+    if (guestCart.items.length === 0) {
+      throw new Error('Guest cart has no items');
+    }
+    userCart = await createCart(authenticatedUserId, guestCart.items[0]);
+
+    // Add remaining items
+    if (guestCart.items.length > 1) {
+      userCart.items.push(...guestCart.items.slice(1));
+    }
   }
 
   // Merge items: add guest items to user cart (avoid duplicates for same stage)
