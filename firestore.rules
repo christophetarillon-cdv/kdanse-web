@@ -107,6 +107,17 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /profiles/{userId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == userId ||
+        isAdmin()
+      );
+      allow write: if request.auth != null && (
+        request.auth.uid == userId ||
+        isAdmin()
+      );
+    }
+
     // Messages privés : réservés aux 2 participants du canal et aux admins.
     // Les autres types de canal (annonces/général/activité) restent ouverts
     // à tout utilisateur authentifié, comme avant.
