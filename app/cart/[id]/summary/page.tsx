@@ -59,7 +59,7 @@ export default function CartSummaryPage() {
 
       // Pré-remplir email si user connecté
       if (firebaseUser?.email) {
-        setAccountInfo((prev) => ({ ...prev, email: firebaseUser.email }));
+        setAccountInfo((prev) => ({ ...prev, email: firebaseUser.email || '' }));
       }
     } catch (error) {
       console.error('Error fetching cart:', error);
