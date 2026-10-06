@@ -337,7 +337,7 @@ export default function CartSummaryPage() {
                         className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900"
                       >
                         <option value={-1}>-- Choisir un danseur --</option>
-                        {profileDancers.map((d, idx) => (
+                        {profileDancers.map((d: any, idx) => (
                           <option key={idx} value={idx}>
                             {d.firstName} {d.lastName}
                           </option>
