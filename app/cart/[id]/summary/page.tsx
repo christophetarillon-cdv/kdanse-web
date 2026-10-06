@@ -72,12 +72,22 @@ export default function CartSummaryPage() {
 
               // Pré-remplir avec les données du profil utilisateur
               dancersToSet = dancersToSet.map((dancer) => {
+                // Vérifier si les noms/prénoms correspondent
+                const hasNameMismatch =
+                  (userData.prenom !== dancer.firstName || userData.nom !== dancer.lastName);
+
                 return {
                   ...dancer,
+                  // Garder les noms/prénoms du cart si différents (pour permettre la saisie)
+                  firstName: dancer.firstName,
+                  lastName: dancer.lastName,
                   dateOfBirth: userProfile.dateOfBirth ?
                     new Date(userProfile.dateOfBirth.seconds * 1000).toISOString().split('T')[0] : '',
                   postalAddress: userProfile.postalAddress || { street: '', postalCode: '', city: '' },
                   license: userProfile.license || { number: '', federation: 'ffdanse', active: false },
+                  hasNameMismatch, // Flag pour afficher un message
+                  accountFirstName: userData.prenom,
+                  accountLastName: userData.nom,
                 };
               });
             }
@@ -225,6 +235,51 @@ export default function CartSummaryPage() {
                   <h3 className="font-bold text-lg text-gray-900">
                     Danseur {idx + 1}: {dancer.firstName} {dancer.lastName}
                   </h3>
+
+                  {/* Alerte si les noms ne correspondent pas */}
+                  {dancer.hasNameMismatch && (
+                    <div className="bg-yellow-50 border-2 border-yellow-200 rounded p-4">
+                      <p className="text-sm text-yellow-800 font-medium mb-3">
+                        ⚠️ Les noms/prénoms ne correspondent pas avec votre compte
+                      </p>
+                      <p className="text-xs text-yellow-700 mb-4">
+                        Votre compte: <strong>{dancer.accountFirstName} {dancer.accountLastName}</strong>
+                      </p>
+                      <p className="text-xs text-yellow-700">
+                        Veuillez confirmer les noms/prénoms pour cette inscription
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Noms et prénoms */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">Prénom*</label>
+                      <input
+                        type="text"
+                        value={dancer.firstName}
+                        onChange={(e) => {
+                          const newDancers = [...dancersInfo];
+                          newDancers[idx].firstName = e.target.value;
+                          setDancersInfo(newDancers);
+                        }}
+                        className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">Nom*</label>
+                      <input
+                        type="text"
+                        value={dancer.lastName}
+                        onChange={(e) => {
+                          const newDancers = [...dancersInfo];
+                          newDancers[idx].lastName = e.target.value;
+                          setDancersInfo(newDancers);
+                        }}
+                        className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900"
+                      />
+                    </div>
+                  </div>
 
                   {/* Date de naissance */}
                   <div>
