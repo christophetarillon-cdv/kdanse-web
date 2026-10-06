@@ -270,7 +270,7 @@ export default function AdminPaymentsConsolidatedPage() {
 
                           {/* Notes */}
                           <div>
-                            <label className="block text-sm font-medium mb-2">Notes (optionnel)</label>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">Notes (optionnel)</label>
                             <textarea
                               value={notes[inst.id] || ''}
                               onChange={(e) => setNotes({ ...notes, [inst.id]: e.target.value })}
