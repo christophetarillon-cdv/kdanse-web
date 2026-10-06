@@ -48,6 +48,22 @@ export default function CartPage() {
           <p className="text-gray-700 font-medium">Vérifiez vos inscriptions avant paiement</p>
         </div>
 
+        {/* Option de connexion si pas connecté */}
+        {!firebaseUser && (
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8">
+            <p className="text-gray-900 font-medium mb-4">Vous avez déjà un compte?</p>
+            <div className="flex gap-3">
+              <Link
+                href="/login"
+                className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white py-3 rounded font-semibold transition"
+              >
+                Se connecter
+              </Link>
+              <p className="flex items-center text-gray-700 font-medium">ou continuer en tant que guest</p>
+            </div>
+          </div>
+        )}
+
         {!cart || cart.items.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
             <p className="text-gray-900 font-medium mb-6">Votre panier est vide</p>
