@@ -275,7 +275,7 @@ export default function AdminPaymentsConsolidatedPage() {
                               value={notes[inst.id] || ''}
                               onChange={(e) => setNotes({ ...notes, [inst.id]: e.target.value })}
                               placeholder="Notes internes..."
-                              className="w-full border rounded px-3 py-2 text-sm"
+                              className="w-full border rounded px-3 py-2 text-sm text-gray-900 placeholder-gray-500"
                               rows={2}
                             />
                           </div>

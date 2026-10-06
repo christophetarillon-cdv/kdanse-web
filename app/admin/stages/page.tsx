@@ -136,7 +136,7 @@ export default function AdminStagesPage() {
               placeholder="Nom du stage"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="border rounded px-3 py-2"
+              className="border rounded px-3 py-2 text-gray-900 placeholder-gray-500"
               required
             />
             <input
@@ -144,7 +144,7 @@ export default function AdminStagesPage() {
               placeholder="Lieu"
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
-              className="border rounded px-3 py-2"
+              className="border rounded px-3 py-2 text-gray-900 placeholder-gray-500"
               required
             />
           </div>
@@ -153,7 +153,7 @@ export default function AdminStagesPage() {
             placeholder="Description"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="border rounded px-3 py-2 w-full h-24"
+            className="border rounded px-3 py-2 w-full h-24 text-gray-900 placeholder-gray-500"
             required
           />
 
@@ -162,13 +162,13 @@ export default function AdminStagesPage() {
               type="date"
               value={form.startDate}
               onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-              className="border rounded px-3 py-2"
+              className="border rounded px-3 py-2 text-gray-900 placeholder-gray-500"
             />
             <input
               type="date"
               value={form.endDate}
               onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-              className="border rounded px-3 py-2"
+              className="border rounded px-3 py-2 text-gray-900 placeholder-gray-500"
             />
           </div>
 
@@ -192,7 +192,7 @@ export default function AdminStagesPage() {
                         stage: { ...form.pricing.stage, soloLicensed: parseFloat(e.target.value) || 0 }
                       }
                     })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border rounded px-3 py-2 text-gray-900"
                     min="0"
                     step="0.01"
                   />
@@ -209,7 +209,7 @@ export default function AdminStagesPage() {
                         stage: { ...form.pricing.stage, soloUnlicensed: parseFloat(e.target.value) || 0 }
                       }
                     })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border rounded px-3 py-2 text-gray-900"
                     min="0"
                     step="0.01"
                   />
@@ -226,7 +226,7 @@ export default function AdminStagesPage() {
                         stage: { ...form.pricing.stage, coupleUnlicensed: parseFloat(e.target.value) || 0 }
                       }
                     })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border rounded px-3 py-2 text-gray-900"
                     min="0"
                     step="0.01"
                   />
@@ -243,7 +243,7 @@ export default function AdminStagesPage() {
                         stage: { ...form.pricing.stage, coupleLicensed: parseFloat(e.target.value) || 0 }
                       }
                     })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border rounded px-3 py-2 text-gray-900"
                     min="0"
                     step="0.01"
                   />
@@ -260,7 +260,7 @@ export default function AdminStagesPage() {
                         stage: { ...form.pricing.stage, coupleMixed: parseFloat(e.target.value) || 0 }
                       }
                     })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border rounded px-3 py-2 text-gray-900"
                     min="0"
                     step="0.01"
                   />
@@ -289,7 +289,7 @@ export default function AdminStagesPage() {
                         housing: { ...form.pricing.housing, solo: parseFloat(e.target.value) || 0 }
                       }
                     })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border rounded px-3 py-2 text-gray-900"
                     min="0"
                     step="0.01"
                   />
@@ -306,7 +306,7 @@ export default function AdminStagesPage() {
                         housing: { ...form.pricing.housing, couple: parseFloat(e.target.value) || 0 }
                       }
                     })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border rounded px-3 py-2 text-gray-900"
                     min="0"
                     step="0.01"
                   />
