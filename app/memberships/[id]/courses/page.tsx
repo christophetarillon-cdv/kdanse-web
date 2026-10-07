@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc, collection, getDocs, query, orderBy, setDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Dance, Level } from '@/types/courses';
 
@@ -27,7 +27,6 @@ export default function CoursesPage() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [currentDancerIndex, setCurrentDancerIndex] = useState(0);
   const [selections, setSelections] = useState<CourseSelection[]>([]);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -100,31 +99,18 @@ export default function CoursesPage() {
     }
   };
 
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-
-      // Save each dancer's selections
-      for (let i = 0; i < dancers.length; i++) {
-        const docId = `${membershipId}_dancer_${i}`;
-        await setDoc(doc(db, 'membershipCourses', docId), {
-          membershipId,
-          dancerIndex: i,
-          dancerName: `${dancers[i].firstName} ${dancers[i].lastName}`,
-          courses: selections[i] || {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      }
-
-      alert('Cours enregistrés!');
-      router.push('/memberships');
-    } catch (error) {
-      console.error('Error saving courses:', error);
-      alert('Erreur: ' + error);
-    } finally {
-      setSaving(false);
-    }
+  const handleViewSummary = () => {
+    // Save selections to localStorage temporarily
+    localStorage.setItem(
+      `courses_${membershipId}`,
+      JSON.stringify({
+        dancers,
+        selections,
+        dances,
+        levels,
+      })
+    );
+    router.push(`/memberships/${membershipId}/courses/summary`);
   };
 
   if (loading) return <div className="p-8 text-center">Chargement...</div>;
@@ -207,15 +193,14 @@ export default function CoursesPage() {
           </button>
         </div>
 
-        {/* Save Button */}
+        {/* Summary Button */}
         {currentDancerIndex === dancers.length - 1 && (
           <div>
             <button
-              onClick={handleSave}
-              disabled={saving}
-              className="w-full bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700 disabled:opacity-50"
+              onClick={handleViewSummary}
+              className="w-full bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700"
             >
-              ✓ Enregistrer tous mes cours
+              📋 Voir le récapitulatif
             </button>
           </div>
         )}
