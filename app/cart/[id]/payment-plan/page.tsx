@@ -42,6 +42,22 @@ export default function PaymentPlanPage() {
   const [installments, setInstallments] = useState<InstallmentConfig[]>([]);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
+  const calculateHotelBudget = () => {
+    if (!cart?.registrationDetails?.wantHousing) return 0;
+    const housingSoloPrice = 80;
+    const housingCouplePrice = 120;
+    return (
+      (cart.registrationDetails.housingSolo || 0) * housingSoloPrice +
+      (cart.registrationDetails.housingCouple || 0) * housingCouplePrice
+    );
+  };
+
+  const hotelBudget = calculateHotelBudget();
+  const vacationChecksTotal = installments
+    .filter(i => i.method === 'cheque_vacances')
+    .reduce((sum, i) => sum + (i.amount || 0), 0);
+  const isVacationChecksValid = vacationChecksTotal <= hotelBudget;
+
   const stats: Stats = {
     total: cart?.totals.total || 0,
     allocated: installments.reduce((sum, i) => sum + (i.amount || 0), 0),
@@ -104,8 +120,20 @@ export default function PaymentPlanPage() {
     );
   };
 
+  const getMaxForInstallment = (index: number) => {
+    const currentAmount = installments[index]?.amount || 0;
+    const otherVacationChecks = installments
+      .filter((_, idx) => idx !== index && _.method === 'cheque_vacances')
+      .reduce((sum, i) => sum + (i.amount || 0), 0);
+    return hotelBudget - otherVacationChecks;
+  };
+
   const handleSubmit = async () => {
     if (!cart || !firebaseUser) return;
+    if (!isVacationChecksValid) {
+      alert(`Chèques vacances (${vacationChecksTotal.toFixed(2)}€) ne peuvent pas dépasser l'hébergement (${hotelBudget.toFixed(2)}€)`);
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -243,7 +271,7 @@ export default function PaymentPlanPage() {
                     className="w-full border rounded px-3 py-2"
                     min="0"
                     step="0.01"
-                    max={stats.total}
+                    max={inst.method === 'cheque_vacances' ? getMaxForInstallment(idx) : stats.total}
                   />
                   {inst.amount > 0 && (
                     <p className="text-xs text-gray-900 font-medium mt-1">
@@ -277,6 +305,20 @@ export default function PaymentPlanPage() {
                     <option value="virement">🏦 Virement</option>
                     <option value="cheque_vacances">🎟️ Chèques vacances</option>
                   </select>
+
+                  {/* Hint pour chèques vacances */}
+                  {inst.method === 'cheque_vacances' && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      <strong>Max:</strong> {getMaxForInstallment(idx).toFixed(2)}€ (hébergement)
+                    </p>
+                  )}
+
+                  {/* Warning si dépassement */}
+                  {inst.method === 'cheque_vacances' && inst.amount > getMaxForInstallment(idx) && (
+                    <div className="p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 mt-2">
+                      Dépasse de {(inst.amount - getMaxForInstallment(idx)).toFixed(2)}€
+                    </div>
+                  )}
                 </div>
 
                 {/* Détails selon le mode */}
@@ -361,6 +403,15 @@ export default function PaymentPlanPage() {
             </div>
           )}
 
+          {/* Avertissement chèques vacances */}
+          {!isVacationChecksValid && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-sm text-red-900">
+                <strong>⚠️ Chèques vacances trop élevés:</strong> Chèques vacances ({vacationChecksTotal.toFixed(2)}€) ne peuvent pas dépasser l'hébergement ({hotelBudget.toFixed(2)}€).
+              </p>
+            </div>
+          )}
+
           {/* Conditions */}
           <div className="border-t pt-6 space-y-4">
             <label className="flex items-start gap-3 cursor-pointer">
@@ -380,11 +431,13 @@ export default function PaymentPlanPage() {
           <div className="flex gap-3">
             <button
               onClick={handleSubmit}
-              disabled={submitting || !acceptedTerms || !stats.isComplete}
+              disabled={submitting || !acceptedTerms || !stats.isComplete || !isVacationChecksValid}
               className="flex-1 bg-green-600 text-white py-4 rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? 'Création en cours...' : (
-                !stats.isComplete
+                !isVacationChecksValid
+                  ? `Chèques vacances invalides`
+                  : !stats.isComplete
                   ? `Montants incomplets (${stats.allocated.toFixed(2)}€ / ${stats.total.toFixed(2)}€)`
                   : 'Créer le plan de paiement'
               )}
