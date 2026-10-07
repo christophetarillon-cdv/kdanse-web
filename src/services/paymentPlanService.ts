@@ -34,7 +34,7 @@ export const createPaymentPlan = async (
     chequeVacancesCount?: number;
   }>,
   cart?: Cart
-): Promise<PaymentPlan> => {
+): Promise<PaymentPlan & { membershipIds?: string[] }> => {
   const planId = doc(collection(db, PAYMENT_PLANS_COLLECTION)).id;
 
   // Calculate equal installment amounts if not specified
@@ -96,8 +96,9 @@ export const createPaymentPlan = async (
   );
 
   // Create memberships for each item in cart (status: pending_plan)
+  let membershipIds: string[] = [];
   if (cart && cart.items.length > 0) {
-    await Promise.all(
+    const membershipRefs = await Promise.all(
       cart.items.map((item) =>
         addDoc(collection(db, 'memberships'), {
           userId,
@@ -113,9 +114,10 @@ export const createPaymentPlan = async (
         })
       )
     );
+    membershipIds = membershipRefs.map(ref => ref.id);
   }
 
-  return plan;
+  return { ...plan, membershipIds };
 };
 
 // Get payment plan by ID
@@ -131,12 +133,19 @@ export const getPaymentPlan = async (planId: string): Promise<PaymentPlan | null
     )
   );
 
-  const installments = installmentsSnap.docs.map((doc) => ({
-    ...doc.data(),
-    id: doc.id,  // Override with correct document ID, not the field id
-    dueDate: doc.data().dueDate?.toDate?.() || new Date(doc.data().dueDate),
-    createdAt: doc.data().createdAt?.toDate?.() || new Date(),
-  })) as PaymentInstallment[];
+  const installments = installmentsSnap.docs
+    .map((doc) => ({
+      ...doc.data(),
+      id: doc.id,  // Override with correct document ID, not the field id
+      dueDate: doc.data().dueDate?.toDate?.() || new Date(doc.data().dueDate),
+      createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+    }))
+    .sort((a, b) => {
+      // Sort by createdAt to maintain order
+      const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+      const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+      return aTime - bTime;
+    }) as PaymentInstallment[];
 
   return {
     id: docSnap.id,

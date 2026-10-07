@@ -152,7 +152,7 @@ export default function PaymentPlanPage() {
         chequeVacancesCount: rest.chequeVacancesCount,
       }));
 
-      await createPaymentPlan(
+      const result = await createPaymentPlan(
         cart.id,
         firebaseUser.uid,
         cart.totals.total,
@@ -161,8 +161,14 @@ export default function PaymentPlanPage() {
         cart
       );
 
-      alert('Plan de paiement créé! Vous recevrez un email de confirmation.');
-      router.push('/memberships');
+      alert('Plan de paiement créé! Vous serez redirigé vers la sélection des cours.');
+
+      // Redirect to course selection for first membership
+      if (result.membershipIds && result.membershipIds.length > 0) {
+        router.push(`/memberships/${result.membershipIds[0]}/courses`);
+      } else {
+        router.push('/memberships');
+      }
     } catch (error) {
       console.error('Error:', error);
       alert('Erreur lors de la création du plan de paiement');
