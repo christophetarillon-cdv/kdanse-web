@@ -43,13 +43,17 @@ export default function PaymentPlanPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const calculateHotelBudget = () => {
-    if (!cart?.registrationDetails?.wantHousing) return 0;
-    const housingSoloPrice = 80;
-    const housingCouplePrice = 120;
-    return (
-      (cart.registrationDetails.housingSolo || 0) * housingSoloPrice +
-      (cart.registrationDetails.housingCouple || 0) * housingCouplePrice
-    );
+    if (!cart?.items || cart.items.length === 0) return 0;
+
+    let totalHousing = 0;
+    cart.items.forEach((item) => {
+      if (item.configuration.wantHousing) {
+        totalHousing +=
+          (item.configuration.housingSolo || 0) * (item.housingPrices?.solo || 0) +
+          (item.configuration.housingCouple || 0) * (item.housingPrices?.couple || 0);
+      }
+    });
+    return totalHousing;
   };
 
   const hotelBudget = calculateHotelBudget();
