@@ -8,12 +8,16 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Membership, PaymentPlan } from '@/types';
 import { getPaymentPlan } from '@/services/paymentPlanService';
+import { Dance, Level } from '@/types/courses';
 
 export default function MembershipsPage() {
   const { firebaseUser, loading: authLoading } = useAuth();
   const router = useRouter();
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [paymentPlans, setPaymentPlans] = useState<{ [key: string]: PaymentPlan }>({});
+  const [membershipCourses, setMembershipCourses] = useState<{ [key: string]: any }>({});
+  const [dances, setDances] = useState<Dance[]>([]);
+  const [levels, setLevels] = useState<Level[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'paid' | 'pending'>('all');
 
@@ -58,6 +62,33 @@ export default function MembershipsPage() {
       }
       setPaymentPlans(plansMap);
 
+      // Load membership courses
+      const coursesData: { [key: string]: any } = {};
+      for (const membership of data) {
+        const courseQuery = query(
+          collection(db, 'membershipCourses'),
+          where('membershipId', '==', membership.id)
+        );
+        const courseSnap = await getDocs(courseQuery);
+        coursesData[membership.id] = courseSnap.docs.map((doc) => doc.data());
+      }
+      setMembershipCourses(coursesData);
+
+      // Load dances and levels
+      const dancesSnap = await getDocs(collection(db, 'dances'));
+      const dancesList = dancesSnap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      } as Dance));
+      setDances(dancesList);
+
+      const levelsSnap = await getDocs(collection(db, 'levels'));
+      const levelsList = levelsSnap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      } as Level));
+      setLevels(levelsList);
+
       setMemberships(data.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()));
     } catch (error) {
       console.error('Error fetching memberships:', error);
@@ -76,6 +107,32 @@ export default function MembershipsPage() {
     total: memberships.length,
     paid: memberships.filter((m) => m.status === 'paid').length,
     pending: memberships.filter((m) => m.status === 'pending_confirmation').length,
+  };
+
+  const getLevelName = (levelId: string | null) => {
+    if (!levelId) return null;
+    const level = levels.find((l) => l.id === levelId);
+    return level?.name;
+  };
+
+  const getDanceName = (danceId: string) => {
+    const dance = dances.find((d) => d.id === danceId);
+    return dance?.name;
+  };
+
+  const getCourseSummary = (courses: { [key: string]: string | null }) => {
+    const summary = dances
+      .map((dance) => {
+        const levelId = courses[dance.id];
+        if (!levelId) return null;
+        const levelName = getLevelName(levelId);
+        return `${dance.name} (${levelName})`;
+      })
+      .filter(Boolean)
+      .slice(0, 2)
+      .join(', ');
+
+    return summary || 'Aucun cours sélectionné';
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
@@ -188,6 +245,35 @@ export default function MembershipsPage() {
               </div>
 
               <div className="p-4 sm:p-6 space-y-4">
+                {/* Danseurs et Cours */}
+                {membership.registrationDetails?.dancers && membership.registrationDetails.dancers.length > 0 && (
+                  <div className="bg-purple-50 rounded border border-purple-200 p-4 space-y-3">
+                    <p className="font-semibold text-purple-900 mb-2">🎯 Sélection des cours</p>
+                    {membership.registrationDetails.dancers.map((dancer: any, idx: number) => {
+                      const courses = membershipCourses[membership.id]?.find(
+                        (c: any) => c.dancerName === `${dancer.firstName} ${dancer.lastName}`
+                      );
+
+                      return (
+                        <div key={idx} className="bg-white p-3 rounded border border-purple-100 text-sm">
+                          <p className="font-semibold text-gray-900 mb-1">
+                            {dancer.firstName} {dancer.lastName}
+                          </p>
+                          <p className="text-gray-600 text-xs">
+                            {courses ? getCourseSummary(courses.courses) : 'Aucun cours sélectionné'}
+                          </p>
+                        </div>
+                      );
+                    })}
+                    <button
+                      onClick={() => router.push(`/memberships/${membership.id}/courses`)}
+                      className="w-full mt-3 bg-purple-600 text-white py-2 rounded font-semibold hover:bg-purple-700 text-sm"
+                    >
+                      {membershipCourses[membership.id]?.length > 0 ? '✏️ Modifier les cours' : '➕ Sélectionner les cours'}
+                    </button>
+                  </div>
+                )}
+
                 {/* Détails */}
                 <div className="bg-blue-50 rounded border border-blue-200 p-4 space-y-2 text-sm">
                   <p>
