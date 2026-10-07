@@ -20,6 +20,7 @@ export default function AdminCoursesPage() {
   const [editingLevel, setEditingLevel] = useState<Level | null>(null);
   const [levelName, setLevelName] = useState('');
   const [levelOrder, setLevelOrder] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -172,22 +173,16 @@ export default function AdminCoursesPage() {
                   />
                 </div>
 
-                <div className="flex gap-2 pt-4">
-                  <button
-                    onClick={handleSaveDance}
-                    className="flex-1 bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700"
-                  >
-                    Enregistrer
-                  </button>
-                  {editingDance && (
+                {editingDance && (
+                  <div className="flex gap-2 pt-4">
                     <button
                       onClick={handleCancelDance}
-                      className="flex-1 bg-gray-300 text-gray-900 py-2 rounded font-semibold hover:bg-gray-400"
+                      className="flex-1 bg-gray-300 text-gray-900 py-2 rounded font-semibold hover:bg-gray-400 text-sm"
                     >
                       Annuler
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -259,22 +254,16 @@ export default function AdminCoursesPage() {
                   />
                 </div>
 
-                <div className="flex gap-2 pt-4">
-                  <button
-                    onClick={handleSaveLevel}
-                    className="flex-1 bg-green-600 text-white py-2 rounded font-semibold hover:bg-green-700"
-                  >
-                    Enregistrer
-                  </button>
-                  {editingLevel && (
+                {editingLevel && (
+                  <div className="flex gap-2 pt-4">
                     <button
                       onClick={handleCancelLevel}
-                      className="flex-1 bg-gray-300 text-gray-900 py-2 rounded font-semibold hover:bg-gray-400"
+                      className="flex-1 bg-gray-300 text-gray-900 py-2 rounded font-semibold hover:bg-gray-400 text-sm"
                     >
                       Annuler
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -315,6 +304,23 @@ export default function AdminCoursesPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Bottom Save Button */}
+        <div className="mt-12 flex gap-4 justify-end">
+          <button
+            onClick={() => {
+              if (editingDance) handleSaveDance();
+              if (editingLevel) handleSaveLevel();
+              if (!editingDance && !editingLevel) {
+                alert('Remplissez un formulaire avant de sauvegarder');
+              }
+            }}
+            disabled={submitting}
+            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
+          >
+            ✓ Enregistrer
+          </button>
         </div>
       </div>
     </div>

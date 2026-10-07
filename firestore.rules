@@ -110,22 +110,31 @@ service cloud.firestore {
     // Courses (dances, levels, courses)
     match /dances/{document=**} {
       allow read: if request.auth != null;
-      allow write: if isAdmin();
+      allow write, delete: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles
+      );
     }
     match /levels/{document=**} {
       allow read: if request.auth != null;
-      allow write: if isAdmin();
+      allow write, delete: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles
+      );
     }
     match /courses/{document=**} {
       allow read: if request.auth != null;
-      allow write: if isAdmin();
+      allow write, delete: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles
+      );
     }
     match /membershipCourses/{document=**} {
-      allow read: if request.auth != null && (
-        resource.data.membershipId in get(/databases/$(database)/documents/memberships/$(resource.data.membershipId)).data ||
-        isAdmin()
+      allow read: if request.auth != null;
+      allow write, delete: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles
       );
-      allow write: if request.auth != null && isAdmin();
       allow create: if request.auth != null;
     }
 
