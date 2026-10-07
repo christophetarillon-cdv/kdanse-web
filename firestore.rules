@@ -107,6 +107,28 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Courses (dances, levels, courses)
+    match /dances/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    match /levels/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    match /courses/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    match /membershipCourses/{document=**} {
+      allow read: if request.auth != null && (
+        resource.data.membershipId in get(/databases/$(database)/documents/memberships/$(resource.data.membershipId)).data ||
+        isAdmin()
+      );
+      allow write: if request.auth != null && isAdmin();
+      allow create: if request.auth != null;
+    }
+
     // Messages privés : réservés aux 2 participants du canal et aux admins.
     // Les autres types de canal (annonces/général/activité) restent ouverts
     // à tout utilisateur authentifié, comme avant.
