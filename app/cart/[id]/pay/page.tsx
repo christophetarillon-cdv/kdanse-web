@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { addDoc, collection, getDoc, doc } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { getCart, clearCart } from '@/services/cartService';
@@ -67,23 +67,13 @@ export default function CartPaymentPage() {
     // Sinon, paiement direct
     setSubmitting(true);
     try {
-      // Load user profile to get dancer emails
-      const userRef = doc(db, 'users', firebaseUser.uid);
-      const userDoc = await getDoc(userRef);
-      const profileDancers = userDoc.data()?.profile?.dancers || [];
-
-      // Create memberships from cart items
+      // Create memberships from cart items with complete dancer data
       const membershipPromises = cart.items.map((item) => {
-        // Enrich dancers with email and stageName
-        const enrichedDancers = item.configuration.dancers.map((dancer: any, index: number) => {
-          // Try to find matching dancer from profile
-          const profileDancer = profileDancers[index];
-          return {
-            ...dancer,
-            email: profileDancer?.email || '',
-            stageName: item.stageName,
-          };
-        });
+        // Enrich dancers with stageName
+        const enrichedDancers = item.configuration.dancers.map((dancer: any) => ({
+          ...dancer,
+          stageName: item.stageName,
+        }));
 
         return addDoc(collection(db, 'memberships'), {
           userId: firebaseUser.uid,

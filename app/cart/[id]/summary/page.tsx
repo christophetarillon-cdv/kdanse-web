@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { getCart, submitCart } from '@/services/cartService';
 import { Cart } from '@/types/cart';
-import { collection, query, where, getDocs, getDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export default function CartSummaryPage() {
@@ -225,6 +225,35 @@ export default function CartSummaryPage() {
           'profile.lastUpdated': new Date(),
         });
       }
+
+      // Sauvegarder les données modifiées du formulaire dans le cart
+      const updatedCart = {
+        ...cart,
+        items: cart.items.map((item, itemIndex) => ({
+          ...item,
+          configuration: {
+            ...item.configuration,
+            // Remplacer les dancers avec les données du formulaire
+            dancers: dancersInfo
+              .slice(0, item.configuration.dancers.length)
+              .map((dancer, dancerIndex) => ({
+                firstName: dancer.firstName,
+                lastName: dancer.lastName,
+                email: dancer.email,
+                dateOfBirth: dancer.dateOfBirth,
+                postalAddress: dancer.postalAddress,
+                license: dancer.license?.number ? { number: dancer.license.number, active: dancer.license.active } : dancer.license,
+              })),
+          },
+        })),
+        updatedAt: new Date(),
+      };
+
+      // Mettre à jour le cart dans Firestore
+      await updateDoc(doc(db, 'carts', cart.id), {
+        items: updatedCart.items,
+        updatedAt: updatedCart.updatedAt,
+      });
 
       // Mark cart as submitted
       await submitCart(cart.id);
