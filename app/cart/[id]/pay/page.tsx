@@ -91,14 +91,15 @@ export default function CartPaymentPage() {
         });
       });
 
-      await Promise.all(membershipPromises);
+      const membershipRefs = await Promise.all(membershipPromises);
+      const firstMembershipId = membershipRefs[0].id;
 
       // Clear cart
       await clearCart(cart.id);
 
       // Show success message
-      alert('Paiement enregistré ! Vous serez redirigé vers vos inscriptions.');
-      router.push('/memberships');
+      alert('Paiement enregistré ! Vous serez redirigé vers la sélection des cours.');
+      router.push(`/memberships/${firstMembershipId}/courses`);
     } catch (error) {
       console.error('Error:', error);
       alert('Erreur lors du traitement du paiement');
