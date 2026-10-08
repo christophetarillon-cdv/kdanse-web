@@ -189,6 +189,7 @@ export default function CartSummaryPage() {
     }
 
     setSubmitting(true);
+    let step = 'initialisation';
     try {
       const dancerUids: (string | undefined)[] = [];
 
@@ -196,15 +197,18 @@ export default function CartSummaryPage() {
       if (firebaseUser) {
         const userRef = doc(db, 'users', firebaseUser.uid);
 
-        // Charger les danseurs existants
+        step = 'lecture du profil';
         const userDoc = await getDoc(userRef);
         const existingDancers = userDoc.data()?.profile?.dancers || [];
 
         // Un danseur ayant son propre compte est lié au commandeur, son profil devient la référence
         for (const dancer of dancersInfo) {
+          step = 'recherche du compte du danseur';
           const dancerUid = dancer.email?.trim() ? await findUserUidByEmail(dancer.email) : null;
           if (dancerUid && dancerUid !== firebaseUser.uid) {
+            step = 'liaison du compte du danseur (managedBy)';
             await linkDancerAccount(dancerUid, firebaseUser.uid);
+            step = 'mise à jour du profil du danseur lié';
             await syncLinkedDancerProfile(dancerUid, dancer);
             dancerUids.push(dancerUid);
           } else {
@@ -242,6 +246,7 @@ export default function CartSummaryPage() {
         }
 
         // Sauvegarder dans le profil utilisateur
+        step = 'sauvegarde des danseurs dans le profil';
         await updateDoc(userRef, {
           'profile.dancers': allDancers,
           'profile.lastUpdated': new Date(),
@@ -273,18 +278,20 @@ export default function CartSummaryPage() {
       };
 
       // Mettre à jour le cart dans Firestore
+      step = 'mise à jour du panier';
       await updateDoc(doc(db, 'carts', cart.id), {
         items: updatedCart.items,
         updatedAt: updatedCart.updatedAt,
       });
 
       // Mark cart as submitted
+      step = 'validation du panier';
       await submitCart(cart.id);
       // Redirect to payment page
       router.push(`/cart/${cart.id}/pay`);
     } catch (error) {
-      console.error('Error:', error);
-      alert('Erreur lors de la validation du panier');
+      console.error('Error at step:', step, error);
+      alert(`Erreur lors de la validation du panier (étape : ${step}) : ${(error as Error).message}`);
     } finally {
       setSubmitting(false);
     }
