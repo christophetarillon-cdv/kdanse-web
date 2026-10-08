@@ -103,14 +103,21 @@ export const updateSavedDancer = async (
 ): Promise<SavedDancer[]> => {
   const current = await getUserProfile(userId);
   const dancers = [...(((current?.profile as any)?.dancers as SavedDancer[]) || [])];
-  dancers[index] = dancer;
+
+  const email = dancer.email?.trim();
+  const emailUid = email ? await findUserUidByEmail(email) : null;
+  const linkedUid = emailUid && emailUid !== userId ? emailUid : undefined;
+  const saved: SavedDancer = linkedUid ? { ...dancer, uid: linkedUid } : dancer;
+
+  if (linkedUid) await linkDancerAccount(linkedUid, userId);
+  dancers[index] = saved;
 
   await updateDoc(doc(db, USERS_COLLECTION, userId), {
     'profile.dancers': dancers,
     updatedAt: serverTimestamp(),
   });
 
-  if (dancer.uid) await syncLinkedDancerProfile(dancer.uid, dancer);
+  if (linkedUid) await syncLinkedDancerProfile(linkedUid, saved);
 
   return resolveLinkedDancers(dancers);
 };

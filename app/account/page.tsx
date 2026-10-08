@@ -244,8 +244,6 @@ export default function AccountPage() {
       };
       if (dancerDraft.email.trim()) updated.email = dancerDraft.email.trim();
       if (dancerDraft.dateOfBirth) updated.dateOfBirth = dancerDraft.dateOfBirth;
-      const linkedUid = dancers[editingIndex]?.uid;
-      if (linkedUid) updated.uid = linkedUid;
 
       const newDancers = await updateSavedDancer(firebaseUser!.uid, editingIndex, updated);
       setDancers(newDancers);
