@@ -6,8 +6,26 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Membership, PaymentInstallment } from '@/types';
-import { getPendingInstallments, getPaymentPlanWithMembership } from '@/services/paymentPlanService';
+import { Membership, PaymentDetailsDraft, PaymentInstallment } from '@/types';
+import {
+  getPendingInstallments,
+  getPaymentPlanWithMembership,
+  updateInstallmentDetails,
+} from '@/services/paymentPlanService';
+import PaymentDetailsForm from '@/components/admin/PaymentDetailsForm';
+import { draftFromInstallment, draftFromMembership, toPaymentDetailsUpdate } from '@/lib/paymentDetails';
+
+const INSTALLMENT_METHODS: { value: PaymentDetailsDraft['method']; label: string }[] = [
+  { value: 'cheque', label: '💳 Chèque' },
+  { value: 'virement', label: '🏦 Virement' },
+  { value: 'cheque_vacances', label: '🎟️ Chèques vacances' },
+];
+
+const SIMPLE_METHODS: { value: PaymentDetailsDraft['method']; label: string }[] = [
+  { value: 'cheque', label: '💳 Chèque' },
+  { value: 'virement', label: '🏦 Virement' },
+  { value: 'helloasso', label: '📱 HelloAsso' },
+];
 
 export default function AdminPaymentsConsolidatedPage() {
   const { user, loading: authLoading } = useAuth();
@@ -22,11 +40,22 @@ export default function AdminPaymentsConsolidatedPage() {
   // Plan info for display (planId -> membership)
   const [planMemberships, setPlanMemberships] = useState<{ [key: string]: Membership }>({});
 
+  // Plan totals vs. sum of all its installments (received ones included)
+  const [planTotals, setPlanTotals] = useState<{ [key: string]: { total: number; sum: number } }>({});
+
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [tab, setTab] = useState<'installments' | 'simple'>('installments');
   const [notes, setNotes] = useState<{ [key: string]: string }>({});
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
+  const [editingInstallment, setEditingInstallment] = useState<{
+    id: string;
+    planId: string;
+    draft: PaymentDetailsDraft;
+  } | null>(null);
+  const [editingMembershipId, setEditingMembershipId] = useState<string | null>(null);
+  const [membershipDraft, setMembershipDraft] = useState<PaymentDetailsDraft | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!authLoading) {
@@ -47,10 +76,17 @@ export default function AdminPaymentsConsolidatedPage() {
       // Fetch membership info for each plan (for display labels)
       const planIds = [...new Set(installmentsData.map(inst => inst.paymentPlanId))];
       const planMembershipMap: { [key: string]: Membership } = {};
+      const planTotalMap: { [key: string]: { total: number; sum: number } } = {};
 
       for (const planId of planIds) {
         try {
           const planData = await getPaymentPlanWithMembership(planId);
+          if (planData) {
+            planTotalMap[planId] = {
+              total: planData.totalAmount,
+              sum: planData.installments.reduce((acc, inst) => acc + inst.amount, 0),
+            };
+          }
           if (planData?.membership) {
             planMembershipMap[planId] = planData.membership;
           }
@@ -59,6 +95,7 @@ export default function AdminPaymentsConsolidatedPage() {
         }
       }
       setPlanMemberships(planMembershipMap);
+      setPlanTotals(planTotalMap);
 
       // Fetch pending simple payments
       const q = query(
@@ -134,6 +171,73 @@ export default function AdminPaymentsConsolidatedPage() {
     } finally {
       setConfirming(null);
     }
+  };
+
+  const startEditInstallment = (inst: PaymentInstallment) => {
+    setEditingInstallment({ id: inst.id, planId: inst.paymentPlanId, draft: draftFromInstallment(inst) });
+  };
+
+  const saveInstallment = async () => {
+    if (!editingInstallment) return;
+    const { id, draft } = editingInstallment;
+    if (!(draft.amount > 0) || !draft.date) {
+      alert('Le montant et la date sont obligatoires');
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateInstallmentDetails(id, draft);
+      setEditingInstallment(null);
+      await fetchAllPayments();
+    } catch (error) {
+      console.error('Error updating installment:', error);
+      alert("Erreur lors de l'enregistrement");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const startEditMembership = (membership: Membership) => {
+    setEditingMembershipId(membership.id);
+    setMembershipDraft(draftFromMembership(membership));
+  };
+
+  const saveMembership = async () => {
+    if (!editingMembershipId || !membershipDraft) return;
+    if (!(membershipDraft.amount > 0) || !membershipDraft.date) {
+      alert('Le montant et la date sont obligatoires');
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateDoc(doc(db, 'memberships', editingMembershipId), {
+        amount: membershipDraft.amount,
+        paymentMethod: membershipDraft.method,
+        paymentDate: new Date(membershipDraft.date),
+        ...toPaymentDetailsUpdate(membershipDraft),
+        updatedAt: serverTimestamp(),
+      });
+      setEditingMembershipId(null);
+      setMembershipDraft(null);
+      await fetchAllPayments();
+    } catch (error) {
+      console.error('Error updating membership payment:', error);
+      alert("Erreur lors de l'enregistrement");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Écart entre le total des échéances du plan et son montant, en tenant compte de la saisie en cours
+  const getPlanGap = (planId: string): number | null => {
+    const totals = planTotals[planId];
+    if (!totals) return null;
+    let sum = totals.sum;
+    if (editingInstallment?.planId === planId) {
+      const original = installments.find((i) => i.id === editingInstallment.id);
+      if (original) sum += editingInstallment.draft.amount - original.amount;
+    }
+    return Math.round((sum - totals.total) * 100) / 100;
   };
 
   const getMethodLabel = (method: 'cheque' | 'virement' | 'cheque_vacances'): string => {
@@ -229,7 +333,9 @@ export default function AdminPaymentsConsolidatedPage() {
             </div>
           ) : (
             <>
-              {Object.entries(groupedByPlan).map(([planId, planInstallments]) => (
+              {Object.entries(groupedByPlan).map(([planId, planInstallments]) => {
+                const gap = getPlanGap(planId);
+                return (
                 <div key={planId} className="bg-white rounded-lg shadow overflow-hidden">
                   <button
                     onClick={() => setExpandedPlan(expandedPlan === planId ? null : planId)}
@@ -239,9 +345,17 @@ export default function AdminPaymentsConsolidatedPage() {
                     <span>{expandedPlan === planId ? '▼' : '▶'}</span>
                   </button>
 
+                  {gap !== null && Math.abs(gap) > 0.005 && (
+                    <p className="px-6 pb-4 text-sm font-medium text-orange-800">
+                      ⚠️ Les échéances ne correspondent pas au montant du plan ({planTotals[planId].total.toFixed(2)}€) : écart de {gap.toFixed(2)}€
+                    </p>
+                  )}
+
                   {expandedPlan === planId && (
                     <div className="border-t divide-y">
-                      {planInstallments.map((inst) => (
+                      {planInstallments.map((inst) => {
+                        const isEditing = editingInstallment?.id === inst.id;
+                        return (
                         <div key={inst.id} className="p-6 space-y-4">
                           <div className="flex justify-between items-start mb-4">
                             <div>
@@ -253,20 +367,28 @@ export default function AdminPaymentsConsolidatedPage() {
                             <span className="text-2xl font-bold text-blue-600">{inst.amount.toFixed(2)}€</span>
                           </div>
 
-                          {/* Détails */}
-                          <div className="bg-gray-50 p-4 rounded space-y-2 text-sm">
-                            {inst.method === 'cheque' && (
-                              <>
-                                {inst.chequeNumber && <p className="text-gray-900"><strong>N° chèque:</strong> {inst.chequeNumber}</p>}
-                                {inst.chequeBank && <p className="text-gray-900"><strong>Banque:</strong> {inst.chequeBank}</p>}
-                                {inst.chequeCity && <p className="text-gray-900"><strong>Ville:</strong> {inst.chequeCity}</p>}
-                                {inst.chequeName && <p className="text-gray-900"><strong>Nom:</strong> {inst.chequeName}</p>}
-                              </>
-                            )}
-                            {inst.method === 'cheque_vacances' && (
-                              <p className="text-gray-900"><strong>Nombre de chèques:</strong> {inst.chequeVacancesCount || 'N/A'}</p>
-                            )}
-                          </div>
+                          {isEditing ? (
+                            <PaymentDetailsForm
+                              draft={editingInstallment.draft}
+                              onChange={(draft) => setEditingInstallment((prev) => prev && { ...prev, draft })}
+                              methods={INSTALLMENT_METHODS}
+                              dateLabel="Date d'échéance"
+                            />
+                          ) : (
+                            <div className="bg-gray-50 p-4 rounded space-y-2 text-sm">
+                              {inst.method === 'cheque' && (
+                                <>
+                                  {inst.chequeNumber && <p className="text-gray-900"><strong>N° chèque:</strong> {inst.chequeNumber}</p>}
+                                  {inst.chequeBank && <p className="text-gray-900"><strong>Banque:</strong> {inst.chequeBank}</p>}
+                                  {inst.chequeCity && <p className="text-gray-900"><strong>Ville:</strong> {inst.chequeCity}</p>}
+                                  {inst.chequeName && <p className="text-gray-900"><strong>Nom:</strong> {inst.chequeName}</p>}
+                                </>
+                              )}
+                              {inst.method === 'cheque_vacances' && (
+                                <p className="text-gray-900"><strong>Nombre de chèques:</strong> {inst.chequeVacancesCount || 'N/A'}</p>
+                              )}
+                            </div>
+                          )}
 
                           {/* Notes */}
                           <div>
@@ -282,20 +404,50 @@ export default function AdminPaymentsConsolidatedPage() {
 
                           {/* Boutons */}
                           <div className="flex gap-3 pt-4">
-                            <button
-                              onClick={() => markInstallmentAsReceived(inst.id)}
-                              disabled={confirming === inst.id}
-                              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
-                            >
-                              {confirming === inst.id ? 'Validation...' : '✅ Marquer reçu'}
-                            </button>
+                            {isEditing ? (
+                              <>
+                                <button
+                                  onClick={saveInstallment}
+                                  disabled={saving}
+                                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                                >
+                                  {saving ? 'Enregistrement...' : '💾 Enregistrer'}
+                                </button>
+                                <button
+                                  onClick={() => setEditingInstallment(null)}
+                                  disabled={saving}
+                                  className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                                >
+                                  Annuler
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => startEditInstallment(inst)}
+                                  disabled={confirming === inst.id}
+                                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                                >
+                                  ✏️ Modifier
+                                </button>
+                                <button
+                                  onClick={() => markInstallmentAsReceived(inst.id)}
+                                  disabled={confirming === inst.id}
+                                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                                >
+                                  {confirming === inst.id ? 'Validation...' : '✅ Marquer reçu'}
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </>
           )}
         </div>
@@ -310,7 +462,9 @@ export default function AdminPaymentsConsolidatedPage() {
             </div>
           ) : (
             <>
-              {memberships.map((membership) => (
+              {memberships.map((membership) => {
+                const isEditing = editingMembershipId === membership.id;
+                return (
                 <div key={membership.id} className="bg-white rounded-lg shadow overflow-hidden">
                   <div className="p-6 border-b bg-gray-50 flex justify-between items-start">
                     <div>
@@ -349,26 +503,76 @@ export default function AdminPaymentsConsolidatedPage() {
                       )}
                     </div>
 
+                    {isEditing && membershipDraft ? (
+                      <PaymentDetailsForm
+                        draft={membershipDraft}
+                        onChange={setMembershipDraft}
+                        methods={SIMPLE_METHODS}
+                        dateLabel="Date de réception"
+                      />
+                    ) : (
+                      membership.paymentMethod === 'cheque' && (
+                        <div className="bg-gray-50 p-4 rounded space-y-2 text-sm">
+                          {membership.chequeNumber && <p className="text-gray-900"><strong>N° chèque:</strong> {membership.chequeNumber}</p>}
+                          {membership.chequeBank && <p className="text-gray-900"><strong>Banque:</strong> {membership.chequeBank}</p>}
+                          {membership.chequeCity && <p className="text-gray-900"><strong>Ville:</strong> {membership.chequeCity}</p>}
+                          {membership.chequeName && <p className="text-gray-900"><strong>Nom:</strong> {membership.chequeName}</p>}
+                        </div>
+                      )
+                    )}
+
                     {/* Actions */}
                     <div className="flex gap-3 pt-4">
-                      <button
-                        onClick={() => confirmSimplePayment(membership.id)}
-                        disabled={confirming === membership.id}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
-                      >
-                        {confirming === membership.id ? 'Validation...' : '✅ Valider'}
-                      </button>
-                      <button
-                        onClick={() => rejectSimplePayment(membership.id)}
-                        disabled={confirming === membership.id}
-                        className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
-                      >
-                        {confirming === membership.id ? 'Refus...' : '❌ Refuser'}
-                      </button>
+                      {isEditing ? (
+                        <>
+                          <button
+                            onClick={saveMembership}
+                            disabled={saving}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                          >
+                            {saving ? 'Enregistrement...' : '💾 Enregistrer'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingMembershipId(null);
+                              setMembershipDraft(null);
+                            }}
+                            disabled={saving}
+                            className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                          >
+                            Annuler
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => startEditMembership(membership)}
+                            disabled={confirming === membership.id}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                          >
+                            ✏️ Modifier
+                          </button>
+                          <button
+                            onClick={() => confirmSimplePayment(membership.id)}
+                            disabled={confirming === membership.id}
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                          >
+                            {confirming === membership.id ? 'Validation...' : '✅ Valider'}
+                          </button>
+                          <button
+                            onClick={() => rejectSimplePayment(membership.id)}
+                            disabled={confirming === membership.id}
+                            className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                          >
+                            {confirming === membership.id ? 'Refus...' : '❌ Refuser'}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </>
           )}
         </div>

@@ -106,10 +106,27 @@ export interface Membership {
   };
   paymentMethod?: 'helloasso' | 'virement' | 'cheque' | 'plan';
   amount: number;
+  paymentDate?: Date;
+  chequeNumber?: string;
+  chequeBank?: string;
+  chequeCity?: string;
+  chequeName?: string;
   paymentPlanId?: string;
   cartId?: string;
   createdAt: Date;
   updatedAt?: Date;
+}
+
+// Saisie admin des détails d'un paiement (échéance ou paiement simple)
+export interface PaymentDetailsDraft {
+  amount: number;
+  method: 'cheque' | 'virement' | 'cheque_vacances' | 'helloasso';
+  date: string;
+  chequeNumber?: string;
+  chequeBank?: string;
+  chequeCity?: string;
+  chequeName?: string;
+  chequeVacancesCount?: number;
 }
 
 

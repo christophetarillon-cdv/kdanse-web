@@ -11,7 +11,8 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { PaymentPlan, PaymentInstallment, PaymentSettings, Cart, Membership } from '@/types';
+import { PaymentPlan, PaymentInstallment, PaymentSettings, Cart, Membership, PaymentDetailsDraft } from '@/types';
+import { toPaymentDetailsUpdate } from '@/lib/paymentDetails';
 
 const PAYMENT_PLANS_COLLECTION = 'paymentPlans';
 const INSTALLMENTS_COLLECTION = 'paymentInstallments';
@@ -189,6 +190,19 @@ export const markInstallmentReceived = async (
     receivedDate: serverTimestamp(),
     confirmedBy: userId,
     notes: notes || '',
+    updatedAt: serverTimestamp(),
+  });
+};
+
+export const updateInstallmentDetails = async (
+  installmentId: string,
+  draft: PaymentDetailsDraft
+): Promise<void> => {
+  await updateDoc(doc(db, INSTALLMENTS_COLLECTION, installmentId), {
+    amount: draft.amount,
+    dueDate: new Date(draft.date),
+    method: draft.method,
+    ...toPaymentDetailsUpdate(draft),
     updatedAt: serverTimestamp(),
   });
 };
