@@ -4,17 +4,24 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { User } from '@/types';
-import { updateUserProfile, getUserProfile } from '@/services/userService';
+import { User, SavedDancer } from '@/types';
+import { updateUserProfile, getUserProfile, updateSavedDancer } from '@/services/userService';
 
-interface SavedDancer {
+interface DancerDraft {
   firstName: string;
   lastName: string;
-  email?: string;
-  dateOfBirth?: string | Date;
-  postalAddress?: { street?: string; postalCode?: string; city?: string };
-  license?: { number?: string; active?: boolean };
+  email: string;
+  dateOfBirth: string;
+  street: string;
+  postalCode: string;
+  city: string;
+  licenseNumber: string;
+  licenseActive: boolean;
 }
+
+const normalize = (value?: string | null) => (value || '').trim().toLowerCase();
+
+const inputClass = 'w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium';
 
 export default function AccountPage() {
   const { firebaseUser, user, loading: authLoading } = useAuth();
@@ -22,6 +29,10 @@ export default function AccountPage() {
 
   const [loading, setLoading] = useState(true);
   const [dancers, setDancers] = useState<SavedDancer[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [dancerDraft, setDancerDraft] = useState<DancerDraft | null>(null);
+  const [savingDancer, setSavingDancer] = useState(false);
+  const [dancerError, setDancerError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -167,6 +178,82 @@ export default function AccountPage() {
       photoUrl: '',
     }));
     setPhotoFile(null);
+  };
+
+  const isAccountHolder = (dancer: SavedDancer) => {
+    const sameName =
+      normalize(formData.firstName) !== '' &&
+      normalize(dancer.firstName) === normalize(formData.firstName) &&
+      normalize(dancer.lastName) === normalize(formData.lastName);
+    const sameEmail = !!dancer.email && normalize(dancer.email) === normalize(firebaseUser?.email);
+    return sameName || sameEmail;
+  };
+
+  const visibleDancers = dancers
+    .map((dancer, index) => ({ dancer, index }))
+    .filter(({ dancer }) => !isAccountHolder(dancer));
+
+  const startEditDancer = (index: number, dancer: SavedDancer) => {
+    setEditingIndex(index);
+    setDancerError(null);
+    setDancerDraft({
+      firstName: dancer.firstName || '',
+      lastName: dancer.lastName || '',
+      email: dancer.email || '',
+      dateOfBirth: dancer.dateOfBirth ? new Date(dancer.dateOfBirth).toISOString().split('T')[0] : '',
+      street: dancer.postalAddress?.street || '',
+      postalCode: dancer.postalAddress?.postalCode || '',
+      city: dancer.postalAddress?.city || '',
+      licenseNumber: dancer.license?.number || '',
+      licenseActive: dancer.license?.active || false,
+    });
+  };
+
+  const cancelEditDancer = () => {
+    setEditingIndex(null);
+    setDancerDraft(null);
+    setDancerError(null);
+  };
+
+  const handleDancerFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setDancerDraft(prev => (prev ? { ...prev, [name]: type === 'checkbox' ? checked : value } : prev));
+  };
+
+  const handleSaveDancer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingIndex === null || !dancerDraft) return;
+
+    setSavingDancer(true);
+    setDancerError(null);
+
+    try {
+      const updated: SavedDancer = {
+        firstName: dancerDraft.firstName.trim(),
+        lastName: dancerDraft.lastName.trim(),
+        postalAddress: {
+          street: dancerDraft.street.trim(),
+          postalCode: dancerDraft.postalCode.trim(),
+          city: dancerDraft.city.trim(),
+        },
+        license: {
+          number: dancerDraft.licenseNumber.trim(),
+          active: dancerDraft.licenseActive,
+        },
+      };
+      if (dancerDraft.email.trim()) updated.email = dancerDraft.email.trim();
+      if (dancerDraft.dateOfBirth) updated.dateOfBirth = dancerDraft.dateOfBirth;
+
+      const newDancers = await updateSavedDancer(firebaseUser!.uid, editingIndex, updated);
+      setDancers(newDancers);
+      setEditingIndex(null);
+      setDancerDraft(null);
+    } catch (err) {
+      console.error('Error saving dancer:', err);
+      setDancerError('Erreur lors de la sauvegarde du danseur. Veuillez réessayer.');
+    } finally {
+      setSavingDancer(false);
+    }
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
@@ -396,38 +483,123 @@ export default function AccountPage() {
       <div className="bg-white rounded-lg shadow p-6 max-w-2xl">
         <h2 className="text-lg font-bold text-gray-900 mb-4">👥 Mes danseurs</h2>
 
-        {dancers.length === 0 ? (
+        {visibleDancers.length === 0 ? (
           <p className="text-gray-900 font-medium">
             Aucun danseur enregistré pour le moment. Ils seront ajoutés lors de votre prochaine inscription.
           </p>
         ) : (
           <ul className="space-y-4">
-            {dancers.map((dancer, index) => {
+            {visibleDancers.map(({ dancer, index }) => {
               const cityLine = [dancer.postalAddress?.postalCode, dancer.postalAddress?.city]
                 .filter(Boolean)
                 .join(' ');
               const addressLine = [dancer.postalAddress?.street, cityLine].filter(Boolean).join(', ');
+              const isEditing = editingIndex === index && dancerDraft !== null;
 
               return (
                 <li key={`${dancer.firstName}-${dancer.lastName}-${index}`} className="border rounded p-4 space-y-1 text-sm">
-                  <p className="font-bold text-gray-900 text-base">
-                    {dancer.firstName} {dancer.lastName}
-                  </p>
-                  {dancer.email && (
-                    <p className="text-gray-900"><strong>Email:</strong> {dancer.email}</p>
-                  )}
-                  {dancer.dateOfBirth && (
-                    <p className="text-gray-900">
-                      <strong>Date de naissance:</strong> {new Date(dancer.dateOfBirth).toLocaleDateString('fr-FR')}
-                    </p>
-                  )}
-                  {addressLine && (
-                    <p className="text-gray-900"><strong>Adresse:</strong> {addressLine}</p>
-                  )}
-                  {dancer.license?.number && (
-                    <p className="text-gray-900">
-                      <strong>Licence FFDanse:</strong> {dancer.license.number} {dancer.license.active ? '(active)' : '(inactive)'}
-                    </p>
+                  {isEditing ? (
+                    <form onSubmit={handleSaveDancer} className="space-y-3">
+                      {dancerError && (
+                        <div className="bg-red-50 border border-red-200 rounded p-3 text-red-900">
+                          {dancerError}
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-bold text-gray-900 mb-1">Prénom</label>
+                          <input type="text" name="firstName" value={dancerDraft.firstName} onChange={handleDancerFieldChange} required className={inputClass} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-gray-900 mb-1">Nom</label>
+                          <input type="text" name="lastName" value={dancerDraft.lastName} onChange={handleDancerFieldChange} required className={inputClass} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-gray-900 mb-1">Email</label>
+                        <input type="email" name="email" value={dancerDraft.email} onChange={handleDancerFieldChange} className={inputClass} />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-gray-900 mb-1">Date de naissance</label>
+                        <input type="date" name="dateOfBirth" value={dancerDraft.dateOfBirth} onChange={handleDancerFieldChange} className={inputClass} />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-gray-900 mb-1">Rue</label>
+                        <input type="text" name="street" value={dancerDraft.street} onChange={handleDancerFieldChange} className={inputClass} />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-bold text-gray-900 mb-1">Code postal</label>
+                          <input type="text" name="postalCode" value={dancerDraft.postalCode} onChange={handleDancerFieldChange} className={inputClass} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-gray-900 mb-1">Ville</label>
+                          <input type="text" name="city" value={dancerDraft.city} onChange={handleDancerFieldChange} className={inputClass} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-gray-900 mb-1">Numéro de licence FFDanse</label>
+                        <input type="text" name="licenseNumber" value={dancerDraft.licenseNumber} onChange={handleDancerFieldChange} className={inputClass} />
+                      </div>
+
+                      <label className="flex items-center gap-2">
+                        <input type="checkbox" name="licenseActive" checked={dancerDraft.licenseActive} onChange={handleDancerFieldChange} className="rounded" />
+                        <span className="text-sm font-medium text-gray-900">Licence active</span>
+                      </label>
+
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          type="submit"
+                          disabled={savingDancer}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                        >
+                          {savingDancer ? 'Sauvegarde...' : '💾 Enregistrer'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditDancer}
+                          className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-2 rounded font-semibold transition"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <p className="font-bold text-gray-900 text-base">
+                        {dancer.firstName} {dancer.lastName}
+                      </p>
+                      {dancer.email && (
+                        <p className="text-gray-900"><strong>Email:</strong> {dancer.email}</p>
+                      )}
+                      {dancer.dateOfBirth && (
+                        <p className="text-gray-900">
+                          <strong>Date de naissance:</strong> {new Date(dancer.dateOfBirth).toLocaleDateString('fr-FR')}
+                        </p>
+                      )}
+                      {addressLine && (
+                        <p className="text-gray-900"><strong>Adresse:</strong> {addressLine}</p>
+                      )}
+                      {dancer.license?.number && (
+                        <p className="text-gray-900">
+                          <strong>Licence FFDanse:</strong> {dancer.license.number} {dancer.license.active ? '(active)' : '(inactive)'}
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => startEditDancer(index, dancer)}
+                        disabled={editingIndex !== null}
+                        className="mt-2 bg-gray-100 hover:bg-gray-200 text-gray-900 px-3 py-1 rounded text-sm font-medium disabled:opacity-50"
+                      >
+                        ✏️ Modifier
+                      </button>
+                    </>
                   )}
                 </li>
               );

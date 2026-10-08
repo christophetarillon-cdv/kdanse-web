@@ -48,6 +48,16 @@ export interface UserProfile {
   photoUrl?: string; // Profile photo from app or uploaded
 }
 
+// Danseur enregistré dans profile.dancers (saisi lors d'une inscription)
+export interface SavedDancer {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  dateOfBirth?: string | Date;
+  postalAddress?: { street?: string; postalCode?: string; city?: string };
+  license?: { number?: string; active?: boolean };
+}
+
 export interface User {
   id: string;
   email: string;

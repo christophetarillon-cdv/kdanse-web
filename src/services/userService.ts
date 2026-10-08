@@ -1,6 +1,6 @@
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { User } from '@/types';
+import { User, SavedDancer } from '@/types';
 
 const USERS_COLLECTION = 'users';
 
@@ -24,6 +24,23 @@ export const getUserProfile = async (userId: string): Promise<User | null> => {
     console.error('Error fetching user profile:', error);
     throw error;
   }
+};
+
+export const updateSavedDancer = async (
+  userId: string,
+  index: number,
+  dancer: SavedDancer
+): Promise<SavedDancer[]> => {
+  const current = await getUserProfile(userId);
+  const dancers = [...(((current?.profile as any)?.dancers as SavedDancer[]) || [])];
+  dancers[index] = dancer;
+
+  await updateDoc(doc(db, USERS_COLLECTION, userId), {
+    'profile.dancers': dancers,
+    updatedAt: serverTimestamp(),
+  });
+
+  return dancers;
 };
 
 export const updateUserProfile = async (userId: string, updates: Partial<User>): Promise<void> => {
