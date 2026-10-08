@@ -73,9 +73,14 @@ export const createPaymentPlan = async (
   }));
 
   // Save plan (without full installments, they're saved separately)
+  const visibleUserIds = cart
+    ? getDancerUids(cart.items.flatMap((item) => item.configuration.dancers))
+    : [];
+
   await setDoc(doc(db, PAYMENT_PLANS_COLLECTION, planId), {
     cartId,
     userId,
+    visibleUserIds,
     totalAmount,
     installmentCount,
     status: 'active',
