@@ -8,6 +8,12 @@ import { getCart, submitCart } from '@/services/cartService';
 import { Cart } from '@/types/cart';
 import { collection, query, where, getDocs, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import {
+  findUserUidByEmail,
+  linkDancerAccount,
+  resolveLinkedDancers,
+  syncLinkedDancerProfile,
+} from '@/services/userService';
 
 export default function CartSummaryPage() {
   const params = useParams();
@@ -75,7 +81,7 @@ export default function CartSummaryPage() {
             if (userDoc.exists()) {
               const userData = userDoc.data();
               const userProfile = userData.profile || {};
-              const accountDancers = userProfile.dancers || [];
+              const accountDancers = await resolveLinkedDancers(userProfile.dancers || []);
 
               // Stocker les danseurs du compte pour le sélecteur
               setProfileDancers(accountDancers);
@@ -115,7 +121,8 @@ export default function CartSummaryPage() {
                     ...dancer,
                     firstName: selectedDancer.firstName,
                     lastName: selectedDancer.lastName,
-                    email: selectedDancer.email || firebaseUser?.email || '',
+                    email: selectedDancer.email || '',
+                    uid: selectedDancer.uid,
                     dateOfBirth: selectedDancer.dateOfBirth || '',
                     postalAddress: selectedDancer.postalAddress || { street: '', postalCode: '', city: '' },
                     license: selectedDancer.license || { number: '', federation: 'ffdanse', active: false },
@@ -129,7 +136,7 @@ export default function CartSummaryPage() {
                     ...dancer,
                     firstName: dancer.firstName,
                     lastName: dancer.lastName,
-                    email: firebaseUser?.email || '',
+                    email: '',
                     dateOfBirth: userProfile.dateOfBirth ?
                       new Date(userProfile.dateOfBirth.seconds * 1000).toISOString().split('T')[0] : '',
                     postalAddress: userProfile.postalAddress || { street: '', postalCode: '', city: '' },
@@ -183,6 +190,8 @@ export default function CartSummaryPage() {
 
     setSubmitting(true);
     try {
+      const dancerUids: (string | undefined)[] = [];
+
       // Sauvegarder les données des danseurs si l'utilisateur est connecté
       if (firebaseUser) {
         const userRef = doc(db, 'users', firebaseUser.uid);
@@ -191,14 +200,27 @@ export default function CartSummaryPage() {
         const userDoc = await getDoc(userRef);
         const existingDancers = userDoc.data()?.profile?.dancers || [];
 
+        // Un danseur ayant son propre compte est lié au commandeur, son profil devient la référence
+        for (const dancer of dancersInfo) {
+          const dancerUid = dancer.email?.trim() ? await findUserUidByEmail(dancer.email) : null;
+          if (dancerUid && dancerUid !== firebaseUser.uid) {
+            await linkDancerAccount(dancerUid, firebaseUser.uid);
+            await syncLinkedDancerProfile(dancerUid, dancer);
+            dancerUids.push(dancerUid);
+          } else {
+            dancerUids.push(undefined);
+          }
+        }
+
         // Transformer dancersInfo pour la sauvegarde
-        const dancersToSave = dancersInfo.map(d => ({
+        const dancersToSave = dancersInfo.map((d, index) => ({
           firstName: d.firstName,
           lastName: d.lastName,
           email: d.email,
           dateOfBirth: d.dateOfBirth,
           postalAddress: d.postalAddress,
           license: d.license,
+          ...(dancerUids[index] ? { uid: dancerUids[index] } : {}),
         }));
 
         // Fusionner: ajouter les nouveaux danseurs qui ne sont pas dans la liste existante
@@ -243,6 +265,7 @@ export default function CartSummaryPage() {
                 dateOfBirth: dancer.dateOfBirth,
                 postalAddress: dancer.postalAddress,
                 license: dancer.license?.number ? { number: dancer.license.number, active: dancer.license.active } : dancer.license,
+                ...(dancerUids[dancerIndex] ? { uid: dancerUids[dancerIndex] } : {}),
               })),
           },
         })),

@@ -17,15 +17,42 @@ service cloud.firestore {
 
     // Collections sans donnée sensible propre à un individu : accès
     // authentifié, comme avant.
+    // Un commandeur est "manager" d'un danseur qui a son propre compte :
+    // il peut mettre à jour le profil du danseur, sans toucher aux autres champs.
+    // Le lien est posé par ajout de son uid dans managedBy (un seul uid à la fois).
     match /users/{userId} {
       allow read: if request.auth != null && (
         request.auth.uid == userId ||
+        request.auth.uid in resource.data.get('managedBy', []) ||
         isAdmin()
       );
-      allow write: if request.auth != null && (
+      allow create, delete: if request.auth != null && (
         request.auth.uid == userId ||
         isAdmin()
       );
+      allow update: if request.auth != null && (
+        request.auth.uid == userId ||
+        isAdmin() ||
+        (
+          request.auth.uid in resource.data.get('managedBy', []) &&
+          request.resource.data.get('managedBy', []) == resource.data.get('managedBy', []) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profile', 'updatedAt'])
+        ) ||
+        (
+          request.resource.data.get('managedBy', []) == resource.data.get('managedBy', []) + [request.auth.uid] &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['managedBy'])
+        )
+      );
+    }
+
+    // Index email -> uid, pour retrouver le compte d'un danseur à partir de son email
+    match /emailIndex/{emailKey} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null &&
+        resource.data.uid == request.auth.uid &&
+        request.resource.data.uid == request.auth.uid;
+      allow delete: if false;
     }
     match /activites/{document=**} {
       allow read, write: if request.auth != null;
@@ -67,8 +94,12 @@ service cloud.firestore {
       allow read, write: if true;
     }
     match /memberships/{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null && (
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid in resource.data.get('visibleUserIds', []) ||
+        isAdmin()
+      );
+      allow update, delete: if request.auth != null && (
         request.auth.uid == resource.data.userId ||
         isAdmin()
       );

@@ -5,6 +5,7 @@ import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { User } from '@/types';
+import { registerEmailIndex } from '@/services/userService';
 
 interface AuthContextType {
   user: User | null;
@@ -75,6 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (userDoc.exists()) {
             const userData = userDoc.data();
             console.log('📍 User data:', userData);
+
+            if (fbUser.email) {
+              registerEmailIndex(fbUser.uid, fbUser.email).catch((err) =>
+                console.error('Error registering email index:', err)
+              );
+            }
 
             // Use 'role' field and convert to 'roles' array
             const role = userData.role || 'user';

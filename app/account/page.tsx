@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User, SavedDancer } from '@/types';
-import { updateUserProfile, getUserProfile, updateSavedDancer } from '@/services/userService';
+import { updateUserProfile, getUserProfile, updateSavedDancer, resolveLinkedDancers } from '@/services/userService';
 
 interface DancerDraft {
   firstName: string;
@@ -67,7 +67,7 @@ export default function AccountPage() {
     try {
       const userData = await getUserProfile(firebaseUser!.uid);
       if (userData) {
-        setDancers((userData.profile as any)?.dancers || []);
+        setDancers(await resolveLinkedDancers((userData.profile as any)?.dancers || []));
         setFormData({
           firstName: userData.profile?.firstName || (userData as any).prenom || '',
           lastName: userData.profile?.lastName || (userData as any).nom || '',
@@ -181,6 +181,7 @@ export default function AccountPage() {
   };
 
   const isAccountHolder = (dancer: SavedDancer) => {
+    if (dancer.uid && dancer.uid === firebaseUser?.uid) return true;
     const sameName =
       normalize(formData.firstName) !== '' &&
       normalize(dancer.firstName) === normalize(formData.firstName) &&
@@ -243,6 +244,8 @@ export default function AccountPage() {
       };
       if (dancerDraft.email.trim()) updated.email = dancerDraft.email.trim();
       if (dancerDraft.dateOfBirth) updated.dateOfBirth = dancerDraft.dateOfBirth;
+      const linkedUid = dancers[editingIndex]?.uid;
+      if (linkedUid) updated.uid = linkedUid;
 
       const newDancers = await updateSavedDancer(firebaseUser!.uid, editingIndex, updated);
       setDancers(newDancers);

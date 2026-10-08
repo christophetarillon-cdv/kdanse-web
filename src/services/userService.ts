@@ -1,8 +1,13 @@
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { User, SavedDancer } from '@/types';
 
 const USERS_COLLECTION = 'users';
+const EMAIL_INDEX_COLLECTION = 'emailIndex';
+
+const normalizeEmail = (email: string) => email.trim().toLowerCase();
+
+const toDateInput = (value: Date | string) => new Date(value).toISOString().split('T')[0];
 
 export const getUserProfile = async (userId: string): Promise<User | null> => {
   try {
@@ -26,6 +31,71 @@ export const getUserProfile = async (userId: string): Promise<User | null> => {
   }
 };
 
+export const registerEmailIndex = async (userId: string, email: string): Promise<void> => {
+  await setDoc(doc(db, EMAIL_INDEX_COLLECTION, normalizeEmail(email)), { uid: userId });
+};
+
+export const findUserUidByEmail = async (email: string): Promise<string | null> => {
+  const snap = await getDoc(doc(db, EMAIL_INDEX_COLLECTION, normalizeEmail(email)));
+  return snap.exists() ? (snap.data().uid as string) : null;
+};
+
+export const getDancerUids = (dancers: { uid?: string }[]): string[] =>
+  [...new Set(dancers.map((d) => d.uid).filter((uid): uid is string => !!uid))];
+
+export const linkDancerAccount = async (dancerUid: string, managerUid: string): Promise<void> => {
+  await updateDoc(doc(db, USERS_COLLECTION, dancerUid), {
+    managedBy: arrayUnion(managerUid),
+  });
+};
+
+export const syncLinkedDancerProfile = async (dancerUid: string, dancer: SavedDancer): Promise<void> => {
+  const profile: Record<string, unknown> = {
+    firstName: dancer.firstName,
+    lastName: dancer.lastName,
+    postalAddress: {
+      street: dancer.postalAddress?.street || '',
+      postalCode: dancer.postalAddress?.postalCode || '',
+      city: dancer.postalAddress?.city || '',
+    },
+    license: {
+      number: dancer.license?.number || '',
+      federation: 'ffdanse',
+      active: dancer.license?.active || false,
+    },
+  };
+  if (dancer.dateOfBirth) profile.dateOfBirth = new Date(dancer.dateOfBirth);
+
+  const update: Record<string, unknown> = { updatedAt: serverTimestamp() };
+  for (const [key, value] of Object.entries(profile)) {
+    update[`profile.${key}`] = value;
+  }
+  await updateDoc(doc(db, USERS_COLLECTION, dancerUid), update);
+};
+
+// Remplace les données copiées par le profil réel des danseurs liés à un compte
+export const resolveLinkedDancers = async (dancers: SavedDancer[]): Promise<SavedDancer[]> =>
+  Promise.all(
+    dancers.map(async (dancer) => {
+      if (!dancer.uid) return dancer;
+
+      const linked = await getUserProfile(dancer.uid).catch(() => null);
+      const profile = linked?.profile as any;
+      if (!profile) return dancer;
+
+      return {
+        ...dancer,
+        firstName: profile.firstName || dancer.firstName,
+        lastName: profile.lastName || dancer.lastName,
+        dateOfBirth: profile.dateOfBirth ? toDateInput(profile.dateOfBirth) : dancer.dateOfBirth,
+        postalAddress: profile.postalAddress || dancer.postalAddress,
+        license: profile.license
+          ? { number: profile.license.number, active: profile.license.active }
+          : dancer.license,
+      };
+    })
+  );
+
 export const updateSavedDancer = async (
   userId: string,
   index: number,
@@ -40,7 +110,9 @@ export const updateSavedDancer = async (
     updatedAt: serverTimestamp(),
   });
 
-  return dancers;
+  if (dancer.uid) await syncLinkedDancerProfile(dancer.uid, dancer);
+
+  return resolveLinkedDancers(dancers);
 };
 
 export const updateUserProfile = async (userId: string, updates: Partial<User>): Promise<void> => {

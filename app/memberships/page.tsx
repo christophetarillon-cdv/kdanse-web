@@ -34,12 +34,14 @@ export default function MembershipsPage() {
 
   const fetchMemberships = async () => {
     try {
-      const q = query(
-        collection(db, 'memberships'),
-        where('userId', '==', firebaseUser!.uid)
-      );
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map((doc) => ({
+      const uid = firebaseUser!.uid;
+      const [ownSnapshot, linkedSnapshot] = await Promise.all([
+        getDocs(query(collection(db, 'memberships'), where('userId', '==', uid))),
+        getDocs(query(collection(db, 'memberships'), where('visibleUserIds', 'array-contains', uid))),
+      ]);
+      const docsById: Record<string, (typeof ownSnapshot.docs)[number]> = {};
+      for (const d of [...ownSnapshot.docs, ...linkedSnapshot.docs]) docsById[d.id] = d;
+      const data = Object.values(docsById).map((doc) => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate?.() || new Date(),

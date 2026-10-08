@@ -13,6 +13,7 @@ import {
 import { db } from '@/lib/firebase';
 import { PaymentPlan, PaymentInstallment, PaymentSettings, Cart, Membership, PaymentDetailsDraft } from '@/types';
 import { toPaymentDetailsUpdate } from '@/lib/paymentDetails';
+import { getDancerUids } from '@/services/userService';
 
 const PAYMENT_PLANS_COLLECTION = 'paymentPlans';
 const INSTALLMENTS_COLLECTION = 'paymentInstallments';
@@ -117,6 +118,7 @@ export const createPaymentPlan = async (
       cart.items.map((item) =>
         addDoc(collection(db, 'memberships'), {
           userId,
+          visibleUserIds: getDancerUids(item.configuration.dancers),
           stageId: item.stageId,
           stageName: item.stageName,
           registrationDetails: item.configuration,

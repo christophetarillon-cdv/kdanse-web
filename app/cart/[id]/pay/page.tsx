@@ -7,6 +7,7 @@ import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { getCart, clearCart } from '@/services/cartService';
+import { getDancerUids } from '@/services/userService';
 import { Cart } from '@/types/cart';
 
 type PaymentMethod = 'helloasso' | 'virement' | 'cheque';
@@ -77,6 +78,7 @@ export default function CartPaymentPage() {
 
         return addDoc(collection(db, 'memberships'), {
           userId: firebaseUser.uid,
+          visibleUserIds: getDancerUids(item.configuration.dancers),
           stageId: item.stageId,
           stageName: item.stageName,
           registrationDetails: {

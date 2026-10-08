@@ -50,6 +50,7 @@ export interface UserProfile {
 
 // Danseur enregistré dans profile.dancers (saisi lors d'une inscription)
 export interface SavedDancer {
+  uid?: string; // compte propre du danseur, si l'email correspond à un compte
   firstName: string;
   lastName: string;
   email?: string;

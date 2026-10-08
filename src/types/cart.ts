@@ -1,5 +1,6 @@
 export interface Dancer {
   licensed: boolean;
+  uid?: string;
 }
 
 export interface RegistrationConfiguration {
