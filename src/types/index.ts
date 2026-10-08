@@ -144,6 +144,7 @@ export interface PaymentSettings {
 export interface PaymentInstallment {
   id: string;
   paymentPlanId: string;
+  index?: number;
   amount: number;
   dueDate: Date;
   status: 'pending' | 'received' | 'cancelled';

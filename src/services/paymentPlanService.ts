@@ -17,6 +17,19 @@ const PAYMENT_PLANS_COLLECTION = 'paymentPlans';
 const INSTALLMENTS_COLLECTION = 'paymentInstallments';
 const PAYMENT_SETTINGS_COLLECTION = 'paymentSettings';
 
+// Plans created before the `index` field existed fall back to due date order,
+// which matches entry order for the default schedule (one month apart).
+const compareInstallments = (
+  a: { index?: number; dueDate: Date; createdAt: Date },
+  b: { index?: number; dueDate: Date; createdAt: Date }
+) => {
+  if (a.index !== undefined && b.index !== undefined) return a.index - b.index;
+  return (
+    a.dueDate.getTime() - b.dueDate.getTime() ||
+    a.createdAt.getTime() - b.createdAt.getTime()
+  );
+};
+
 // Create payment plan with installments
 export const createPaymentPlan = async (
   cartId: string,
@@ -41,9 +54,10 @@ export const createPaymentPlan = async (
   const amountPerInstallment = totalAmount / installmentCount;
 
   // Create installment documents
-  const installmentDocs = installments.map((inst) => ({
+  const installmentDocs = installments.map((inst, index) => ({
     id: doc(collection(db, INSTALLMENTS_COLLECTION)).id,
     paymentPlanId: planId,
+    index,
     amount: inst.amount || amountPerInstallment,
     dueDate: new Date(inst.dueDate),
     method: inst.method,
@@ -140,12 +154,7 @@ export const getPaymentPlan = async (planId: string): Promise<PaymentPlan | null
       dueDate: doc.data().dueDate?.toDate?.() || new Date(doc.data().dueDate),
       createdAt: doc.data().createdAt?.toDate?.() || new Date(),
     }))
-    .sort((a, b) => {
-      // Sort by createdAt to maintain order
-      const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
-      const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
-      return aTime - bTime;
-    }) as PaymentInstallment[];
+    .sort(compareInstallments) as PaymentInstallment[];
 
   return {
     id: docSnap.id,
@@ -234,12 +243,18 @@ export const getPendingInstallments = async (): Promise<PaymentInstallment[]> =>
   );
   const snapshot = await getDocs(q);
 
-  return snapshot.docs.map((doc) => ({
-    ...doc.data(),
-    id: doc.id,  // Override with correct document ID
-    dueDate: doc.data().dueDate?.toDate?.() || new Date(),
-    createdAt: doc.data().createdAt?.toDate?.() || new Date(),
-  })) as PaymentInstallment[];
+  return snapshot.docs
+    .map((doc): PaymentInstallment => ({
+      ...doc.data(),
+      id: doc.id,  // Override with correct document ID
+      dueDate: doc.data().dueDate?.toDate?.() || new Date(),
+      createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+    } as PaymentInstallment))
+    .sort((a, b) =>
+      a.paymentPlanId === b.paymentPlanId
+        ? compareInstallments(a, b)
+        : a.paymentPlanId.localeCompare(b.paymentPlanId)
+    );
 };
 
 // Get installments by plan
@@ -250,12 +265,14 @@ export const getInstallmentsByPlan = async (planId: string): Promise<PaymentInst
   );
   const snapshot = await getDocs(q);
 
-  return snapshot.docs.map((doc) => ({
-    ...doc.data(),
-    id: doc.id,  // Override with correct document ID
-    dueDate: doc.data().dueDate?.toDate?.() || new Date(),
-    createdAt: doc.data().createdAt?.toDate?.() || new Date(),
-  })) as PaymentInstallment[];
+  return snapshot.docs
+    .map((doc) => ({
+      ...doc.data(),
+      id: doc.id,  // Override with correct document ID
+      dueDate: doc.data().dueDate?.toDate?.() || new Date(),
+      createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+    }))
+    .sort(compareInstallments) as PaymentInstallment[];
 };
 
 // Get payment plan with associated membership (reusable for admin & danseur space)
