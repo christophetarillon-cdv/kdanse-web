@@ -46,7 +46,10 @@ service cloud.firestore {
             .hasOnly(['firstName', 'lastName', 'dateOfBirth', 'postalAddress', 'license'])
         ) ||
         (
-          request.resource.data.get('managedBy', []) == resource.data.get('managedBy', []) + [request.auth.uid] &&
+          request.auth.uid in request.resource.data.get('managedBy', []) &&
+          !(request.auth.uid in resource.data.get('managedBy', [])) &&
+          request.resource.data.get('managedBy', []).hasAll(resource.data.get('managedBy', [])) &&
+          request.resource.data.get('managedBy', []).size() == resource.data.get('managedBy', []).size() + 1 &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['managedBy'])
         )
       );
