@@ -1,4 +1,15 @@
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+  arrayUnion,
+  serverTimestamp,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { User, SavedDancer } from '@/types';
 
@@ -36,8 +47,14 @@ export const registerEmailIndex = async (userId: string, email: string): Promise
 };
 
 export const findUserUidByEmail = async (email: string): Promise<string | null> => {
-  const snap = await getDoc(doc(db, EMAIL_INDEX_COLLECTION, normalizeEmail(email)));
-  return snap.exists() ? (snap.data().uid as string) : null;
+  const normalized = normalizeEmail(email);
+  const indexSnap = await getDoc(doc(db, EMAIL_INDEX_COLLECTION, normalized));
+  if (indexSnap.exists()) return indexSnap.data().uid as string;
+
+  const usersSnap = await getDocs(
+    query(collection(db, USERS_COLLECTION), where('email', '==', normalized))
+  );
+  return usersSnap.empty ? null : usersSnap.docs[0].id;
 };
 
 export const getDancerUids = (dancers: { uid?: string }[]): string[] =>
