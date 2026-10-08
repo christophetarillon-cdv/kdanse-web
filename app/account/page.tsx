@@ -7,11 +7,21 @@ import Link from 'next/link';
 import { User } from '@/types';
 import { updateUserProfile, getUserProfile } from '@/services/userService';
 
+interface SavedDancer {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  dateOfBirth?: string | Date;
+  postalAddress?: { street?: string; postalCode?: string; city?: string };
+  license?: { number?: string; active?: boolean };
+}
+
 export default function AccountPage() {
   const { firebaseUser, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
+  const [dancers, setDancers] = useState<SavedDancer[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -46,6 +56,7 @@ export default function AccountPage() {
     try {
       const userData = await getUserProfile(firebaseUser!.uid);
       if (userData) {
+        setDancers((userData.profile as any)?.dancers || []);
         setFormData({
           firstName: userData.profile?.firstName || (userData as any).prenom || '',
           lastName: userData.profile?.lastName || (userData as any).nom || '',
@@ -127,6 +138,10 @@ export default function AccountPage() {
       if (formData.photoUrl) {
         profileData.photoUrl = formData.photoUrl;
       }
+
+      // Le champ profile est remplacé entier: conserver les danseurs enregistrés
+      const currentUser = await getUserProfile(firebaseUser!.uid);
+      profileData.dancers = (currentUser?.profile as any)?.dancers || [];
 
       const displayName = `${formData.firstName} ${formData.lastName}`.trim();
       const updatedUser: Partial<User> = {
@@ -377,6 +392,49 @@ export default function AccountPage() {
           </button>
         </div>
       </form>
+
+      <div className="bg-white rounded-lg shadow p-6 max-w-2xl">
+        <h2 className="text-lg font-bold text-gray-900 mb-4">👥 Mes danseurs</h2>
+
+        {dancers.length === 0 ? (
+          <p className="text-gray-900 font-medium">
+            Aucun danseur enregistré pour le moment. Ils seront ajoutés lors de votre prochaine inscription.
+          </p>
+        ) : (
+          <ul className="space-y-4">
+            {dancers.map((dancer, index) => {
+              const cityLine = [dancer.postalAddress?.postalCode, dancer.postalAddress?.city]
+                .filter(Boolean)
+                .join(' ');
+              const addressLine = [dancer.postalAddress?.street, cityLine].filter(Boolean).join(', ');
+
+              return (
+                <li key={`${dancer.firstName}-${dancer.lastName}-${index}`} className="border rounded p-4 space-y-1 text-sm">
+                  <p className="font-bold text-gray-900 text-base">
+                    {dancer.firstName} {dancer.lastName}
+                  </p>
+                  {dancer.email && (
+                    <p className="text-gray-900"><strong>Email:</strong> {dancer.email}</p>
+                  )}
+                  {dancer.dateOfBirth && (
+                    <p className="text-gray-900">
+                      <strong>Date de naissance:</strong> {new Date(dancer.dateOfBirth).toLocaleDateString('fr-FR')}
+                    </p>
+                  )}
+                  {addressLine && (
+                    <p className="text-gray-900"><strong>Adresse:</strong> {addressLine}</p>
+                  )}
+                  {dancer.license?.number && (
+                    <p className="text-gray-900">
+                      <strong>Licence FFDanse:</strong> {dancer.license.number} {dancer.license.active ? '(active)' : '(inactive)'}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
