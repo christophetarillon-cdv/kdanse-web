@@ -188,8 +188,27 @@ export default function CartSummaryPage() {
       }
     }
 
+    const describeField = (value: unknown) =>
+      value === undefined ? 'absent' : value === null ? 'null' : Array.isArray(value) ? `liste (${value.length})` : typeof value;
+
+    const diagnoseLink = async (callerUid: string, dancerUid: string, email: string) => {
+      const callerSnap = await getDoc(doc(db, 'users', callerUid));
+      const callerData = callerSnap.data();
+      const dancerSnap = await getDoc(doc(db, 'users', dancerUid));
+      const dancerData = dancerSnap.data();
+      const indexSnap = await getDoc(doc(db, 'emailIndex', email.trim().toLowerCase()));
+      const alreadyLinked = Array.isArray(dancerData?.managedBy) && dancerData.managedBy.includes(callerUid);
+      return [
+        `Commandeur : document existe ${callerSnap.exists()}, role ${describeField(callerData?.role)}, roles ${describeField(callerData?.roles)}`,
+        `Danseur : document existe ${dancerSnap.exists()}, managedBy ${describeField(dancerData?.managedBy)}, profile ${describeField(dancerData?.profile)}, déjà lié ${alreadyLinked}`,
+        `emailIndex : ${indexSnap.exists() ? indexSnap.data().uid : 'absent'}`,
+      ].join('\n');
+    };
+
     setSubmitting(true);
     let step = 'initialisation';
+    let targetUid: string | undefined;
+    let targetEmail = '';
     try {
       const dancerUids: (string | undefined)[] = [];
 
@@ -205,6 +224,8 @@ export default function CartSummaryPage() {
         for (const dancer of dancersInfo) {
           step = 'recherche du compte du danseur';
           const dancerUid = dancer.email?.trim() ? await findUserUidByEmail(dancer.email) : null;
+          targetUid = dancerUid ?? undefined;
+          targetEmail = dancer.email ?? '';
           if (dancerUid && dancerUid !== firebaseUser.uid) {
             step = 'liaison du compte du danseur (managedBy)';
             await linkDancerAccount(dancerUid, firebaseUser.uid);
@@ -291,7 +312,16 @@ export default function CartSummaryPage() {
       router.push(`/cart/${cart.id}/pay`);
     } catch (error) {
       console.error('Error at step:', step, error);
-      alert(`Erreur lors de la validation du panier (étape : ${step}) : ${(error as Error).message}`);
+      const details =
+        firebaseUser && targetUid
+          ? await diagnoseLink(firebaseUser.uid, targetUid, targetEmail).catch(
+              (diagError) => `diagnostic impossible : ${(diagError as Error).message}`
+            )
+          : '';
+      alert(
+        `Erreur lors de la validation du panier (étape : ${step}) : ${(error as Error).message}` +
+          (details ? `\n\n${details}` : '')
+      );
     } finally {
       setSubmitting(false);
     }
