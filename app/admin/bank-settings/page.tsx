@@ -75,10 +75,10 @@ export default function AdminBankSettingsPage() {
           <p className="text-gray-900 font-medium">Configurez les coordonnées pour les virements et adresse pour les chèques</p>
         </div>
         <Link
-          href="/admin/payment-plans"
+          href="/dashboard"
           className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-semibold transition whitespace-nowrap"
         >
-          ← Plans de paiement
+          ← Dashboard
         </Link>
       </div>
 
