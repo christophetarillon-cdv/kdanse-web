@@ -278,7 +278,7 @@ export default function PaymentPlanPage() {
                     type="number"
                     value={inst.amount || ''}
                     onChange={(e) => updateInstallment(inst.id, { amount: parseFloat(e.target.value) || 0 })}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border rounded px-3 py-2 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     min="0"
                     step="0.01"
                     max={inst.method === 'cheque_vacances' ? getMaxForInstallment(idx) : stats.total}
