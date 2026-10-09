@@ -215,7 +215,6 @@ export default function StageDetailPage() {
           <div className="p-8 space-y-8">
             <div>
               <h2 className="text-2xl font-semibold mb-4">À propos</h2>
-              <p className="text-gray-900 mb-4">{stage.description}</p>
               {stage.startDate && stage.endDate && (
                 <p className="text-gray-900 font-medium">
                   <strong>Dates :</strong> {stage.startDate} - {stage.endDate}
@@ -266,7 +265,7 @@ export default function StageDetailPage() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
                 <h3 className="font-semibold text-green-900 mb-4 flex items-center">
                   <span className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">1b</span>
-                  Noms et prénoms
+                  Prénoms et Noms du ou des danseurs
                 </h3>
                 <div className="space-y-4">
                   {form.dancers.map((dancer, idx) => (
@@ -382,7 +381,7 @@ export default function StageDetailPage() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
                 <h3 className="font-semibold text-green-900 mb-4 flex items-center">
                   <span className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">4</span>
-                  Hébergement (optionnel)
+                  Hébergement
                 </h3>
 
                 <div className="flex items-center gap-3 mb-6 p-4 bg-white rounded border">
