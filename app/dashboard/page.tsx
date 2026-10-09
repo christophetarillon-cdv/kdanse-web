@@ -106,15 +106,6 @@ export default function DashboardPage() {
             <Link href="/admin/payments" className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-center font-semibold">
               💳 Paiements à valider
             </Link>
-            <Link href="/admin/pages" className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-center">
-              Gérer les pages CMS
-            </Link>
-            <Link href="/admin/menus" className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-center">
-              Gérer les menus
-            </Link>
-            <Link href="/admin/settings" className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-center">
-              Paramètres
-            </Link>
             <Link href="/admin/bank-settings" className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-center">
               🏦 Renseignements du club
             </Link>
