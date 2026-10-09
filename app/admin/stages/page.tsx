@@ -161,9 +161,9 @@ export default function AdminStagesPage() {
         <h2 className="text-xl font-semibold text-gray-900 mb-4">{editing ? 'Modifier' : 'Créer'} un stage</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">Photo du stage</label>
+            <p className="text-sm font-medium text-gray-900 mb-2">Photo du stage</p>
             {form.imageUrl && (
-              <div className="mb-2 flex items-start gap-4">
+              <div className="mb-3 flex items-start gap-4">
                 <img src={form.imageUrl} alt="Aperçu du stage" className="w-48 h-32 object-cover rounded border" />
                 <button
                   type="button"
@@ -174,14 +174,22 @@ export default function AdminStagesPage() {
                 </button>
               </div>
             )}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              disabled={uploadingImage}
-              className="text-sm text-gray-900"
-            />
-            {uploadingImage && <p className="text-sm text-gray-900 mt-1">Envoi de la photo...</p>}
+            <label
+              className={`flex flex-col items-center justify-center gap-1 border-2 border-dashed border-blue-400 rounded-lg p-6 text-center bg-blue-50 hover:bg-blue-100 transition ${uploadingImage ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
+            >
+              <span className="text-3xl">📷</span>
+              <span className="font-semibold text-gray-900">
+                {uploadingImage ? 'Envoi de la photo...' : form.imageUrl ? 'Cliquer pour changer la photo' : 'Cliquer pour ajouter une photo'}
+              </span>
+              <span className="text-sm text-gray-900">Image de 5 Mo maximum</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={uploadingImage}
+                className="hidden"
+              />
+            </label>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
