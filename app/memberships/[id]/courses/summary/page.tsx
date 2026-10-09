@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Dance, Level } from '@/types/courses';
 
@@ -22,6 +22,27 @@ interface StoredData {
   dances: Dance[];
   levels: Level[];
 }
+
+const findNextMembershipWithoutCourses = async (membershipId: string): Promise<string | null> => {
+  const currentSnap = await getDoc(doc(db, 'memberships', membershipId));
+  const current = currentSnap.data();
+  if (!current?.cartId) return null;
+
+  const siblingsSnap = await getDocs(
+    query(
+      collection(db, 'memberships'),
+      where('userId', '==', current.userId),
+      where('cartId', '==', current.cartId)
+    )
+  );
+
+  for (const sibling of siblingsSnap.docs) {
+    if (sibling.id === membershipId) continue;
+    const coursesSnap = await getDoc(doc(db, 'membershipCourses', `${sibling.id}_dancer_0`));
+    if (!coursesSnap.exists()) return sibling.id;
+  }
+  return null;
+};
 
 export default function CoursesSummaryPage() {
   const params = useParams();
@@ -75,11 +96,20 @@ export default function CoursesSummaryPage() {
         });
       }
 
-      // Clear localStorage
+      await updateDoc(doc(db, 'memberships', membershipId), {
+        coursesConfirmedAt: serverTimestamp(),
+      });
+
       localStorage.removeItem(`courses_${membershipId}`);
 
-      alert('Cours enregistrés!');
-      router.push('/memberships');
+      const nextMembershipId = await findNextMembershipWithoutCourses(membershipId);
+      if (nextMembershipId) {
+        alert('Cours enregistrés ! Passons à l\'inscription suivante.');
+        router.push(`/memberships/${nextMembershipId}/courses`);
+      } else {
+        alert('Cours enregistrés!');
+        router.push('/memberships');
+      }
     } catch (error) {
       console.error('Error saving courses:', error);
       alert('Erreur: ' + error);
