@@ -57,9 +57,9 @@ export default function CartPage() {
                 href={`/login?redirect=/cart/${cart.id}/summary`}
                 className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white py-3 rounded font-semibold transition"
               >
-                Se connecter
+                Connectez-vous
               </Link>
-              <p className="flex items-center text-gray-700 font-medium">ou continuer en tant que guest</p>
+              <p className="flex items-center text-gray-700 font-medium">continuez</p>
             </div>
           </div>
         )}
