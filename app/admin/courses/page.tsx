@@ -135,8 +135,8 @@ export default function AdminCoursesPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <Link href="/admin" className="text-blue-600 hover:underline text-sm">
-            ← Admin
+          <Link href="/dashboard" className="text-blue-600 hover:underline text-sm">
+            ← Dashboard
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mt-4 mb-2">🎵 Gérer les Cours</h1>
           <p className="text-gray-600">Créer les danses et niveaux disponibles</p>
