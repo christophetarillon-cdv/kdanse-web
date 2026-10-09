@@ -12,8 +12,13 @@ interface Stage {
   name: string;
   description: string;
   location: string;
+  startDate?: string;
+  endDate?: string;
   imageUrl?: string;
 }
+
+const formatDateFr = (isoDate: string) =>
+  new Date(`${isoDate}T00:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
 export default function StagesPage() {
   const { firebaseUser, loading } = useAuth();
@@ -35,6 +40,8 @@ export default function StagesPage() {
         name: doc.data().name,
         description: doc.data().description,
         location: doc.data().location,
+        startDate: doc.data().startDate,
+        endDate: doc.data().endDate,
         imageUrl: doc.data().imageUrl,
       })) as Stage[];
       setStages(data);
@@ -65,6 +72,9 @@ export default function StagesPage() {
                   <img src={stage.imageUrl} alt={stage.name} className="w-full h-48 object-cover rounded mb-4" />
                 )}
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{stage.name}</h2>
+                {stage.startDate && stage.endDate && (
+                  <p className="text-gray-900 mb-2"><strong>Dates :</strong> du {formatDateFr(stage.startDate)} au {formatDateFr(stage.endDate)}</p>
+                )}
                 <p className="text-gray-900 font-medium mb-4 whitespace-pre-wrap">{stage.description}</p>
                 <p className="text-gray-900 mb-4"><strong>Lieu :</strong> {stage.location}</p>
                 <div className="text-center">
