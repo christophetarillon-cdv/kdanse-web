@@ -59,7 +59,7 @@ export default function CartPage() {
               >
                 Connectez-vous
               </Link>
-              <p className="flex items-center text-gray-700 font-medium">continuez</p>
+              <p className="flex items-center text-gray-700 font-medium">ou continuez</p>
             </div>
           </div>
         )}
