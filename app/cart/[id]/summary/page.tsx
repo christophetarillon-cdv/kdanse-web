@@ -129,14 +129,15 @@ export default function CartSummaryPage() {
                     selectedDancerIndex: selectedIndex,
                   };
                 } else {
+                  const isAccountHolder = dancerIndex === 0;
                   const hasNameMismatch =
-                    (userData.prenom !== dancer.firstName || userData.nom !== dancer.lastName);
+                    !isAccountHolder && (userData.prenom !== dancer.firstName || userData.nom !== dancer.lastName);
 
                   return {
                     ...dancer,
-                    firstName: dancer.firstName,
-                    lastName: dancer.lastName,
-                    email: '',
+                    firstName: isAccountHolder ? userData.prenom || dancer.firstName : dancer.firstName,
+                    lastName: isAccountHolder ? userData.nom || dancer.lastName : dancer.lastName,
+                    email: isAccountHolder ? firebaseUser.email || '' : '',
                     dateOfBirth: userProfile.dateOfBirth ?
                       new Date(userProfile.dateOfBirth.seconds * 1000).toISOString().split('T')[0] : '',
                     postalAddress: userProfile.postalAddress || { street: '', postalCode: '', city: '' },
