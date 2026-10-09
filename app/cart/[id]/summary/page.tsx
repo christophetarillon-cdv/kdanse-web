@@ -178,6 +178,10 @@ export default function CartSummaryPage() {
         alert('Veuillez remplir toutes les informations des danseurs');
         return;
       }
+      if (dancer.licensed && !dancer.license?.number?.trim()) {
+        alert('Veuillez renseigner le numéro de licence FFDanse des danseurs licenciés');
+        return;
+      }
     }
 
     // Si pas connecté, valider compte
@@ -205,6 +209,15 @@ export default function CartSummaryPage() {
       ].join('\n');
     };
 
+    const dancersToSubmit = dancersInfo.map((dancer) =>
+      dancer.licensed
+        ? {
+            ...dancer,
+            license: { number: dancer.license.number.trim(), federation: 'ffdanse', active: true },
+          }
+        : dancer
+    );
+
     setSubmitting(true);
     let step = 'initialisation';
     let targetUid: string | undefined;
@@ -221,7 +234,7 @@ export default function CartSummaryPage() {
         const existingDancers = userDoc.data()?.profile?.dancers || [];
 
         // Un danseur ayant son propre compte est lié au commandeur, son profil devient la référence
-        for (const dancer of dancersInfo) {
+        for (const dancer of dancersToSubmit) {
           step = 'recherche du compte du danseur';
           const dancerUid = dancer.email?.trim() ? await findUserUidByEmail(dancer.email) : null;
           targetUid = dancerUid ?? undefined;
@@ -238,7 +251,7 @@ export default function CartSummaryPage() {
         }
 
         // Transformer dancersInfo pour la sauvegarde
-        const dancersToSave = dancersInfo.map((d, index) => ({
+        const dancersToSave = dancersToSubmit.map((d, index) => ({
           firstName: d.firstName,
           lastName: d.lastName,
           email: d.email,
@@ -282,7 +295,7 @@ export default function CartSummaryPage() {
           configuration: {
             ...item.configuration,
             // Remplacer les dancers avec les données du formulaire
-            dancers: dancersInfo
+            dancers: dancersToSubmit
               .slice(0, item.configuration.dancers.length)
               .map((dancer, dancerIndex) => ({
                 firstName: dancer.firstName,
@@ -290,7 +303,7 @@ export default function CartSummaryPage() {
                 email: dancer.email,
                 dateOfBirth: dancer.dateOfBirth,
                 postalAddress: dancer.postalAddress,
-                license: dancer.license?.number ? { number: dancer.license.number, active: dancer.license.active } : dancer.license,
+                license: dancer.license,
                 ...(dancerUids[dancerIndex] ? { uid: dancerUids[dancerIndex] } : {}),
               })),
           },
@@ -600,33 +613,22 @@ export default function CartSummaryPage() {
                   </div>
 
                   {/* Licence FFDanse */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-900 mb-2">Licence FFDanse (optionnel)</label>
-                    <input
-                      type="text"
-                      value={dancer.license?.number || ''}
-                      onChange={(e) => {
-                        const newDancers = [...dancersInfo];
-                        newDancers[idx].license.number = e.target.value;
-                        setDancersInfo(newDancers);
-                      }}
-                      placeholder="Numéro de licence"
-                      className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-500 mb-2"
-                    />
-                    <label className="flex items-center gap-2">
+                  {dancer.licensed && (
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">Licence FFDanse*</label>
                       <input
-                        type="checkbox"
-                        checked={dancer.license?.active || false}
+                        type="text"
+                        value={dancer.license?.number || ''}
                         onChange={(e) => {
                           const newDancers = [...dancersInfo];
-                          newDancers[idx].license.active = e.target.checked;
+                          newDancers[idx].license.number = e.target.value;
                           setDancersInfo(newDancers);
                         }}
-                        className="rounded"
+                        placeholder="Numéro de licence"
+                        className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 placeholder-gray-500"
                       />
-                      <span className="text-sm font-medium text-gray-900">Licence active</span>
-                    </label>
-                  </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
