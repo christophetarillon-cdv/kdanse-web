@@ -67,9 +67,11 @@ export default function StagesPage() {
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{stage.name}</h2>
                 <p className="text-gray-900 font-medium mb-4 whitespace-pre-wrap">{stage.description}</p>
                 <p className="text-gray-900 mb-4"><strong>Lieu :</strong> {stage.location}</p>
-                <Link href={`/stages/${stage.id}`} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                  Je m'inscris
-                </Link>
+                <div className="text-center">
+                  <Link href={`/stages/${stage.id}`} className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Je m'inscris
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
