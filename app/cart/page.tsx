@@ -91,7 +91,6 @@ export default function CartPage() {
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-900">{item.stageName}</h3>
-                        <p className="text-sm text-gray-800 font-medium">ID article: {item.id.substring(0, 8)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-2xl font-bold text-blue-600">{item.totals?.total || 0}€</p>
