@@ -9,6 +9,13 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { CartItem } from '@/types/cart';
 
+const formatDateFr = (isoDate: string) =>
+  new Date(`${isoDate}T00:00:00`).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
 interface Stage {
   id: string;
   name: string;
@@ -214,10 +221,9 @@ export default function StageDetailPage() {
 
           <div className="p-8 space-y-8">
             <div>
-              <h2 className="text-2xl font-semibold mb-4">À propos</h2>
               {stage.startDate && stage.endDate && (
                 <p className="text-gray-900 font-medium">
-                  <strong>Dates :</strong> {stage.startDate} - {stage.endDate}
+                  <strong>Dates :</strong> du {formatDateFr(stage.startDate)} au {formatDateFr(stage.endDate)}
                 </p>
               )}
               {stage.maxParticipants && (
@@ -265,7 +271,9 @@ export default function StageDetailPage() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
                 <h3 className="font-semibold text-green-900 mb-4 flex items-center">
                   <span className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">1b</span>
-                  Prénoms et Noms du ou des danseurs
+                  {form.danceType === 'solo'
+                    ? 'Prénom et Nom du danseur ou de la danseuse'
+                    : 'Prénoms et Noms des danseurs'}
                 </h3>
                 <div className="space-y-4">
                   {form.dancers.map((dancer, idx) => (
