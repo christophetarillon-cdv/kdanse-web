@@ -270,7 +270,7 @@ export default function CartPaymentPage() {
                     />
                     <div>
                       <p className="font-semibold">Plan de paiement (échéancier)</p>
-                      <p className="text-sm text-gray-700 font-medium">Divisez le paiement en 3 ou 4 échéances</p>
+                      <p className="text-sm text-gray-700 font-medium">Divisez le paiement en 2, 3 ou 4 échéances</p>
                     </div>
                   </div>
                 </div>
