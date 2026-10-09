@@ -109,6 +109,9 @@ export default function DashboardPage() {
             <Link href="/admin/bank-settings" className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-center">
               🏦 Renseignements du club
             </Link>
+            <Link href="/admin/courses" className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-center">
+              🎵 Gérer les cours
+            </Link>
           </div>
         </div>
       )}

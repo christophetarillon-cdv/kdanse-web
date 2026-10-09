@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import Link from 'next/link';
 
 interface Stage {
   id: string;
@@ -122,9 +123,17 @@ export default function AdminStagesPage() {
 
   return (
     <div className="min-h-screen bg-white space-y-8 p-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Stages</h1>
-        <p className="text-gray-900 font-medium">Créez et gérez les stages Kdanse</p>
+      <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Stages</h1>
+          <p className="text-gray-900 font-medium">Créez et gérez les stages Kdanse</p>
+        </div>
+        <Link
+          href="/dashboard"
+          className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-semibold transition whitespace-nowrap"
+        >
+          ← Dashboard
+        </Link>
       </div>
 
       <div className="bg-white rounded-lg shadow p-6">
