@@ -12,6 +12,7 @@ interface Stage {
   name: string;
   description: string;
   location: string;
+  imageUrl?: string;
 }
 
 export default function StagesPage() {
@@ -34,6 +35,7 @@ export default function StagesPage() {
         name: doc.data().name,
         description: doc.data().description,
         location: doc.data().location,
+        imageUrl: doc.data().imageUrl,
       })) as Stage[];
       setStages(data);
     } catch (error) {
@@ -59,8 +61,11 @@ export default function StagesPage() {
           <div className="grid gap-6 md:grid-cols-2">
             {stages.map(stage => (
               <div key={stage.id} className="bg-white rounded-lg shadow-md p-6">
+                {stage.imageUrl && (
+                  <img src={stage.imageUrl} alt={stage.name} className="w-full h-48 object-cover rounded mb-4" />
+                )}
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{stage.name}</h2>
-                <p className="text-gray-900 font-medium mb-4">{stage.description}</p>
+                <p className="text-gray-900 font-medium mb-4 whitespace-pre-wrap">{stage.description}</p>
                 <p className="text-gray-900 mb-4"><strong>Lieu :</strong> {stage.location}</p>
                 <Link href={`/stages/${stage.id}`} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                   Voir détails

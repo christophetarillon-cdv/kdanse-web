@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
+import { uploadImage } from '@/services/imageService';
 
 interface Stage {
   id: string;
   name: string;
   description: string;
   location: string;
+  imageUrl?: string;
   startDate?: string;
   endDate?: string;
   pricing?: {
@@ -50,9 +52,11 @@ export default function AdminStagesPage() {
     location: '',
     startDate: '',
     endDate: '',
+    imageUrl: '',
     pricing: defaultPricing,
   });
   const [editing, setEditing] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     fetchStages();
@@ -85,7 +89,7 @@ export default function AdminStagesPage() {
           createdAt: new Date(),
         });
       }
-      setForm({ name: '', description: '', location: '', startDate: '', endDate: '', pricing: defaultPricing });
+      setForm({ name: '', description: '', location: '', startDate: '', endDate: '', imageUrl: '', pricing: defaultPricing });
       fetchStages();
     } catch (error) {
       console.error('Error:', error);
@@ -99,9 +103,26 @@ export default function AdminStagesPage() {
       location: stage.location,
       startDate: stage.startDate || '',
       endDate: stage.endDate || '',
+      imageUrl: stage.imageUrl || '',
       pricing: stage.pricing || defaultPricing,
     });
     setEditing(stage.id);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const url = await uploadImage(file, 'stages');
+      setForm((prev) => ({ ...prev, imageUrl: url }));
+    } catch (error) {
+      alert('Erreur upload: ' + (error instanceof Error ? error.message : 'Erreur'));
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -116,7 +137,7 @@ export default function AdminStagesPage() {
 
   const handleCancel = () => {
     setEditing(null);
-    setForm({ name: '', description: '', location: '', startDate: '', endDate: '', pricing: defaultPricing });
+    setForm({ name: '', description: '', location: '', startDate: '', endDate: '', imageUrl: '', pricing: defaultPricing });
   };
 
   if (loading) return <div className="p-8">Chargement...</div>;
@@ -139,6 +160,30 @@ export default function AdminStagesPage() {
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">{editing ? 'Modifier' : 'Créer'} un stage</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-1">Photo du stage</label>
+            {form.imageUrl && (
+              <div className="mb-2 flex items-start gap-4">
+                <img src={form.imageUrl} alt="Aperçu du stage" className="w-48 h-32 object-cover rounded border" />
+                <button
+                  type="button"
+                  onClick={() => setForm((prev) => ({ ...prev, imageUrl: '' }))}
+                  className="text-red-600 hover:underline text-sm font-semibold"
+                >
+                  Retirer la photo
+                </button>
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={uploadingImage}
+              className="text-sm text-gray-900"
+            />
+            {uploadingImage && <p className="text-sm text-gray-900 mt-1">Envoi de la photo...</p>}
+          </div>
+
           <div className="grid md:grid-cols-2 gap-4">
             <input
               type="text"
