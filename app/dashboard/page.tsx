@@ -103,6 +103,15 @@ export default function DashboardPage() {
             <Link href="/admin/inscriptions" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center font-semibold">
               📋 Inscriptions aux stages
             </Link>
+            <Link href="/admin/danseurs" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center font-semibold">
+              👤 Danseurs
+            </Link>
+            <Link href="/admin/encaissements" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center font-semibold">
+              💶 Encaissements
+            </Link>
+            <Link href="/admin/mises-en-banque" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center font-semibold">
+              🏦 Mises en banque
+            </Link>
             <Link href="/admin/payment-plans-validation" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-center font-semibold">
               📋 Plans à valider
             </Link>

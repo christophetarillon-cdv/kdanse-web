@@ -150,6 +150,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Bordereaux de remise en banque : créés par les admins, jamais modifiés ni supprimés
+    match /bordereaux/{bordereauId} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
+
     // Courses (dances, levels, courses)
     match /dances/{document=**} {
       allow read: if request.auth != null;
