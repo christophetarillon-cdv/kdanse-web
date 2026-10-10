@@ -136,7 +136,7 @@ export default function AdminCoursesPage() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <Link href="/dashboard" className="text-gold-deep hover:underline text-sm">
-            ← Dashboard
+            ← Accueil
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mt-4 mb-2">🎵 Gérer les Cours</h1>
           <p className="text-gray-600">Créer les danses et niveaux disponibles</p>

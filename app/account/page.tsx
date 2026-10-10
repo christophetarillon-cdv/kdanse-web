@@ -264,7 +264,7 @@ export default function AccountPage() {
     <div className="space-y-8 p-4 sm:p-8">
       <div>
         <Link href="/dashboard" className="text-gold-deep hover:underline mb-4 inline-block">
-          ← Retour au dashboard
+          ← Retour à l'accueil
         </Link>
         <h1 className="text-2xl sm:text-4xl font-bold mt-4 mb-2">👤 Mon compte</h1>
         <p className="text-gray-700 font-medium">Gérez vos informations personnelles</p>

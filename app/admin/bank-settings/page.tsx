@@ -78,7 +78,7 @@ export default function AdminBankSettingsPage() {
           href="/dashboard"
           className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-semibold transition whitespace-nowrap"
         >
-          ← Dashboard
+          ← Accueil
         </Link>
       </div>
 
