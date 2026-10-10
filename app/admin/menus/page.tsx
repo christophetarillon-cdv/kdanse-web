@@ -158,7 +158,7 @@ export default function AdminMenusPage() {
   return (
     <div className="space-y-8 p-8">
       <div>
-        <Link href="/admin" className="text-blue-600 hover:underline mb-4 inline-block">
+        <Link href="/admin" className="text-gold-deep hover:underline mb-4 inline-block">
           ← Retour admin
         </Link>
         <h1 className="text-3xl font-bold mb-2">Gestion des menus</h1>
@@ -259,7 +259,7 @@ export default function AdminMenusPage() {
                       <button
                         type="button"
                         onClick={() => addMenuItem(item.id)}
-                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
+                        className="text-xs bg-gold-100 text-gold-deep px-2 py-1 rounded hover:bg-gold-200"
                       >
                         + Ajouter un sous-menu
                       </button>
@@ -267,7 +267,7 @@ export default function AdminMenusPage() {
                       {children.length > 0 && (
                         <div className="ml-4 space-y-2 border-l-2 border-gray-300 pl-3 pt-2">
                           {children.map((child, childIdx) => (
-                            <div key={child.id} className="bg-blue-50 border border-blue-200 rounded p-2 space-y-1">
+                            <div key={child.id} className="bg-gold-50 border border-gold-200 rounded p-2 space-y-1">
                               <div className="flex justify-between items-center">
                                 <span className="text-xs font-semibold text-gray-900 font-medium">Sous-menu {childIdx + 1}</span>
                                 <div className="flex gap-1">
@@ -340,7 +340,7 @@ export default function AdminMenusPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold disabled:bg-gray-400"
+              className="bg-ink text-white px-6 py-2 rounded hover:bg-ink-soft font-semibold disabled:bg-gray-400"
             >
               {submitting ? 'En cours...' : editingMenuId ? 'Mettre à jour' : 'Créer'}
             </button>
@@ -376,7 +376,7 @@ export default function AdminMenusPage() {
                 <td className="px-6 py-3 space-x-2">
                   <button
                     onClick={() => handleEdit(menu)}
-                    className="text-blue-600 hover:underline text-sm font-semibold"
+                    className="text-gold-deep hover:underline text-sm font-semibold"
                   >
                     Modifier
                   </button>

@@ -306,7 +306,7 @@ export default function AdminPaymentsConsolidatedPage() {
           onClick={() => setTab('installments')}
           className={`px-4 py-3 font-semibold border-b-2 transition ${
             tab === 'installments'
-              ? 'border-blue-600 text-blue-600'
+              ? 'border-ink text-gold-deep'
               : 'border-transparent text-gray-900 font-medium hover:text-gray-900'
           }`}
         >
@@ -364,7 +364,7 @@ export default function AdminPaymentsConsolidatedPage() {
                                 Échéance: {new Date(inst.dueDate).toLocaleDateString('fr-FR')}
                               </p>
                             </div>
-                            <span className="text-2xl font-bold text-blue-600">{inst.amount.toFixed(2)}€</span>
+                            <span className="text-2xl font-bold text-gold-deep">{inst.amount.toFixed(2)}€</span>
                           </div>
 
                           {isEditing ? (
@@ -409,7 +409,7 @@ export default function AdminPaymentsConsolidatedPage() {
                                 <button
                                   onClick={saveInstallment}
                                   disabled={saving}
-                                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                                  className="flex-1 bg-ink hover:bg-ink-soft text-white py-2 rounded font-semibold disabled:opacity-50 transition"
                                 >
                                   {saving ? 'Enregistrement...' : '💾 Enregistrer'}
                                 </button>
@@ -426,7 +426,7 @@ export default function AdminPaymentsConsolidatedPage() {
                                 <button
                                   onClick={() => startEditInstallment(inst)}
                                   disabled={confirming === inst.id}
-                                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                                  className="flex-1 bg-ink hover:bg-ink-soft text-white py-2 rounded font-semibold disabled:opacity-50 transition"
                                 >
                                   ✏️ Modifier
                                 </button>
@@ -457,7 +457,7 @@ export default function AdminPaymentsConsolidatedPage() {
       {tab === 'simple' && (
         <div className="space-y-4">
           {memberships.length === 0 ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+            <div className="bg-gold-50 border border-gold-200 rounded-lg p-6 text-center">
               <p className="text-gray-900">Aucun paiement simple en attente ✅</p>
             </div>
           ) : (
@@ -483,7 +483,7 @@ export default function AdminPaymentsConsolidatedPage() {
 
                   <div className="p-6 space-y-4">
                     {/* Détails de l'inscription */}
-                    <div className="bg-blue-50 rounded border border-blue-200 p-4 space-y-2 text-sm">
+                    <div className="bg-gold-50 rounded border border-gold-200 p-4 space-y-2 text-sm">
                       <p className="text-gray-900">
                         <strong>Danseurs:</strong> {membership.registrationDetails.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
                         {membership.registrationDetails.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}
@@ -528,7 +528,7 @@ export default function AdminPaymentsConsolidatedPage() {
                           <button
                             onClick={saveMembership}
                             disabled={saving}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                            className="flex-1 bg-ink hover:bg-ink-soft text-white py-2 rounded font-semibold disabled:opacity-50 transition"
                           >
                             {saving ? 'Enregistrement...' : '💾 Enregistrer'}
                           </button>
@@ -548,7 +548,7 @@ export default function AdminPaymentsConsolidatedPage() {
                           <button
                             onClick={() => startEditMembership(membership)}
                             disabled={confirming === membership.id}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                            className="flex-1 bg-ink hover:bg-ink-soft text-white py-2 rounded font-semibold disabled:opacity-50 transition"
                           >
                             ✏️ Modifier
                           </button>

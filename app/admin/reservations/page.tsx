@@ -74,7 +74,7 @@ export default function ReservationsAdminPage() {
   };
 
   const STATUS_COLORS: Record<Reservation['status'], string> = {
-    pending: 'bg-yellow-100 text-yellow-800',
+    pending: 'bg-gold-100 text-gold-ink',
     confirmed: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800',
   };
@@ -89,7 +89,7 @@ export default function ReservationsAdminPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
         <div className="text-center">
-          <div className="animate-spin inline-block w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+          <div className="animate-spin inline-block w-12 h-12 border-4 border-ink border-t-transparent rounded-full"></div>
           <p className="text-gray-900 font-medium mt-4">Chargement des réservations...</p>
         </div>
       </div>
@@ -100,7 +100,7 @@ export default function ReservationsAdminPage() {
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-6 py-4 rounded-lg text-center">
+          <div className="bg-gold-100 border border-gold text-gold-ink px-6 py-4 rounded-lg text-center">
             <p className="font-bold mb-2">Aucune saison active</p>
             <p>Il n'y a pas de réservations à gérer pour le moment.</p>
           </div>
@@ -123,11 +123,11 @@ export default function ReservationsAdminPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-3xl font-bold text-blue-600">{stats.total}</div>
+            <div className="text-3xl font-bold text-gold-deep">{stats.total}</div>
             <div className="text-sm text-gray-900 font-medium mt-1">Réservations au total</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-3xl font-bold text-yellow-600">{stats.pending}</div>
+            <div className="text-3xl font-bold text-gold-deep">{stats.pending}</div>
             <div className="text-sm text-gray-900 font-medium mt-1">En attente</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">

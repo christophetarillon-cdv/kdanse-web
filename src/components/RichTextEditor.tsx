@@ -58,7 +58,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
           type="button"
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleBold().run())}
           className={`px-3 py-1 rounded text-sm font-semibold ${
-            editor.isActive('bold') ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+            editor.isActive('bold') ? 'bg-ink text-white' : 'bg-white border hover:bg-gray-50'
           }`}
         >
           <strong>B</strong>
@@ -67,7 +67,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <button
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleItalic().run())}
           className={`px-3 py-1 rounded text-sm italic ${
-            editor.isActive('italic') ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+            editor.isActive('italic') ? 'bg-ink text-white' : 'bg-white border hover:bg-gray-50'
           }`}
         >
           I
@@ -76,7 +76,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <button
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleStrike().run())}
           className={`px-3 py-1 rounded text-sm line-through ${
-            editor.isActive('strike') ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+            editor.isActive('strike') ? 'bg-ink text-white' : 'bg-white border hover:bg-gray-50'
           }`}
         >
           S
@@ -101,7 +101,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <button
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('left').run())}
           className={`px-3 py-1 rounded text-sm ${
-            editor.isActive({ textAlign: 'left' }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+            editor.isActive({ textAlign: 'left' }) ? 'bg-ink text-white' : 'bg-white border hover:bg-gray-50'
           }`}
           title="Aligner à gauche"
         >
@@ -111,7 +111,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <button
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('center').run())}
           className={`px-3 py-1 rounded text-sm ${
-            editor.isActive({ textAlign: 'center' }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+            editor.isActive({ textAlign: 'center' }) ? 'bg-ink text-white' : 'bg-white border hover:bg-gray-50'
           }`}
           title="Centrer"
         >
@@ -121,7 +121,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <button
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().setTextAlign('right').run())}
           className={`px-3 py-1 rounded text-sm ${
-            editor.isActive({ textAlign: 'right' }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+            editor.isActive({ textAlign: 'right' }) ? 'bg-ink text-white' : 'bg-white border hover:bg-gray-50'
           }`}
           title="Aligner à droite"
         >
@@ -133,7 +133,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <button
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleHeading({ level: 1 }).run())}
           className={`px-3 py-1 rounded text-sm font-bold ${
-            editor.isActive('heading', { level: 1 }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+            editor.isActive('heading', { level: 1 }) ? 'bg-ink text-white' : 'bg-white border hover:bg-gray-50'
           }`}
         >
           H1
@@ -142,7 +142,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <button
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleHeading({ level: 2 }).run())}
           className={`px-3 py-1 rounded text-sm font-bold ${
-            editor.isActive('heading', { level: 2 }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+            editor.isActive('heading', { level: 2 }) ? 'bg-ink text-white' : 'bg-white border hover:bg-gray-50'
           }`}
         >
           H2
@@ -151,7 +151,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <button
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleHeading({ level: 3 }).run())}
           className={`px-3 py-1 rounded text-sm font-bold ${
-            editor.isActive('heading', { level: 3 }) ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+            editor.isActive('heading', { level: 3 }) ? 'bg-ink text-white' : 'bg-white border hover:bg-gray-50'
           }`}
         >
           H3
@@ -162,7 +162,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <button
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleBulletList().run())}
           className={`px-3 py-1 rounded text-sm ${
-            editor.isActive('bulletList') ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+            editor.isActive('bulletList') ? 'bg-ink text-white' : 'bg-white border hover:bg-gray-50'
           }`}
         >
           • Liste
@@ -171,7 +171,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         <button
           onPointerDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleOrderedList().run())}
           className={`px-3 py-1 rounded text-sm ${
-            editor.isActive('orderedList') ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50'
+            editor.isActive('orderedList') ? 'bg-ink text-white' : 'bg-white border hover:bg-gray-50'
           }`}
         >
           1. Liste

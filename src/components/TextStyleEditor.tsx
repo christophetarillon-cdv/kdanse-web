@@ -50,7 +50,7 @@ export default function TextStyleEditor({
       <button
         type="button"
         onClick={() => setShowStylePanel(!showStylePanel)}
-        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
+        className="text-xs bg-gold-100 text-gold-deep px-2 py-1 rounded hover:bg-gold-200"
       >
         {showStylePanel ? '✕ Fermer styles' : '✏️ Ajouter des styles'}
       </button>
@@ -137,7 +137,7 @@ export default function TextStyleEditor({
                     onClick={() => handleStyleChange('textAlign', align)}
                     className={`flex-1 px-2 py-1 text-xs rounded border ${
                       style.textAlign === align
-                        ? 'bg-blue-500 text-white border-blue-500'
+                        ? 'bg-gold-500 text-white border-gold'
                         : 'border-gray-300 hover:bg-gray-100'
                     }`}
                   >

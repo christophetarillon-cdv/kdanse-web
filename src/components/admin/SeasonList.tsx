@@ -13,7 +13,7 @@ interface SeasonListProps {
 const STATUS_COLORS: Record<Season['status'], string> = {
   planning: 'bg-gray-100 text-gray-800',
   active: 'bg-green-100 text-green-800',
-  reservation: 'bg-blue-100 text-blue-800',
+  reservation: 'bg-gold-100 text-gold-deep',
   closed: 'bg-red-100 text-red-800',
 };
 
@@ -106,7 +106,7 @@ export default function SeasonList({ seasons, onEdit, onRefresh }: SeasonListPro
                 <div className="flex gap-2 justify-end">
                   <button
                     onClick={() => onEdit?.(season)}
-                    className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition"
+                    className="px-3 py-1 bg-gold-500 hover:bg-ink text-white text-sm rounded transition"
                   >
                     Éditer
                   </button>

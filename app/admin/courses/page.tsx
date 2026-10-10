@@ -135,7 +135,7 @@ export default function AdminCoursesPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <Link href="/dashboard" className="text-blue-600 hover:underline text-sm">
+          <Link href="/dashboard" className="text-gold-deep hover:underline text-sm">
             ← Dashboard
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mt-4 mb-2">🎵 Gérer les Cours</h1>
@@ -146,7 +146,7 @@ export default function AdminCoursesPage() {
           {/* ===== DANCES SECTION ===== */}
           <div>
             <div className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-blue-100">
+              <div className="p-6 border-b bg-gradient-to-r from-gold-50 to-gold-100">
                 <h2 className="text-xl font-bold text-gray-900">💃 Danses</h2>
               </div>
 
@@ -176,7 +176,7 @@ export default function AdminCoursesPage() {
                 <div className="flex gap-2 pt-4">
                   <button
                     onClick={handleSaveDance}
-                    className="flex-1 bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 text-sm"
+                    className="flex-1 bg-ink text-white py-2 rounded font-semibold hover:bg-ink-soft text-sm"
                   >
                     ✓ Enregistrer
                   </button>
@@ -212,7 +212,7 @@ export default function AdminCoursesPage() {
                       <div className="flex gap-1">
                         <button
                           onClick={() => handleEditDance(dance)}
-                          className="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-semibold hover:bg-blue-200"
+                          className="px-2 py-1 bg-gold-100 text-gold-deep rounded text-xs font-semibold hover:bg-gold-200"
                         >
                           ✏️
                         </button>

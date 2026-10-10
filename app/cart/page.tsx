@@ -41,7 +41,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <Link href="/stages" className="text-blue-600 hover:underline">
+          <Link href="/stages" className="text-gold-deep hover:underline">
             ← Retour aux stages
           </Link>
           <h1 className="text-4xl font-bold mt-4 mb-2">🛒 Mon panier</h1>
@@ -50,12 +50,12 @@ export default function CartPage() {
 
         {/* Option de connexion si pas connecté */}
         {!firebaseUser && cart && (
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8">
+          <div className="bg-gold-50 border-2 border-gold-200 rounded-lg p-6 mb-8">
             <p className="text-gray-900 font-medium mb-4">Vous avez déjà un compte?</p>
             <div className="flex gap-3">
               <Link
                 href={`/login?redirect=/cart/${cart.id}/summary`}
-                className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white py-3 rounded font-semibold transition"
+                className="flex-1 text-center bg-ink hover:bg-ink-soft text-white py-3 rounded font-semibold transition"
               >
                 Connectez-vous
               </Link>
@@ -69,7 +69,7 @@ export default function CartPage() {
             <p className="text-gray-900 font-medium mb-6">Votre panier est vide</p>
             <Link
               href="/stages"
-              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+              className="inline-block bg-ink text-white px-6 py-3 rounded-lg hover:bg-ink-soft"
             >
               Voir les stages disponibles
             </Link>
@@ -93,7 +93,7 @@ export default function CartPage() {
                         <h3 className="text-lg font-bold text-gray-900">{item.stageName}</h3>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-blue-600">{item.totals?.total || 0}€</p>
+                        <p className="text-2xl font-bold text-gold-deep">{item.totals?.total || 0}€</p>
                       </div>
                     </div>
 
@@ -114,7 +114,7 @@ export default function CartPage() {
 
                     {/* Expanded details */}
                     {expandedItems.has(item.id) && (
-                      <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-4 space-y-2 text-sm">
+                      <div className="bg-gold-50 border border-gold-200 rounded p-4 mb-4 space-y-2 text-sm">
                         <p>
                           <strong>Danseurs:</strong> {item.configuration.danceType === 'solo' ? '1' : '2'}
                           {item.configuration.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}
@@ -157,7 +157,7 @@ export default function CartPage() {
                     <div className="flex gap-2">
                       <Link
                         href={`/stages/${item.stageId}`}
-                        className="px-4 py-2 text-blue-600 border border-blue-600 rounded hover:bg-blue-50 text-sm font-medium"
+                        className="px-4 py-2 text-gold-deep border border-ink rounded hover:bg-gold-50 text-sm font-medium"
                       >
                         Modifier configuration
                       </Link>
@@ -174,7 +174,7 @@ export default function CartPage() {
             </div>
 
             {/* Totals and CTA */}
-            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6">
+            <div className="bg-gradient-to-r from-gold-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6">
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-gray-700">
                   <span>Total stages:</span>
@@ -194,7 +194,7 @@ export default function CartPage() {
 
               <Link
                 href={`/cart/${cart.id}/summary`}
-                className="w-full block text-center bg-blue-600 text-white py-4 rounded-lg font-semibold hover:bg-blue-700"
+                className="w-full block text-center bg-ink text-white py-4 rounded-lg font-semibold hover:bg-ink-soft"
               >
                 Continuer vers le paiement
               </Link>

@@ -59,7 +59,7 @@ export default function StagesPage() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 flex justify-between items-center">
           <h1 className="text-4xl font-bold text-gray-900">Stages disponibles</h1>
-          <Link href="/dashboard" className="text-blue-600 hover:underline">← Retour</Link>
+          <Link href="/dashboard" className="text-gold-deep hover:underline">← Retour</Link>
         </div>
 
         {stages.length === 0 ? (
@@ -78,7 +78,7 @@ export default function StagesPage() {
                 <p className="text-gray-900 font-medium mb-4 whitespace-pre-wrap">{stage.description}</p>
                 <p className="text-gray-900 mb-4"><strong>Lieu :</strong> {stage.location}</p>
                 <div className="text-center">
-                  <Link href={`/stages/${stage.id}`} className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                  <Link href={`/stages/${stage.id}`} className="inline-block bg-ink text-white px-4 py-2 rounded hover:bg-ink-soft">
                     Je m'inscris
                   </Link>
                 </div>

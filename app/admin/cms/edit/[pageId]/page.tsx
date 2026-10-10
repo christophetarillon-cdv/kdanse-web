@@ -64,7 +64,7 @@ export default function CMSEditPage() {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-ink" />
           <p className="mt-4 text-gray-900 font-medium">Chargement de la page...</p>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function CMSEditPage() {
           <p className="text-red-600 font-semibold">{error || 'Page non trouvée'}</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="mt-4 px-4 py-2 bg-ink text-white rounded hover:bg-ink-soft"
           >
             Retour
           </button>

@@ -175,7 +175,7 @@ export default function AdminStagesPage() {
               </div>
             )}
             <label
-              className={`flex flex-col items-center justify-center gap-1 border-2 border-dashed border-blue-400 rounded-lg p-6 text-center bg-blue-50 hover:bg-blue-100 transition ${uploadingImage ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
+              className={`flex flex-col items-center justify-center gap-1 border-2 border-dashed border-gold rounded-lg p-6 text-center bg-gold-50 hover:bg-gold-100 transition ${uploadingImage ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
             >
               <span className="text-3xl">📷</span>
               <span className="font-semibold text-gray-900">
@@ -237,10 +237,10 @@ export default function AdminStagesPage() {
           {/* Tarifs du stage */}
           <div className="border-t pt-6 mt-6">
             <h3 className="font-semibold text-lg text-gray-900 mb-4 flex items-center">
-              <span className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-2">1</span>
+              <span className="bg-ink text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-2">1</span>
               Tarifs du stage (€)
             </h3>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-gold-50 border border-gold-200 rounded-lg p-4">
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-1">Solo licencié</label>
@@ -380,7 +380,7 @@ export default function AdminStagesPage() {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold"
+              className="bg-ink text-white px-6 py-2 rounded hover:bg-ink-soft font-semibold"
             >
               {editing ? 'Mettre à jour' : 'Créer'}
             </button>
@@ -422,7 +422,7 @@ export default function AdminStagesPage() {
                   {stage.pricing?.stage ? (
                     <div className="space-y-2">
                       <div>
-                        <p className="font-semibold text-blue-700">Stage:</p>
+                        <p className="font-semibold text-gold-deep">Stage:</p>
                         <p className="text-gray-900">Solo lic.: {stage.pricing.stage.soloLicensed}€</p>
                         <p className="text-gray-900">Solo non lic.: {stage.pricing.stage.soloUnlicensed}€</p>
                         <p className="text-gray-900">Couple lic.: {stage.pricing.stage.coupleLicensed}€</p>
@@ -442,7 +442,7 @@ export default function AdminStagesPage() {
                 <td className="px-6 py-3 space-x-2">
                   <button
                     onClick={() => handleEdit(stage)}
-                    className="text-blue-600 hover:underline text-sm font-semibold"
+                    className="text-gold-deep hover:underline text-sm font-semibold"
                   >
                     Modifier
                   </button>

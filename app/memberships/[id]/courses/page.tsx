@@ -141,7 +141,7 @@ export default function CoursesPage() {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all"
+                className="bg-ink h-2 rounded-full transition-all"
                 style={{ width: `${((currentDancerIndex + 1) / dancers.length) * 100}%` }}
               />
             </div>

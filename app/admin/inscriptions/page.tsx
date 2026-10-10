@@ -41,9 +41,9 @@ const PENDING_STATUSES = ['pending_confirmation', 'pending_plan'];
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   paid: { label: 'Payée', className: 'bg-green-100 text-green-800' },
-  pending_confirmation: { label: 'À valider', className: 'bg-yellow-100 text-yellow-800' },
-  pending_plan: { label: 'Échéancier en attente', className: 'bg-yellow-100 text-yellow-800' },
-  active: { label: 'Active', className: 'bg-blue-100 text-blue-800' },
+  pending_confirmation: { label: 'À valider', className: 'bg-gold-100 text-gold-ink' },
+  pending_plan: { label: 'Échéancier en attente', className: 'bg-gold-100 text-gold-ink' },
+  active: { label: 'Active', className: 'bg-gold-100 text-gold-deep' },
   completed: { label: 'Terminée', className: 'bg-gray-100 text-gray-800' },
   cancelled: { label: 'Annulée', className: 'bg-red-100 text-red-800' },
 };
@@ -228,7 +228,7 @@ export default function AdminInscriptionsPage() {
             <div className="text-sm text-gray-900 font-medium">Payées</div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-2xl font-bold text-yellow-700">{kpis.pending}</div>
+            <div className="text-2xl font-bold text-gold-ink">{kpis.pending}</div>
             <div className="text-sm text-gray-900 font-medium">En attente de paiement</div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">

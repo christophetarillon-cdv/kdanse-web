@@ -136,14 +136,14 @@ const toInstallment = (id: string, data: DocumentData): Installment => ({
 
 const paymentOf = (m: Membership, isPlan: boolean, total: number, received: number): Payment => {
   if (isPlan) {
-    if (total === 0) return { label: 'Échéancier à valider', className: 'bg-yellow-100 text-yellow-800' };
+    if (total === 0) return { label: 'Échéancier à valider', className: 'bg-gold-100 text-gold-ink' };
     if (received === total) return { label: 'Payé', className: 'bg-green-100 text-green-800' };
-    if (received === 0) return { label: `0 échéance sur ${total}`, className: 'bg-yellow-100 text-yellow-800' };
-    return { label: `${received} échéance${received > 1 ? 's' : ''} sur ${total}`, className: 'bg-blue-100 text-blue-800' };
+    if (received === 0) return { label: `0 échéance sur ${total}`, className: 'bg-gold-100 text-gold-ink' };
+    return { label: `${received} échéance${received > 1 ? 's' : ''} sur ${total}`, className: 'bg-gold-100 text-gold-deep' };
   }
   if (m.status === 'paid') return { label: 'Payé', className: 'bg-green-100 text-green-800' };
-  if (m.status === 'pending_confirmation') return { label: 'À confirmer', className: 'bg-yellow-100 text-yellow-800' };
-  if (m.status === 'pending_plan') return { label: 'Échéancier à valider', className: 'bg-yellow-100 text-yellow-800' };
+  if (m.status === 'pending_confirmation') return { label: 'À confirmer', className: 'bg-gold-100 text-gold-ink' };
+  if (m.status === 'pending_plan') return { label: 'Échéancier à valider', className: 'bg-gold-100 text-gold-ink' };
   return { label: 'Non payé', className: 'bg-gray-100 text-gray-800' };
 };
 
@@ -417,8 +417,8 @@ export default function AdminDancersPage() {
                     <tr
                       key={r.key}
                       onClick={() => setSelectedKey(r.key)}
-                      className={`cursor-pointer text-sm text-gray-900 align-top hover:bg-blue-50 ${
-                        selectedKey === r.key ? 'bg-blue-50' : ''
+                      className={`cursor-pointer text-sm text-gray-900 align-top hover:bg-gold-50 ${
+                        selectedKey === r.key ? 'bg-gold-50' : ''
                       }`}
                     >
                       <td className="px-4 py-3">

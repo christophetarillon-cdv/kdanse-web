@@ -42,7 +42,7 @@ export default function CMSPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
-        <Link href="/" className="text-blue-600 hover:underline mb-8 inline-block">
+        <Link href="/" className="text-gold-deep hover:underline mb-8 inline-block">
           ← Retour accueil
         </Link>
 

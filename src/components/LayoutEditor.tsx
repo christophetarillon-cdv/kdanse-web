@@ -66,7 +66,7 @@ export default function LayoutEditor({
   };
 
   return (
-    <div className="bg-blue-50 border-2 border-blue-200 rounded p-4 space-y-3">
+    <div className="bg-gold-50 border-2 border-gold-200 rounded p-4 space-y-3">
       <div className="flex justify-between items-start">
         <div>
           <h4 className="font-semibold text-sm text-gray-900">Zone (Layout)</h4>
@@ -94,7 +94,7 @@ export default function LayoutEditor({
                     layout.id as 'image-text' | 'text-image' | 'two-columns'
                   )
                 }
-                className="text-left p-2 border rounded hover:bg-blue-100 transition"
+                className="text-left p-2 border rounded hover:bg-gold-100 transition"
               >
                 <div className="font-semibold text-sm text-gray-900">{layout.label}</div>
                 <div className="text-xs text-gray-600">{layout.description}</div>
@@ -122,7 +122,7 @@ export default function LayoutEditor({
                       onClick={() =>
                         setExpandedColumn(expandedColumn === colIdx ? null : colIdx)
                       }
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs text-gold-deep hover:underline"
                     >
                       {expandedColumn === colIdx ? '▼' : '▶'}
                     </button>

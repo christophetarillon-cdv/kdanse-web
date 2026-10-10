@@ -88,14 +88,14 @@ export default function InlineEditableBlock({
       }}
       className={`transition-all ${
         isSelected
-          ? 'border-2 border-blue-500 shadow-xl'
+          ? 'border-2 border-gold shadow-xl'
           : 'border-2 border-gray-300 hover:border-gray-400'
       }`}
       style={{ zIndex: block.zIndex || 0 }}
     >
       <div
         className={`w-full h-full rounded overflow-hidden flex flex-col ${
-          isSelected ? 'ring-2 ring-blue-400' : ''
+          isSelected ? 'ring-2 ring-gold' : ''
         }`}
         style={{
           backgroundColor: block.backgroundColor
@@ -147,14 +147,14 @@ export default function InlineEditableBlock({
           <div className="absolute top-1 right-1 flex gap-1">
             <button
               onMouseDown={(e) => { e.preventDefault(); onBringToFront?.(); }}
-              className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 font-medium"
+              className="px-2 py-1 text-xs bg-gold-500 text-white rounded hover:bg-ink font-medium"
               title="Avancer devant"
             >
               ↑
             </button>
             <button
               onMouseDown={(e) => { e.preventDefault(); onSendToBack?.(); }}
-              className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 font-medium"
+              className="px-2 py-1 text-xs bg-gold-500 text-white rounded hover:bg-ink font-medium"
               title="Reculer derrière"
             >
               ↓

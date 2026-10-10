@@ -75,7 +75,7 @@ export default function CMSListPage() {
         <h1 className="text-3xl font-bold text-gray-900">Pages CMS</h1>
         <button
           onClick={() => setShowNewForm(!showNewForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="px-4 py-2 bg-ink text-white rounded hover:bg-ink-soft"
         >
           + Nouvelle Page
         </button>
@@ -155,7 +155,7 @@ export default function CMSListPage() {
               <div className="flex-1">
                 <Link
                   href={`/admin/cms/edit/${page.id}`}
-                  className="text-lg font-bold text-gray-900 text-blue-600 hover:underline"
+                  className="text-lg font-bold text-gray-900 text-gold-deep hover:underline"
                 >
                   {page.title}
                 </Link>
@@ -176,7 +176,7 @@ export default function CMSListPage() {
                 </span>
                 <Link
                   href={`/admin/cms/edit/${page.id}`}
-                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="px-3 py-1 text-sm bg-ink text-white rounded hover:bg-ink-soft"
                 >
                   Éditer
                 </Link>

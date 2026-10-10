@@ -146,7 +146,7 @@ export default function CoursesSummaryPage() {
           {data.dancers.map((dancer, dancerIndex) => (
             <div key={dancerIndex} className="bg-white rounded-lg shadow overflow-hidden">
               {/* Dancer Header */}
-              <div className="p-6 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 flex justify-between items-center">
+              <div className="p-6 bg-gradient-to-r from-gold-50 to-gold-100 border-b border-gold-200 flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">
                     {dancer.firstName} {dancer.lastName}
@@ -155,7 +155,7 @@ export default function CoursesSummaryPage() {
                 </div>
                 <button
                   onClick={() => handleModify(dancerIndex)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 text-sm"
+                  className="px-4 py-2 bg-ink text-white rounded font-semibold hover:bg-ink-soft text-sm"
                 >
                   ✏️ Modifier
                 </button>

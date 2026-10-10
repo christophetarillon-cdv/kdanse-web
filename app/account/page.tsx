@@ -263,7 +263,7 @@ export default function AccountPage() {
   return (
     <div className="space-y-8 p-4 sm:p-8">
       <div>
-        <Link href="/dashboard" className="text-blue-600 hover:underline mb-4 inline-block">
+        <Link href="/dashboard" className="text-gold-deep hover:underline mb-4 inline-block">
           ← Retour au dashboard
         </Link>
         <h1 className="text-2xl sm:text-4xl font-bold mt-4 mb-2">👤 Mon compte</h1>
@@ -296,7 +296,7 @@ export default function AccountPage() {
                   <img
                     src={formData.photoUrl}
                     alt="Photo de profil"
-                    className="w-32 h-32 rounded-full object-cover border-2 border-blue-300"
+                    className="w-32 h-32 rounded-full object-cover border-2 border-gold-200"
                   />
                 </div>
                 <button
@@ -467,7 +467,7 @@ export default function AccountPage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+            className="flex-1 bg-ink hover:bg-ink-soft text-white py-2 rounded font-semibold disabled:opacity-50 transition"
           >
             {saving ? 'Sauvegarde...' : '💾 Sauvegarder'}
           </button>
@@ -558,7 +558,7 @@ export default function AccountPage() {
                         <button
                           type="submit"
                           disabled={savingDancer}
-                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold disabled:opacity-50 transition"
+                          className="flex-1 bg-ink hover:bg-ink-soft text-white py-2 rounded font-semibold disabled:opacity-50 transition"
                         >
                           {savingDancer ? 'Sauvegarde...' : '💾 Enregistrer'}
                         </button>

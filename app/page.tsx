@@ -37,7 +37,7 @@ export default function HomePage() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#f3f4f6',
+      backgroundColor: '#f9f7f4',
       padding: '20px'
     }}>
       <div style={{
@@ -74,14 +74,14 @@ export default function HomePage() {
         {/* Admin CTA */}
         {isAdmin && pendingPlansCount > 0 && (
           <div style={{
-            backgroundColor: '#fef3c7',
-            border: '2px solid #fcd34d',
+            backgroundColor: '#faf6ea',
+            border: '2px solid #c9a84c',
             borderRadius: '8px',
             padding: '16px',
             marginBottom: '24px'
           }}>
             <p style={{
-              color: '#92400e',
+              color: '#5f4b17',
               marginBottom: '12px',
               fontWeight: '500'
             }}>
@@ -110,7 +110,7 @@ export default function HomePage() {
           style={{
             display: 'inline-block',
             padding: '8px 24px',
-            backgroundColor: '#2563eb',
+            backgroundColor: '#1a1a1a',
             color: 'white',
             borderRadius: '8px',
             textDecoration: 'none',

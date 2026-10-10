@@ -125,7 +125,7 @@ export default function AdminPaymentPlansPage() {
                             Échéance: {new Date(inst.dueDate).toLocaleDateString('fr-FR')}
                           </p>
                         </div>
-                        <span className="text-2xl font-bold text-blue-600">{inst.amount.toFixed(2)}€</span>
+                        <span className="text-2xl font-bold text-gold-deep">{inst.amount.toFixed(2)}€</span>
                       </div>
 
                       {/* Détails */}
@@ -175,9 +175,9 @@ export default function AdminPaymentPlansPage() {
       )}
 
       {/* Paramètres bancaires */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h2 className="font-semibold text-blue-900 mb-4">📋 Coordonnées bancaires Kdanse</h2>
-        <p className="text-sm text-blue-800">
+      <div className="bg-gold-50 border border-gold-200 rounded-lg p-6">
+        <h2 className="font-semibold text-ink mb-4">📋 Coordonnées bancaires Kdanse</h2>
+        <p className="text-sm text-gold-deep">
           <Link href="/admin/bank-settings" className="underline font-semibold">
             Configurer les coordonnées bancaires →
           </Link>

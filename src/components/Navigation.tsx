@@ -40,11 +40,11 @@ export default function Navigation({ menuName, menuId, className = '' }: Navigat
   const renderItem = (item: any) => {
     const isExternal = item.url.startsWith('http');
     const link = isExternal ? (
-      <a href={item.url} className="text-xs sm:text-base px-2 py-1 rounded whitespace-nowrap hover:text-blue-600 transition">
+      <a href={item.url} className="text-xs sm:text-base px-2 py-1 rounded whitespace-nowrap hover:text-gold transition">
         {item.label}
       </a>
     ) : (
-      <Link href={item.url} className="text-xs sm:text-base px-2 py-1 rounded whitespace-nowrap hover:text-blue-600 transition">
+      <Link href={item.url} className="text-xs sm:text-base px-2 py-1 rounded whitespace-nowrap hover:text-gold transition">
         {item.label}
       </Link>
     );
@@ -56,9 +56,9 @@ export default function Navigation({ menuName, menuId, className = '' }: Navigat
     return (
       <div className="relative group">
         {link}
-        <ul className="absolute left-0 mt-0 hidden group-hover:block bg-white shadow rounded min-w-48">
+        <ul className="absolute left-0 mt-0 hidden group-hover:block bg-white text-ink shadow rounded min-w-48">
           {item.children.map((child: any) => (
-            <li key={child.id} className="px-4 py-2 hover:bg-gray-100">
+            <li key={child.id} className="px-4 py-2 hover:bg-gold-50">
               {renderItem(child)}
             </li>
           ))}

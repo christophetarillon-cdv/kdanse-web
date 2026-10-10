@@ -209,14 +209,14 @@ export default function StageDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <Link href="/stages" className="text-blue-600 hover:underline mb-6 inline-block">
+        <Link href="/stages" className="text-gold-deep hover:underline mb-6 inline-block">
           ← Retour aux stages
         </Link>
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8">
+          <div className="bg-gradient-to-r from-ink to-ink-soft text-white p-8">
             <h1 className="text-4xl font-bold mb-2">{stage.name}</h1>
-            <p className="text-blue-100">📍 {stage.location}</p>
+            <p className="text-gold-100">📍 {stage.location}</p>
           </div>
 
           <div className="p-8 space-y-8">
@@ -238,9 +238,9 @@ export default function StageDetailPage() {
               <h2 className="text-2xl font-semibold mb-6">Configurez votre inscription</h2>
 
               {/* Étape 1: Type de participation */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-                <h3 className="font-semibold text-blue-900 mb-4 flex items-center">
-                  <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">1</span>
+              <div className="bg-gold-50 border border-gold-200 rounded-lg p-6 mb-6">
+                <h3 className="font-semibold text-ink mb-4 flex items-center">
+                  <span className="bg-ink text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">1</span>
                   Nombre de danseurs
                 </h3>
                 <div className="flex gap-4">
@@ -248,8 +248,8 @@ export default function StageDetailPage() {
                     onClick={() => setForm({ ...form, danceType: 'solo', dancers: [{ firstName: '', lastName: '', licensed: false }] })}
                     className={`flex-1 p-4 border-2 rounded-lg font-semibold transition ${
                       form.danceType === 'solo'
-                        ? 'border-blue-600 bg-blue-100 text-blue-900'
-                        : 'border-gray-300 hover:border-blue-400'
+                        ? 'border-ink bg-gold-100 text-ink'
+                        : 'border-gray-300 hover:border-gold'
                     }`}
                   >
                     🧑‍🎤 Solo
@@ -258,8 +258,8 @@ export default function StageDetailPage() {
                     onClick={() => setForm({ ...form, danceType: 'couple', dancers: [{ firstName: '', lastName: '', licensed: false }, { firstName: '', lastName: '', licensed: false }] })}
                     className={`flex-1 p-4 border-2 rounded-lg font-semibold transition ${
                       form.danceType === 'couple'
-                        ? 'border-blue-600 bg-blue-100 text-blue-900'
-                        : 'border-gray-300 hover:border-blue-400'
+                        ? 'border-ink bg-gold-100 text-ink'
+                        : 'border-gray-300 hover:border-gold'
                     }`}
                   >
                     👥 Couple
@@ -411,7 +411,7 @@ export default function StageDetailPage() {
 
                 {form.wantHousing && (
                   <div className="space-y-4">
-                    <div className="p-3 bg-blue-100 rounded text-blue-900 text-sm font-medium">
+                    <div className="p-3 bg-gold-100 rounded text-ink text-sm font-medium">
                       🛏️ À loger: <strong>{getTotalPersons()} personne(s)</strong>
                     </div>
 
@@ -473,7 +473,7 @@ export default function StageDetailPage() {
                     {/* Validation message */}
                     <div className={`p-3 rounded text-sm font-medium ${
                       getHousingStatus() === 'ok' ? 'bg-green-100 text-green-900' :
-                      getHousingStatus() === 'warning' ? 'bg-yellow-100 text-yellow-900' :
+                      getHousingStatus() === 'warning' ? 'bg-gold-100 text-ink' :
                       'bg-red-100 text-red-900'
                     }`}>
                       {getHousingStatus() === 'ok' && `✅ Capacité: ${getTotalHousingCapacity()} places pour ${getTotalPersons()} personnes`}
@@ -485,7 +485,7 @@ export default function StageDetailPage() {
               </div>
 
               {/* Résumé du prix */}
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6 mb-6">
+              <div className="bg-gradient-to-r from-gold-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6 mb-6">
                 <h3 className="font-semibold text-orange-900 mb-4">📋 Résumé de votre inscription</h3>
                 <div className="space-y-2 text-gray-800 mb-4">
                   <p>
@@ -515,7 +515,7 @@ export default function StageDetailPage() {
               <button
                 onClick={handleAddToCart}
                 disabled={submitting}
-                className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 disabled:opacity-50"
+                className="w-full bg-ink text-white py-4 rounded-lg font-semibold text-lg hover:bg-ink-soft disabled:opacity-50"
               >
                 {submitting ? 'Ajout au panier...' : `Ajouter au panier (${calculatePrice()}€)`}
               </button>

@@ -316,7 +316,7 @@ export default function AdminMisesEnBanquePage() {
 
   const tabClass = (value: Tab) =>
     `px-4 py-2 text-sm font-semibold rounded ${
-      tab === value ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 border hover:bg-gray-50'
+      tab === value ? 'bg-ink text-white' : 'bg-white text-gray-900 border hover:bg-gray-50'
     }`;
 
   const selectableVisible = visible.filter((c) => !c.remiseId);
@@ -355,7 +355,7 @@ export default function AdminMisesEnBanquePage() {
             <div className="text-sm text-gray-900 font-medium">Chèques déposés</div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-2xl font-bold text-blue-700">{selectedCheques.length}</div>
+            <div className="text-2xl font-bold text-gold-deep">{selectedCheques.length}</div>
             <div className="text-sm text-gray-900 font-medium">
               Sélection ({eur(sum(selectedCheques))})
             </div>
@@ -385,7 +385,7 @@ export default function AdminMisesEnBanquePage() {
             <button
               onClick={createBordereau}
               disabled={selectedCheques.length === 0 || saving}
-              className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
+              className="bg-ink text-white px-4 py-2 rounded text-sm font-semibold hover:bg-ink-soft disabled:opacity-50"
             >
               {saving ? 'Création…' : `Créer le bordereau ${nextReference} (${eur(sum(selectedCheques))})`}
             </button>

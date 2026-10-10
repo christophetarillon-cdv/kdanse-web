@@ -97,7 +97,7 @@ export default function PaymentPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        <Link href="/memberships" className="text-blue-600 hover:underline mb-6 inline-block">
+        <Link href="/memberships" className="text-gold-deep hover:underline mb-6 inline-block">
           ← Retour aux inscriptions
         </Link>
 
@@ -105,12 +105,12 @@ export default function PaymentPage() {
           <h1 className="text-3xl font-bold mb-8">Paiement</h1>
 
           {/* Résumé */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+          <div className="bg-gold-50 border border-gold-200 rounded-lg p-6 mb-8">
             <h2 className="font-semibold text-gray-900 mb-4">Résumé de l'inscription</h2>
             <div className="space-y-2">
               <p><strong>Stage :</strong> {membership.stageName}</p>
               <p><strong>Catégorie :</strong> {membership.pricingCategory}</p>
-              <p className="text-2xl font-bold text-blue-600">Total : {membership.amount}€</p>
+              <p className="text-2xl font-bold text-gold-deep">Total : {membership.amount}€</p>
             </div>
           </div>
 
@@ -123,8 +123,8 @@ export default function PaymentPage() {
               <div
                 className={`border-2 rounded-lg p-4 cursor-pointer transition ${
                   method === 'helloasso'
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-blue-300'
+                    ? 'border-ink bg-gold-50'
+                    : 'border-gray-200 hover:border-gold-200'
                 }`}
                 onClick={() => setMethod('helloasso')}
               >
@@ -200,22 +200,22 @@ export default function PaymentPage() {
           <button
             onClick={handleSubmitPayment}
             disabled={submitting}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
+            className="w-full bg-ink text-white py-3 rounded-lg font-semibold hover:bg-ink-soft disabled:opacity-50"
           >
             {submitting ? 'Traitement...' : `Confirmer le paiement (${membership.amount}€)`}
           </button>
 
           {method === 'virement' && (
-            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-900">
+            <div className="mt-6 p-4 bg-gold-50 border border-gold-200 rounded-lg">
+              <p className="text-sm text-ink">
                 <strong>Virement :</strong> Après confirmation, vous recevrez les coordonnées bancaires par email.
               </p>
             </div>
           )}
 
           {method === 'cheque' && (
-            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-900">
+            <div className="mt-6 p-4 bg-gold-50 border border-gold-200 rounded-lg">
+              <p className="text-sm text-ink">
                 <strong>Chèque :</strong> Après confirmation, vous recevrez l'adresse d'envoi par email.
               </p>
             </div>

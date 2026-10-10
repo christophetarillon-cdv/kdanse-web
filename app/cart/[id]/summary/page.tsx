@@ -348,7 +348,7 @@ export default function CartSummaryPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <Link href="/cart" className="text-blue-600 hover:underline">
+          <Link href="/cart" className="text-gold-deep hover:underline">
             ← Retour au panier
           </Link>
           <h1 className="text-4xl font-bold mt-4 mb-2">📋 Résumé de votre commande</h1>
@@ -369,10 +369,10 @@ export default function CartSummaryPage() {
                     <div>
                       <h3 className="text-lg font-bold text-gray-900">{item.stageName}</h3>
                     </div>
-                    <span className="text-2xl font-bold text-blue-600">{item.totals?.total}€</span>
+                    <span className="text-2xl font-bold text-gold-deep">{item.totals?.total}€</span>
                   </div>
 
-                  <div className="bg-blue-50 rounded border border-blue-200 p-4 space-y-2 text-sm">
+                  <div className="bg-gold-50 rounded border border-gold-200 p-4 space-y-2 text-sm">
                     <p>
                       <strong>Danseurs:</strong> {item.configuration.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
                       {item.configuration.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}
@@ -420,7 +420,7 @@ export default function CartSummaryPage() {
               <h2 className="text-xl font-bold text-gray-900">📝 Informations des danseurs</h2>
               <p className="text-sm text-gray-700 mt-1">Complétez les informations avant de payer</p>
               {firebaseUser && (
-                <p className="text-sm text-blue-700 mt-2 font-medium">
+                <p className="text-sm text-gold-deep mt-2 font-medium">
                   ✓ Vos données ont été pré-remplies à partir de votre compte existant
                 </p>
               )}
@@ -493,14 +493,14 @@ export default function CartSummaryPage() {
 
                   {/* Alerte si les noms ne correspondent pas */}
                   {dancer.hasNameMismatch && (
-                    <div className="bg-yellow-50 border-2 border-yellow-200 rounded p-4">
-                      <p className="text-sm text-yellow-800 font-medium mb-3">
+                    <div className="bg-gold-50 border-2 border-gold-200 rounded p-4">
+                      <p className="text-sm text-gold-ink font-medium mb-3">
                         ⚠️ Les noms/prénoms ne correspondent pas avec votre compte
                       </p>
-                      <p className="text-xs text-yellow-700 mb-4">
+                      <p className="text-xs text-gold-ink mb-4">
                         Votre compte: <strong>{dancer.accountFirstName} {dancer.accountLastName}</strong>
                       </p>
-                      <p className="text-xs text-yellow-700">
+                      <p className="text-xs text-gold-ink">
                         Veuillez confirmer les noms/prénoms pour cette inscription
                       </p>
                     </div>
@@ -680,7 +680,7 @@ export default function CartSummaryPage() {
           )}
 
           {/* Totals */}
-          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6">
+          <div className="bg-gradient-to-r from-gold-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6">
             <div className="space-y-3 mb-6">
               <div className="text-lg">
                 <div className="flex justify-between text-gray-700 mb-2">
@@ -704,14 +704,14 @@ export default function CartSummaryPage() {
             <button
               onClick={handleContinueToPayment}
               disabled={submitting}
-              className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 disabled:opacity-50"
+              className="w-full bg-ink text-white py-4 rounded-lg font-semibold text-lg hover:bg-ink-soft disabled:opacity-50"
             >
               {submitting ? 'Validation en cours...' : 'Continuer vers le paiement'}
             </button>
           </div>
 
           {/* Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-900">
+          <div className="bg-gold-50 border border-gold-200 rounded-lg p-4 text-sm text-ink">
             <p className="mb-2">
               <strong>ℹ️ Important :</strong>
             </p>

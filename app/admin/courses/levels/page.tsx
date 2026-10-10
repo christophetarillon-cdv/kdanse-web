@@ -79,7 +79,7 @@ export default function AdminLevelsPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-width-4xl mx-auto">
         <div className="mb-8">
-          <Link href="/admin" className="text-blue-600 hover:underline text-sm">
+          <Link href="/admin" className="text-gold-deep hover:underline text-sm">
             ← Admin
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mt-4 mb-2">📊 Gérer les Niveaux</h1>
@@ -119,7 +119,7 @@ export default function AdminLevelsPage() {
               <div className="flex gap-2 pt-4">
                 <button
                   onClick={handleSave}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700"
+                  className="flex-1 bg-ink text-white py-2 rounded font-semibold hover:bg-ink-soft"
                 >
                   Enregistrer
                 </button>
@@ -156,7 +156,7 @@ export default function AdminLevelsPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEdit(level)}
-                        className="px-3 py-1 bg-blue-100 text-blue-600 rounded text-sm font-semibold hover:bg-blue-200"
+                        className="px-3 py-1 bg-gold-100 text-gold-deep rounded text-sm font-semibold hover:bg-gold-200"
                       >
                         Éditer
                       </button>

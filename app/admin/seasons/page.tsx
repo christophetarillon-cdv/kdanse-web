@@ -79,7 +79,7 @@ export default function SeasonsAdminPage() {
                 setSelectedSeason(undefined);
                 setShowForm(true);
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition shadow-md"
+              className="bg-ink hover:bg-ink-soft text-white font-bold py-3 px-6 rounded-lg transition shadow-md"
             >
               + Créer une nouvelle saison
             </button>
@@ -101,7 +101,7 @@ export default function SeasonsAdminPage() {
         {/* Stats */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-3xl font-bold text-blue-600">{seasons.length}</div>
+            <div className="text-3xl font-bold text-gold-deep">{seasons.length}</div>
             <div className="text-sm text-gray-900 font-medium mt-1">Saisons au total</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
@@ -111,7 +111,7 @@ export default function SeasonsAdminPage() {
             <div className="text-sm text-gray-900 font-medium mt-1">Saisons actives</div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-3xl font-bold text-gold-deep">
               {seasons.filter(s => s.status === 'reservation').length}
             </div>
             <div className="text-sm text-gray-900 font-medium mt-1">Réservations ouvertes</div>

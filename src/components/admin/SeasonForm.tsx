@@ -69,7 +69,7 @@ export default function SeasonForm({ season, onSuccess, onCancel }: SeasonFormPr
           defaultValue={season?.name}
           placeholder="Ex: 2024-2025"
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent"
         />
       </div>
 
@@ -83,7 +83,7 @@ export default function SeasonForm({ season, onSuccess, onCancel }: SeasonFormPr
           defaultValue={season?.description}
           placeholder="Description de la saison..."
           rows={3}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent"
         />
       </div>
 
@@ -98,7 +98,7 @@ export default function SeasonForm({ season, onSuccess, onCancel }: SeasonFormPr
             name="startDate"
             defaultValue={season ? formatDate(season.startDate) : ''}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent"
           />
         </div>
         <div>
@@ -110,7 +110,7 @@ export default function SeasonForm({ season, onSuccess, onCancel }: SeasonFormPr
             name="endDate"
             defaultValue={season ? formatDate(season.endDate) : ''}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent"
           />
         </div>
       </div>
@@ -126,7 +126,7 @@ export default function SeasonForm({ season, onSuccess, onCancel }: SeasonFormPr
             name="reservationStartDate"
             defaultValue={season ? formatDate(season.reservationStartDate) : ''}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent"
           />
         </div>
         <div>
@@ -138,7 +138,7 @@ export default function SeasonForm({ season, onSuccess, onCancel }: SeasonFormPr
             name="reservationEndDate"
             defaultValue={season ? formatDate(season.reservationEndDate) : ''}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent"
           />
         </div>
       </div>
@@ -152,7 +152,7 @@ export default function SeasonForm({ season, onSuccess, onCancel }: SeasonFormPr
           name="status"
           defaultValue={season?.status || 'planning'}
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent"
         >
           <option value="planning">Planification</option>
           <option value="active">Actif</option>
@@ -166,7 +166,7 @@ export default function SeasonForm({ season, onSuccess, onCancel }: SeasonFormPr
         <button
           type="submit"
           disabled={isLoading}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition"
+          className="flex-1 bg-ink hover:bg-ink-soft disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition"
         >
           {isLoading ? 'Sauvegarde...' : season ? 'Mettre à jour' : 'Créer'}
         </button>

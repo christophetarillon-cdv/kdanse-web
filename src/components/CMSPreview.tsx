@@ -50,7 +50,7 @@ export default function CMSPreview({ title, description, content }: CMSPreviewPr
               )}
 
               {block.type === 'section' && (
-                <div className="bg-gray-50 border-l-4 border-blue-500 p-4 my-4">
+                <div className="bg-gray-50 border-l-4 border-gold p-4 my-4">
                   {block.text && <h3 className="font-semibold mb-2">{block.text}</h3>}
                   {block.content && (
                     <div className="space-y-2">

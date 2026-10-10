@@ -116,7 +116,7 @@ export default function CartPaymentPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-3xl mx-auto">
-        <Link href={`/cart/${cart.id}/summary`} className="text-blue-600 hover:underline mb-6 inline-block">
+        <Link href={`/cart/${cart.id}/summary`} className="text-gold-deep hover:underline mb-6 inline-block">
           ← Retour au résumé
         </Link>
 
@@ -124,7 +124,7 @@ export default function CartPaymentPage() {
           <h1 className="text-3xl font-bold mb-8">💳 Paiement</h1>
 
           {/* Résumé rapide */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+          <div className="bg-gold-50 border border-gold-200 rounded-lg p-6 mb-8">
             <h2 className="font-semibold text-gray-900 mb-4">Résumé de votre commande</h2>
             <div className="space-y-2 mb-4">
               {cart.items.map((item) => (
@@ -134,7 +134,7 @@ export default function CartPaymentPage() {
                 </div>
               ))}
             </div>
-            <div className="flex justify-between text-xl font-bold text-blue-600 pt-4 border-t border-blue-200">
+            <div className="flex justify-between text-xl font-bold text-gold-deep pt-4 border-t border-gold-200">
               <span>Total:</span>
               <span>{cart.totals.total}€</span>
             </div>
@@ -149,8 +149,8 @@ export default function CartPaymentPage() {
               <div
                 className={`border-2 rounded-lg p-4 cursor-pointer transition ${
                   method === 'helloasso'
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-blue-300'
+                    ? 'border-ink bg-gold-50'
+                    : 'border-gray-200 hover:border-gold-200'
                 }`}
                 onClick={() => setMethod('helloasso')}
               >
@@ -230,8 +230,8 @@ export default function CartPaymentPage() {
                 <div
                   className={`border-2 rounded-lg p-4 cursor-pointer transition ${
                     paymentOption === 'direct'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-blue-300'
+                      ? 'border-ink bg-gold-50'
+                      : 'border-gray-200 hover:border-gold-200'
                   }`}
                   onClick={() => setPaymentOption('direct')}
                 >
@@ -282,7 +282,7 @@ export default function CartPaymentPage() {
           <button
             onClick={handleSubmitPayment}
             disabled={submitting || ((method === 'cheque' || method === 'virement') && !paymentOption)}
-            className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 disabled:opacity-50 mb-6"
+            className="w-full bg-ink text-white py-4 rounded-lg font-semibold text-lg hover:bg-ink-soft disabled:opacity-50 mb-6"
           >
             {submitting ? 'Traitement en cours...' : (
               paymentOption === 'plan'
@@ -293,8 +293,8 @@ export default function CartPaymentPage() {
 
           {/* Instructions */}
           {method === 'virement' && (
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-900">
+            <div className="p-4 bg-gold-50 border border-gold-200 rounded-lg">
+              <p className="text-sm text-ink">
                 <strong>Virement bancaire :</strong> Après confirmation, vous recevrez les coordonnées bancaires par email.
                 Votre inscription sera confirmée une fois le virement reçu.
               </p>
@@ -302,8 +302,8 @@ export default function CartPaymentPage() {
           )}
 
           {method === 'cheque' && (
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-900">
+            <div className="p-4 bg-gold-50 border border-gold-200 rounded-lg">
+              <p className="text-sm text-ink">
                 <strong>Chèque :</strong> Après confirmation, vous recevrez l'adresse d'envoi par email.
                 Votre inscription sera confirmée une fois le chèque reçu.
               </p>
@@ -311,8 +311,8 @@ export default function CartPaymentPage() {
           )}
 
           {method === 'helloasso' && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-900">
+            <div className="p-4 bg-gold-50 border border-gold-200 rounded-lg">
+              <p className="text-sm text-ink">
                 <strong>HelloAsso :</strong> Vous serez redirigé vers le paiement sécurisé HelloAsso.
                 Votre inscription sera confirmée immédiatement après le paiement.
               </p>

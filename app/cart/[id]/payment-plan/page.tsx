@@ -183,7 +183,7 @@ export default function PaymentPlanPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <Link href={`/cart/${cart.id}/pay`} className="text-blue-600 hover:underline mb-6 inline-block">
+        <Link href={`/cart/${cart.id}/pay`} className="text-gold-deep hover:underline mb-6 inline-block">
           ← Retour au paiement
         </Link>
 
@@ -194,9 +194,9 @@ export default function PaymentPlanPage() {
           </div>
 
           {/* Résumé */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="bg-gold-50 border border-gold-200 rounded-lg p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Montant total à payer</h2>
-            <div className="text-3xl font-bold text-blue-600 mb-4">{cart.totals.total}€</div>
+            <div className="text-3xl font-bold text-gold-deep mb-4">{cart.totals.total}€</div>
 
             {/* Nombre d'échéances */}
             <div className="space-y-3">
@@ -206,7 +206,7 @@ export default function PaymentPlanPage() {
                   onClick={() => updateInstallmentCount(2)}
                   className={`flex-1 min-w-[120px] py-2 rounded font-semibold transition ${
                     installmentCount === 2
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-ink text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
@@ -216,7 +216,7 @@ export default function PaymentPlanPage() {
                   onClick={() => updateInstallmentCount(3)}
                   className={`flex-1 min-w-[120px] py-2 rounded font-semibold transition ${
                     installmentCount === 3
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-ink text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
@@ -226,7 +226,7 @@ export default function PaymentPlanPage() {
                   onClick={() => updateInstallmentCount(4)}
                   className={`flex-1 min-w-[120px] py-2 rounded font-semibold transition ${
                     installmentCount === 4
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-ink text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
@@ -240,7 +240,7 @@ export default function PaymentPlanPage() {
               <div className="grid grid-cols-3 gap-3 text-sm">
                 <div>
                   <p className="text-gray-700 font-medium">Total</p>
-                  <p className="text-xl font-bold text-blue-600">{stats.total.toFixed(2)}€</p>
+                  <p className="text-xl font-bold text-gold-deep">{stats.total.toFixed(2)}€</p>
                 </div>
                 <div>
                   <p className="text-gray-700 font-medium">Alloué</p>
@@ -333,7 +333,7 @@ export default function PaymentPlanPage() {
 
                 {/* Détails selon le mode */}
                 {inst.method === 'cheque' && (
-                  <div className="space-y-3 bg-blue-50 p-4 rounded">
+                  <div className="space-y-3 bg-gold-50 p-4 rounded">
                     <input
                       type="text"
                       placeholder="Numéro du chèque"
@@ -375,7 +375,7 @@ export default function PaymentPlanPage() {
                 )}
 
                 {inst.method === 'cheque_vacances' && (
-                  <div className="bg-yellow-50 p-4 rounded space-y-3">
+                  <div className="bg-gold-50 p-4 rounded space-y-3">
                     <input
                       type="number"
                       placeholder="Nombre de chèques vacances"
@@ -406,8 +406,8 @@ export default function PaymentPlanPage() {
           )}
 
           {stats.allocated === 0 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-900">
+            <div className="bg-gold-50 border border-gold-200 rounded-lg p-4">
+              <p className="text-sm text-ink">
                 <strong>💡 Conseil:</strong> Entrez les montants pour chaque paiement. Le total doit correspondre exactement à {stats.total.toFixed(2)}€.
               </p>
             </div>

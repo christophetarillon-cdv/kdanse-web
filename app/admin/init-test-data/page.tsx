@@ -117,9 +117,9 @@ export default function InitTestDataPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Initialisation des Données de Test</h1>
           <p className="text-gray-900 font-medium mb-8">Phase 4 - Gestion des Accès</p>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <h2 className="text-lg font-bold text-gray-900 text-blue-900 mb-3">📋 Ce qui sera créé:</h2>
-            <ul className="space-y-2 text-sm text-blue-800">
+          <div className="bg-gold-50 border border-gold-200 rounded-lg p-6 mb-8">
+            <h2 className="text-lg font-bold text-gray-900 text-ink mb-3">📋 Ce qui sera créé:</h2>
+            <ul className="space-y-2 text-sm text-gold-deep">
               <li>✅ <span className="font-medium">1 Stage</span> - "Stage de Test - Phase 4" pour saison 2024-2025</li>
               <li>✅ <span className="font-medium">1 Membership</span> - Inscription de l'utilisateur dev au stage</li>
               <li>✅ <span className="font-medium">1 Réservation</span> - Pour saison 2025-2026 (statut: pending)</li>
@@ -186,19 +186,19 @@ export default function InitTestDataPage() {
                 <h3 className="font-semibold text-gray-900 mb-3">🧪 Prêt pour tester:</h3>
                 <ul className="space-y-2 text-sm text-gray-900">
                   <li>
-                    📍 <a href="/admin/reservations" className="text-blue-600 hover:underline">
+                    📍 <a href="/admin/reservations" className="text-gold-deep hover:underline">
                       /admin/reservations
                     </a>
                     {' '} — Voir les réservations avec colonne Éligibilité
                   </li>
                   <li>
-                    📍 <a href="/reservations" className="text-blue-600 hover:underline">
+                    📍 <a href="/reservations" className="text-gold-deep hover:underline">
                       /reservations
                     </a>
                     {' '} — Tester la page de réservation avec badge d'éligibilité
                   </li>
                   <li>
-                    📍 <a href="/admin/stages" className="text-blue-600 hover:underline">
+                    📍 <a href="/admin/stages" className="text-gold-deep hover:underline">
                       /admin/stages
                     </a>
                     {' '} — Voir le stage créé

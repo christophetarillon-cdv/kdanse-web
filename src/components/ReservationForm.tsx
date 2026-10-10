@@ -104,7 +104,7 @@ export default function ReservationForm({ currentSeasonId, onSuccess }: Reservat
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow p-8 text-center">
-        <div className="animate-spin inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+        <div className="animate-spin inline-block w-8 h-8 border-4 border-ink border-t-transparent rounded-full"></div>
         <p className="text-gray-600 mt-4">Chargement...</p>
       </div>
     );
@@ -129,7 +129,7 @@ export default function ReservationForm({ currentSeasonId, onSuccess }: Reservat
 
   if (isEligible === false) {
     return (
-      <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-6 py-4 rounded-lg">
+      <div className="bg-gold-100 border border-gold text-gold-ink px-6 py-4 rounded-lg">
         <div className="font-bold mb-2">⚠️ Accès restreint</div>
         <p>{eligibilityReason}</p>
       </div>
@@ -190,12 +190,12 @@ export default function ReservationForm({ currentSeasonId, onSuccess }: Reservat
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Avez-vous des questions ou des informations à partager ?"
             rows={4}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent"
           />
         </div>
 
         {/* Conditions */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-gold-50 border border-gold-200 rounded-lg p-4">
           <p className="text-sm text-gray-700">
             En validant votre réservation, vous confirmez que vous avez des informations
             supplémentaires au sujet de cette saison. Votre réservation sera revérifiée par notre
@@ -207,7 +207,7 @@ export default function ReservationForm({ currentSeasonId, onSuccess }: Reservat
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition"
+          className="w-full bg-ink hover:bg-ink-soft disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition"
         >
           {isSubmitting ? 'Réservation en cours...' : 'Confirmer ma réservation'}
         </button>

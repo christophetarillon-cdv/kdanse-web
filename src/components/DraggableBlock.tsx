@@ -47,12 +47,12 @@ export default function DraggableBlock({
         });
       }}
       className={`transition-all ${
-        isSelected ? 'border-2 border-blue-500 shadow-lg' : 'border-2 border-gray-300'
+        isSelected ? 'border-2 border-gold shadow-lg' : 'border-2 border-gray-300'
       }`}
     >
       <div
         className={`w-full h-full p-4 bg-white rounded overflow-hidden cursor-pointer ${
-          isSelected ? 'ring-2 ring-blue-400' : ''
+          isSelected ? 'ring-2 ring-gold' : ''
         }`}
         onClick={() => onSelect(block.id)}
       >

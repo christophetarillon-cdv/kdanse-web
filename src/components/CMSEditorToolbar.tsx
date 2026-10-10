@@ -54,35 +54,35 @@ export default function CMSEditorToolbar() {
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-300 p-3 flex gap-2 flex-wrap items-center shadow-md max-h-32 overflow-y-auto">
+    <div className="bg-gradient-to-r from-gold-50 to-indigo-50 border-b-2 border-gold-200 p-3 flex gap-2 flex-wrap items-center shadow-md max-h-32 overflow-y-auto">
 
       {/* Texte styles */}
       <div className="flex gap-1 items-center bg-white p-2 rounded-lg border border-gray-200">
         <span className="text-xs font-semibold text-gray-600 px-1">Texte</span>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('bold'); }}
-          className="px-3 py-1 text-xs font-bold bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-3 py-1 text-xs font-bold bg-gray-100 hover:bg-gold-200 rounded"
           title="Gras (Ctrl+B)"
         >
           G
         </button>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('italic'); }}
-          className="px-3 py-1 text-xs italic bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-3 py-1 text-xs italic bg-gray-100 hover:bg-gold-200 rounded"
           title="Italique (Ctrl+I)"
         >
           I
         </button>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('underline'); }}
-          className="px-3 py-1 text-xs underline bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-3 py-1 text-xs underline bg-gray-100 hover:bg-gold-200 rounded"
           title="Souligné (Ctrl+U)"
         >
           U
         </button>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('strikethrough'); }}
-          className="px-3 py-1 text-xs line-through bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-3 py-1 text-xs line-through bg-gray-100 hover:bg-gold-200 rounded"
           title="Barré"
         >
           S
@@ -123,7 +123,7 @@ export default function CMSEditorToolbar() {
         <select
           onChange={(e) => applyFormat('fontSize', e.target.value)}
           defaultValue="3"
-          className="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-100 rounded border"
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gold-100 rounded border"
           title="Taille du texte"
         >
           <option value="1">Très petit</option>
@@ -141,28 +141,28 @@ export default function CMSEditorToolbar() {
         <span className="text-xs font-semibold text-gray-600 px-1">Align</span>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('justifyLeft'); }}
-          className="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gold-200 rounded"
           title="Aligner à gauche"
         >
           ⬅
         </button>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('justifyCenter'); }}
-          className="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gold-200 rounded"
           title="Centrer"
         >
           ⬆⬇
         </button>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('justifyRight'); }}
-          className="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gold-200 rounded"
           title="Aligner à droite"
         >
           ➡
         </button>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('justifyFull'); }}
-          className="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gold-200 rounded"
           title="Justifier"
         >
           ⟺
@@ -174,14 +174,14 @@ export default function CMSEditorToolbar() {
         <span className="text-xs font-semibold text-gray-600 px-1">Listes</span>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('insertUnorderedList'); }}
-          className="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gold-200 rounded"
           title="Liste à puces"
         >
           •••
         </button>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('insertOrderedList'); }}
-          className="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gold-200 rounded"
           title="Liste numérotée"
         >
           123
@@ -192,14 +192,14 @@ export default function CMSEditorToolbar() {
       <div className="flex gap-1 items-center bg-white p-2 rounded-lg border border-gray-200">
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('outdent'); }}
-          className="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gold-200 rounded"
           title="Diminuer le retrait"
         >
           ◀ Retrait
         </button>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('indent'); }}
-          className="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gold-200 rounded"
           title="Augmenter le retrait"
         >
           Retrait ▶
@@ -217,7 +217,7 @@ export default function CMSEditorToolbar() {
             }
             setShowLinkInput(!showLinkInput);
           }}
-          className="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 rounded text-blue-700 font-medium"
+          className="px-2 py-1 text-xs bg-gold-100 hover:bg-gold-200 rounded text-gold-deep font-medium"
           title="Insérer un lien"
         >
           🔗 Lien
@@ -234,7 +234,7 @@ export default function CMSEditorToolbar() {
             />
             <button
               onMouseDown={(e) => { e.preventDefault(); insertLink(); }}
-              className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-2 py-1 text-xs bg-ink text-white rounded hover:bg-ink-soft"
             >
               OK
             </button>
@@ -253,14 +253,14 @@ export default function CMSEditorToolbar() {
       <div className="flex gap-1 items-center bg-white p-2 rounded-lg border border-gray-200">
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('formatBlock', '<blockquote>'); }}
-          className="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-200 rounded"
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gold-200 rounded"
           title="Blocquote"
         >
           " Citation
         </button>
         <button
           onMouseDown={(e) => { e.preventDefault(); applyFormat('formatBlock', '<pre>'); }}
-          className="px-2 py-1 text-xs bg-gray-100 hover:bg-blue-200 rounded font-mono text-xs"
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gold-200 rounded font-mono text-xs"
           title="Code"
         >
           &lt;&gt;

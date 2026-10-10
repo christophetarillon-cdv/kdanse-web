@@ -143,7 +143,7 @@ export default function MembershipsPage() {
   return (
     <div className="space-y-8 p-4 sm:p-8">
       <div>
-        <Link href="/dashboard" className="text-blue-600 hover:underline mb-4 inline-block">
+        <Link href="/dashboard" className="text-gold-deep hover:underline mb-4 inline-block">
           ← Retour au dashboard
         </Link>
         <h1 className="text-2xl sm:text-4xl font-bold mt-4 mb-2">📋 Mes inscriptions</h1>
@@ -152,8 +152,8 @@ export default function MembershipsPage() {
 
       {/* Statistiques */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-          <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
+        <div className="bg-gold-50 border border-gold-200 rounded-lg p-4 text-center">
+          <p className="text-2xl font-bold text-gold-deep">{stats.total}</p>
           <p className="text-sm text-gray-700 font-medium">Total</p>
         </div>
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
@@ -172,7 +172,7 @@ export default function MembershipsPage() {
           onClick={() => setFilter('all')}
           className={`px-4 py-2 rounded font-semibold transition ${
             filter === 'all'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-ink text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
@@ -209,7 +209,7 @@ export default function MembershipsPage() {
               : 'Aucune inscription ne correspond à ce filtre'}
           </p>
           {stats.total === 0 && (
-            <Link href="/stages" className="text-blue-600 hover:underline font-semibold">
+            <Link href="/stages" className="text-gold-deep hover:underline font-semibold">
               Découvrir les stages →
             </Link>
           )}
@@ -226,7 +226,7 @@ export default function MembershipsPage() {
                   </p>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <span className="text-xl sm:text-2xl font-bold text-blue-600">{membership.amount}€</span>
+                  <span className="text-xl sm:text-2xl font-bold text-gold-deep">{membership.amount}€</span>
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-semibold ${
                       membership.status === 'paid'
@@ -234,7 +234,7 @@ export default function MembershipsPage() {
                         : membership.status === 'pending_confirmation'
                         ? 'bg-orange-100 text-orange-800'
                         : membership.status === 'pending_plan'
-                        ? 'bg-blue-100 text-blue-800'
+                        ? 'bg-gold-100 text-gold-deep'
                         : 'bg-red-100 text-red-800'
                     }`}
                   >
@@ -277,7 +277,7 @@ export default function MembershipsPage() {
                 )}
 
                 {/* Détails */}
-                <div className="bg-blue-50 rounded border border-blue-200 p-4 space-y-2 text-sm">
+                <div className="bg-gold-50 rounded border border-gold-200 p-4 space-y-2 text-sm">
                   <p>
                     <strong>Danseurs:</strong> {membership.registrationDetails.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
                     {membership.registrationDetails.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}
@@ -351,10 +351,10 @@ export default function MembershipsPage() {
                 )}
 
                 {membership.status === 'pending_plan' && membership.paymentPlanId && paymentPlans[membership.paymentPlanId] && (
-                  <div className="bg-blue-50 border border-blue-200 rounded p-4 space-y-4">
+                  <div className="bg-gold-50 border border-gold-200 rounded p-4 space-y-4">
                     <div>
-                      <p className="font-semibold text-blue-900 mb-2">📋 Plan de paiement</p>
-                      <p className="text-sm text-blue-900 mb-3">
+                      <p className="font-semibold text-ink mb-2">📋 Plan de paiement</p>
+                      <p className="text-sm text-ink mb-3">
                         Veuillez respecter les dates d'échéance et envoyer les paiements selon les modalités convenues.
                       </p>
                     </div>
@@ -362,10 +362,10 @@ export default function MembershipsPage() {
                     {/* Installments */}
                     <div className="space-y-3">
                       {paymentPlans[membership.paymentPlanId].installments.map((inst, idx) => (
-                        <div key={inst.id} className="bg-white p-3 rounded border border-blue-100 text-sm">
+                        <div key={inst.id} className="bg-white p-3 rounded border border-gold-100 text-sm">
                           <div className="flex justify-between items-center mb-2">
                             <span className="font-semibold">Paiement {idx + 1}</span>
-                            <span className="text-lg font-bold text-blue-600">{inst.amount.toFixed(2)}€</span>
+                            <span className="text-lg font-bold text-gold-deep">{inst.amount.toFixed(2)}€</span>
                           </div>
                           <div className="space-y-1 text-gray-700">
                             <p><strong>Date:</strong> {new Date(inst.dueDate).toLocaleDateString('fr-FR')}</p>

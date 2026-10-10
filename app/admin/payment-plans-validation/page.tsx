@@ -195,7 +195,7 @@ export default function AdminPaymentPlansValidationPage() {
           {plans.map(plan => (
             <div key={plan.id} className="bg-white rounded-lg shadow overflow-hidden">
               {/* Header */}
-              <div className="p-6 bg-gradient-to-r from-blue-50 to-blue-100 border-b">
+              <div className="p-6 bg-gradient-to-r from-gold-50 to-gold-100 border-b">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">
@@ -204,7 +204,7 @@ export default function AdminPaymentPlansValidationPage() {
                     <p className="text-sm text-gray-900 font-medium">Plan ID: {plan.id.substring(0, 8)}...</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-blue-600">{plan.totalAmount.toFixed(2)}€</p>
+                    <p className="text-2xl font-bold text-gold-deep">{plan.totalAmount.toFixed(2)}€</p>
                     <p className="text-sm text-gray-900 font-medium">{plan.installmentCount} paiements</p>
                   </div>
                 </div>
@@ -216,7 +216,7 @@ export default function AdminPaymentPlansValidationPage() {
                   <div key={inst.id} className="p-6 space-y-4">
                     <div className="flex justify-between items-start">
                       <h3 className="font-semibold text-lg">Paiement {idx + 1}</h3>
-                      <span className="text-2xl font-bold text-blue-600">
+                      <span className="text-2xl font-bold text-gold-deep">
                         {inst.amount.toFixed(2)}€
                       </span>
                     </div>
@@ -319,7 +319,7 @@ export default function AdminPaymentPlansValidationPage() {
                         setEditingPlan(plan.id);
                         setEditedInstallments(prev => ({ ...prev, [plan.id]: plan.installments }));
                       }}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold"
+                      className="flex-1 bg-ink hover:bg-ink-soft text-white py-2 rounded font-semibold"
                     >
                       ✏️ Modifier
                     </button>

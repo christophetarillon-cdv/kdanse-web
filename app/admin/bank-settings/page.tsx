@@ -258,7 +258,7 @@ export default function AdminBankSettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
+          className="w-full bg-ink text-white py-4 rounded-lg font-semibold hover:bg-ink-soft disabled:opacity-50"
         >
           {saving ? 'Sauvegarde en cours...' : '💾 Sauvegarder'}
         </button>

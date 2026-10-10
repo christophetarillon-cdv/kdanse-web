@@ -82,7 +82,7 @@ export default function CMSVisualEditor({
         <div className="flex gap-2 items-center">
           <button
             onClick={() => handleAddBlock('paragraph')}
-            className="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
+            className="px-3 py-2 text-sm bg-ink text-white rounded hover:bg-ink-soft font-medium"
           >
             + Texte
           </button>

@@ -274,7 +274,7 @@ export default function AdminEncaissementsPage() {
             <div className="text-sm text-gray-900 font-medium">Encaissé sur la période</div>
           </div>
           <div className="bg-white rounded-lg shadow p-4 col-span-2 md:col-span-1">
-            <div className="text-2xl font-bold text-yellow-700">{eur(sum(pending))}</div>
+            <div className="text-2xl font-bold text-gold-ink">{eur(sum(pending))}</div>
             <div className="text-sm text-gray-900 font-medium">En attente de réception</div>
           </div>
           {modeTotals.map((mode) => (
@@ -354,7 +354,7 @@ export default function AdminEncaissementsPage() {
                     <td className="px-4 py-3">
                       <span
                         className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-                          r.kind === 'echeance' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                          r.kind === 'echeance' ? 'bg-gold-100 text-gold-deep' : 'bg-gray-100 text-gray-800'
                         }`}
                       >
                         {r.position}
@@ -363,7 +363,7 @@ export default function AdminEncaissementsPage() {
                     <td className="px-4 py-3">{MODE_LABELS[r.method] ?? (r.method || '—')}</td>
                     <td className="px-4 py-3">{r.reference}</td>
                     <td className="px-4 py-3 text-right font-semibold">
-                      <span className={r.received ? '' : 'text-yellow-800'}>{eur(r.amount)}</span>
+                      <span className={r.received ? '' : 'text-gold-ink'}>{eur(r.amount)}</span>
                     </td>
                     <td className="px-4 py-3">{r.confirmedBy}</td>
                   </tr>

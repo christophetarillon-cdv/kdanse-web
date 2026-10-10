@@ -219,7 +219,7 @@ export default function AdminPagesPage() {
   return (
     <div className="space-y-8 p-8">
       <div>
-        <Link href="/admin" className="text-blue-600 hover:underline mb-4 inline-block">
+        <Link href="/admin" className="text-gold-deep hover:underline mb-4 inline-block">
           ← Retour admin
         </Link>
         <h1 className="text-3xl font-bold mb-2">Gestion des pages CMS</h1>
@@ -425,7 +425,7 @@ export default function AdminPagesPage() {
                         <button
                           type="button"
                           onClick={() => updateBlock(block.id, { items: [...(block.items || []), ''] })}
-                          className="text-xs px-2 py-1 bg-blue-200 hover:bg-blue-300 text-blue-900 rounded"
+                          className="text-xs px-2 py-1 bg-gold-200 hover:bg-gold-200 text-ink rounded"
                         >
                           + Item
                         </button>
@@ -501,7 +501,7 @@ export default function AdminPagesPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="bg-ink text-white px-6 py-2 rounded hover:bg-ink-soft font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {submitting ? 'En cours...' : (editingId ? 'Mettre à jour' : 'Créer')}
             </button>
@@ -555,7 +555,7 @@ export default function AdminPagesPage() {
                 <td className="px-6 py-3 text-sm text-gray-900 font-medium">/{page.slug}</td>
                 <td className="px-6 py-3">
                   <span className={`px-3 py-1 rounded text-sm font-semibold ${
-                    page.published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                    page.published ? 'bg-green-100 text-green-800' : 'bg-gold-100 text-gold-ink'
                   }`}>
                     {page.published ? 'Publié' : 'Brouillon'}
                   </span>
@@ -566,7 +566,7 @@ export default function AdminPagesPage() {
                 <td className="px-6 py-3 space-x-2">
                   <button
                     onClick={() => handleEdit(page)}
-                    className="text-blue-600 hover:underline text-sm font-semibold"
+                    className="text-gold-deep hover:underline text-sm font-semibold"
                   >
                     Modifier
                   </button>

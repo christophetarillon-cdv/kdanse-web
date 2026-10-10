@@ -70,7 +70,7 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-8 p-8">
       <div>
-        <Link href="/admin" className="text-blue-600 hover:underline mb-4 inline-block">
+        <Link href="/admin" className="text-gold-deep hover:underline mb-4 inline-block">
           ← Retour admin
         </Link>
         <h1 className="text-3xl font-bold mb-2">Paramètres du site</h1>
@@ -126,7 +126,7 @@ export default function AdminSettingsPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-semibold disabled:bg-gray-400"
+            className="bg-ink text-white px-6 py-2 rounded hover:bg-ink-soft font-semibold disabled:bg-gray-400"
           >
             {submitting ? 'En cours...' : 'Sauvegarder'}
           </button>
@@ -134,9 +134,9 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl">
-        <h3 className="font-semibold text-blue-900 mb-2">💡 Comment ça marche ?</h3>
-        <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
+      <div className="bg-gold-50 border border-gold-200 rounded-lg p-6 max-w-2xl">
+        <h3 className="font-semibold text-ink mb-2">💡 Comment ça marche ?</h3>
+        <ol className="text-sm text-gold-deep space-y-2 list-decimal list-inside">
           <li>Crée des menus dans "Gérer les menus"</li>
           <li>Assigne-les au Header ou Footer ici</li>
           <li>Ils s'affichent automatiquement sur le site</li>
