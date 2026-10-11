@@ -3,20 +3,37 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getAuth, signOut } from 'firebase/auth';
+import { getUserProfile } from '@/services/userService';
+import type { SavedDancer } from '@/types';
 
 export default function DashboardPage() {
   const { user, firebaseUser, loading } = useAuth();
   const { cart } = useCart();
   const router = useRouter();
+  const [firstName, setFirstName] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !firebaseUser) {
       router.push('/login');
     }
   }, [loading, firebaseUser, router]);
+
+  useEffect(() => {
+    if (!firebaseUser) return;
+    const email = (firebaseUser.email || '').trim().toLowerCase();
+    getUserProfile(firebaseUser.uid)
+      .then((userData) => {
+        const profile = userData?.profile as any;
+        const holder = ((profile?.dancers || []) as SavedDancer[]).find(
+          (d) => d.uid === firebaseUser.uid || (!!d.email && d.email.trim().toLowerCase() === email)
+        );
+        setFirstName(profile?.firstName || (userData as any)?.prenom || holder?.firstName || null);
+      })
+      .catch((err) => console.error('Erreur chargement profil:', err));
+  }, [firebaseUser]);
 
   if (loading) return <div className="p-8">Chargement...</div>;
   if (!firebaseUser) return null;
@@ -49,7 +66,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="bg-gradient-to-r from-ink to-ink-soft text-white rounded-lg shadow-lg p-4 sm:p-8 flex flex-col sm:flex-row justify-between items-start gap-4">
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-4xl font-bold mb-2 break-words">Bienvenue, {user?.displayName || user?.email}!</h1>
+          <h1 className="text-xl sm:text-4xl font-bold mb-2 break-words">Bienvenue, {firstName || user?.displayName || user?.email}</h1>
           <p className="text-sm sm:text-base text-gold-100">Site de réservation et paiement Kdanse</p>
         </div>
         <button
