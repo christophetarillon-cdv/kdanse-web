@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import SeasonForm from '@/components/admin/SeasonForm';
 import SeasonList from '@/components/admin/SeasonList';
 import { getSeasons } from '@/services/seasonService';
@@ -48,11 +49,19 @@ export default function SeasonsAdminPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Saisons</h1>
-          <p className="text-gray-900 font-medium">
-            Créez et gérez les saisons de danse, définissez les périodes de réservation
-          </p>
+        <div className="mb-8 flex justify-between items-start gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestion des Saisons</h1>
+            <p className="text-gray-900 font-medium">
+              Créez et gérez les saisons de danse, définissez les périodes de réservation
+            </p>
+          </div>
+          <Link
+            href="/dashboard"
+            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-semibold transition whitespace-nowrap"
+          >
+            ← Accueil
+          </Link>
         </div>
 
         {/* Form Section */}
