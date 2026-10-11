@@ -15,6 +15,8 @@ import {
   syncLinkedDancerProfile,
 } from '@/services/userService';
 
+const DATE_OF_BIRTH_MAX = '2010-01-01';
+
 export default function CartSummaryPage() {
   const params = useParams();
   const cartId = params.id as string;
@@ -177,6 +179,10 @@ export default function CartSummaryPage() {
     for (const dancer of dancersInfo) {
       if (!dancer.dateOfBirth || !dancer.postalAddress?.street || !dancer.postalAddress?.postalCode || !dancer.postalAddress?.city) {
         alert('Veuillez remplir toutes les informations des danseurs');
+        return;
+      }
+      if (dancer.dateOfBirth > DATE_OF_BIRTH_MAX) {
+        alert('La date de naissance des danseurs ne peut pas être postérieure au 01/01/2010');
         return;
       }
       if (dancer.licensed && !dancer.license?.number?.trim()) {
@@ -557,13 +563,22 @@ export default function CartSummaryPage() {
                     <input
                       type="date"
                       value={dancer.dateOfBirth}
+                      max={DATE_OF_BIRTH_MAX}
                       onChange={(e) => {
                         const newDancers = [...dancersInfo];
                         newDancers[idx].dateOfBirth = e.target.value;
                         setDancersInfo(newDancers);
                       }}
+                      onBlur={(e) => {
+                        if (!dancer.dateOfBirth) e.currentTarget.value = '';
+                      }}
                       className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900"
                     />
+                    {dancer.dateOfBirth > DATE_OF_BIRTH_MAX && (
+                      <p className="text-sm text-red-600 font-medium mt-1">
+                        La date de naissance ne peut pas être postérieure au 01/01/2010
+                      </p>
+                    )}
                   </div>
 
                   {/* Adresse */}
