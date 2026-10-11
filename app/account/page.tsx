@@ -21,6 +21,9 @@ interface DancerDraft {
 
 const normalize = (value?: string | null) => (value || '').trim().toLowerCase();
 
+const isSameAccountHolder = (dancer: SavedDancer, uid?: string, email?: string | null) =>
+  (!!dancer.uid && dancer.uid === uid) || (!!dancer.email && normalize(dancer.email) === normalize(email));
+
 const inputClass = 'w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium';
 
 export default function AccountPage() {
@@ -67,20 +70,25 @@ export default function AccountPage() {
     try {
       const userData = await getUserProfile(firebaseUser!.uid);
       if (userData) {
-        setDancers(await resolveLinkedDancers((userData.profile as any)?.dancers || []));
+        const profile = userData.profile as any;
+        const savedDancers = await resolveLinkedDancers(profile?.dancers || []);
+        setDancers(savedDancers);
+        const holder = savedDancers.find((d) => isSameAccountHolder(d, firebaseUser!.uid, firebaseUser!.email));
         setFormData({
-          firstName: userData.profile?.firstName || (userData as any).prenom || '',
-          lastName: userData.profile?.lastName || (userData as any).nom || '',
-          phone: userData.profile?.phone || '',
-          dateOfBirth: userData.profile?.dateOfBirth
-            ? new Date(userData.profile.dateOfBirth).toISOString().split('T')[0]
-            : '',
-          street: userData.profile?.postalAddress?.street || '',
-          postalCode: userData.profile?.postalAddress?.postalCode || '',
-          city: userData.profile?.postalAddress?.city || '',
-          licenseNumber: userData.profile?.license?.number || '',
-          licenseActive: userData.profile?.license?.active || false,
-          photoUrl: userData.profile?.photoUrl || (userData as any).photo || '',
+          firstName: profile?.firstName || (userData as any).prenom || holder?.firstName || '',
+          lastName: profile?.lastName || (userData as any).nom || holder?.lastName || '',
+          phone: profile?.phone || '',
+          dateOfBirth: profile?.dateOfBirth
+            ? new Date(profile.dateOfBirth).toISOString().split('T')[0]
+            : holder?.dateOfBirth
+              ? new Date(holder.dateOfBirth).toISOString().split('T')[0]
+              : '',
+          street: profile?.postalAddress?.street || holder?.postalAddress?.street || '',
+          postalCode: profile?.postalAddress?.postalCode || holder?.postalAddress?.postalCode || '',
+          city: profile?.postalAddress?.city || holder?.postalAddress?.city || '',
+          licenseNumber: profile?.license?.number || holder?.license?.number || '',
+          licenseActive: (profile?.license?.number ? profile.license.active : holder?.license?.active) || false,
+          photoUrl: profile?.photoUrl || (userData as any).photo || '',
         });
       }
     } catch (err) {
@@ -152,7 +160,23 @@ export default function AccountPage() {
 
       // Le champ profile est remplacé entier: conserver les danseurs enregistrés
       const currentUser = await getUserProfile(firebaseUser!.uid);
-      profileData.dancers = (currentUser?.profile as any)?.dancers || [];
+      const savedDancers: SavedDancer[] = [...((currentUser?.profile as any)?.dancers || [])];
+      const holderIndex = savedDancers.findIndex((d) =>
+        isSameAccountHolder(d, firebaseUser!.uid, firebaseUser!.email)
+      );
+      if (holderIndex >= 0) {
+        const holder: SavedDancer = {
+          ...savedDancers[holderIndex],
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          postalAddress: { street: formData.street, postalCode: formData.postalCode, city: formData.city },
+          license: { number: formData.licenseNumber, active: formData.licenseActive },
+        };
+        if (formData.dateOfBirth) holder.dateOfBirth = formData.dateOfBirth;
+        else delete holder.dateOfBirth;
+        savedDancers[holderIndex] = holder;
+      }
+      profileData.dancers = savedDancers;
 
       const displayName = `${formData.firstName} ${formData.lastName}`.trim();
       const updatedUser: Partial<User> = {
