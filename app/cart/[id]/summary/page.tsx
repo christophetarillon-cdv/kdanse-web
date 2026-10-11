@@ -1,16 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { getCart, submitCart } from '@/services/cartService';
 import { Cart } from '@/types/cart';
 import { collection, query, where, getDocs, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '@/lib/firebase';
 import {
   findUserUidByEmail,
   linkDancerAccount,
+  registerEmailIndex,
   resolveLinkedDancers,
   syncLinkedDancerProfile,
 } from '@/services/userService';
@@ -98,6 +100,7 @@ export default function CartSummaryPage() {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const accountCreationRef = useRef(false);
 
   // Infos danseurs complètes (Phase 2b validation)
   const [dancersInfo, setDancersInfo] = useState<any[]>([]);
@@ -119,7 +122,7 @@ export default function CartSummaryPage() {
   });
 
   useEffect(() => {
-    if (!authLoading && cartId) {
+    if (!authLoading && cartId && !accountCreationRef.current) {
       fetchCart();
     }
   }, [authLoading, cartId, firebaseUser]);
@@ -309,7 +312,7 @@ export default function CartSummaryPage() {
       ].join('\n');
     };
 
-    const dancersToSubmit = dancersInfo.map((dancer) =>
+    let dancersToSubmit = dancersInfo.map((dancer) =>
       dancer.licensed
         ? {
             ...dancer,
@@ -322,12 +325,54 @@ export default function CartSummaryPage() {
     let step = 'initialisation';
     let targetUid: string | undefined;
     let targetEmail = '';
+    let ownerUid = firebaseUser?.uid;
+    let accountCreated = false;
     try {
+      if (!ownerUid) {
+        step = 'création du compte';
+        const holderEmail = accountInfo.email.trim();
+        accountCreationRef.current = true;
+        let credential;
+        try {
+          credential = await createUserWithEmailAndPassword(auth, holderEmail, accountInfo.password);
+        } catch (createError) {
+          accountCreationRef.current = false;
+          if ((createError as { code?: string }).code === 'auth/email-already-in-use') {
+            alert('Un compte existe déjà avec cet email : connectez-vous avant de valider le panier');
+            return;
+          }
+          throw createError;
+        }
+        ownerUid = credential.user.uid;
+        accountCreated = true;
+
+        const holder = dancersToSubmit[0];
+        step = 'création du profil';
+        await setDoc(doc(db, 'users', ownerUid), {
+          email: holderEmail,
+          displayName: `${holder.firstName} ${holder.lastName}`.trim(),
+          prenom: holder.firstName,
+          nom: holder.lastName,
+          role: 'user',
+          profile: { firstName: holder.firstName, lastName: holder.lastName, dancers: [], lastUpdated: new Date() },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        step = 'index email';
+        await registerEmailIndex(ownerUid, holderEmail);
+        step = 'rattachement du panier';
+        await updateDoc(doc(db, 'carts', cart.id), { userId: ownerUid });
+
+        dancersToSubmit = dancersToSubmit.map((d, index) =>
+          index === 0 && !d.email?.trim() ? { ...d, email: holderEmail } : d
+        );
+      }
+
       const dancerUids: (string | undefined)[] = [];
 
       // Sauvegarder les données des danseurs si l'utilisateur est connecté
-      if (firebaseUser) {
-        const userRef = doc(db, 'users', firebaseUser.uid);
+      if (ownerUid) {
+        const userRef = doc(db, 'users', ownerUid);
 
         step = 'lecture du profil';
         const userDoc = await getDoc(userRef);
@@ -339,9 +384,9 @@ export default function CartSummaryPage() {
           const dancerUid = dancer.email?.trim() ? await findUserUidByEmail(dancer.email) : null;
           targetUid = dancerUid ?? undefined;
           targetEmail = dancer.email ?? '';
-          if (dancerUid && dancerUid !== firebaseUser.uid) {
+          if (dancerUid && dancerUid !== ownerUid) {
             step = 'liaison du compte du danseur (managedBy)';
-            await linkDancerAccount(dancerUid, firebaseUser.uid);
+            await linkDancerAccount(dancerUid, ownerUid);
             step = 'mise à jour du profil du danseur lié';
             await syncLinkedDancerProfile(dancerUid, dancer);
             dancerUids.push(dancerUid);
@@ -421,13 +466,16 @@ export default function CartSummaryPage() {
       // Mark cart as submitted
       step = 'validation du panier';
       await submitCart(cart.id);
-      // Redirect to payment page
-      router.push(`/cart/${cart.id}/pay`);
+      if (accountCreated) {
+        window.location.assign(`/cart/${cart.id}/pay`);
+      } else {
+        router.push(`/cart/${cart.id}/pay`);
+      }
     } catch (error) {
       console.error('Error at step:', step, error);
       const details =
-        firebaseUser && targetUid
-          ? await diagnoseLink(firebaseUser.uid, targetUid, targetEmail).catch(
+        ownerUid && targetUid
+          ? await diagnoseLink(ownerUid, targetUid, targetEmail).catch(
               (diagError) => `diagnostic impossible : ${(diagError as Error).message}`
             )
           : '';
