@@ -16,6 +16,79 @@ import {
 } from '@/services/userService';
 
 const DATE_OF_BIRTH_MAX = '2010-01-01';
+const DATE_OF_BIRTH_MAX_YEAR = 2010;
+const DATE_OF_BIRTH_MIN_YEAR = 1920;
+const MONTH_NAMES = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+const MONTH_VALUES = MONTH_NAMES.map((_, i) => String(i + 1));
+const YEAR_VALUES = Array.from(
+  { length: DATE_OF_BIRTH_MAX_YEAR - DATE_OF_BIRTH_MIN_YEAR + 1 },
+  (_, i) => String(DATE_OF_BIRTH_MAX_YEAR - i)
+);
+
+type BirthParts = { day: string; month: string; year: string };
+const EMPTY_BIRTH: BirthParts = { day: '', month: '', year: '' };
+
+const parseBirth = (iso: string): BirthParts => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  return match ? { year: match[1], month: String(Number(match[2])), day: String(Number(match[3])) } : EMPTY_BIRTH;
+};
+
+const birthToIso = ({ day, month, year }: BirthParts) =>
+  day && month && year ? `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}` : '';
+
+const daysInMonth = ({ month, year }: BirthParts) =>
+  month && year ? new Date(Number(year), Number(month), 0).getDate() : 31;
+
+function BirthDateSelect({
+  dateOfBirth,
+  partialBirth,
+  onChange,
+}: {
+  dateOfBirth: string;
+  partialBirth?: BirthParts;
+  onChange: (field: keyof BirthParts, value: string) => void;
+}) {
+  const parts = dateOfBirth ? parseBirth(dateOfBirth) : partialBirth ?? EMPTY_BIRTH;
+  const restricted = parts.year === String(DATE_OF_BIRTH_MAX_YEAR);
+  const yearOptions = Number(parts.year) > DATE_OF_BIRTH_MAX_YEAR ? [parts.year, ...YEAR_VALUES] : YEAR_VALUES;
+  const monthOptions = restricted ? [...new Set(['1', parts.month].filter(Boolean))] : MONTH_VALUES;
+  const dayCount = restricted ? 1 : daysInMonth(parts);
+  const dayOptions = restricted
+    ? [...new Set(['1', parts.day].filter(Boolean))]
+    : Array.from({ length: dayCount }, (_, i) => String(i + 1));
+  const selectClass = 'w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 bg-white';
+
+  return (
+    <div>
+      <label className="block text-sm font-bold text-gray-900 mb-2">Date de naissance*</label>
+      <div className="grid grid-cols-3 gap-2">
+        <select aria-label="Jour de naissance" value={parts.day} onChange={(e) => onChange('day', e.target.value)} className={selectClass}>
+          <option value="">Jour</option>
+          {dayOptions.map((d) => (
+            <option key={d} value={d}>{d}</option>
+          ))}
+        </select>
+        <select aria-label="Mois de naissance" value={parts.month} onChange={(e) => onChange('month', e.target.value)} className={selectClass}>
+          <option value="">Mois</option>
+          {monthOptions.map((m) => (
+            <option key={m} value={m}>{MONTH_NAMES[Number(m) - 1]}</option>
+          ))}
+        </select>
+        <select aria-label="Année de naissance" value={parts.year} onChange={(e) => onChange('year', e.target.value)} className={selectClass}>
+          <option value="">Année</option>
+          {yearOptions.map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+      </div>
+      {dateOfBirth > DATE_OF_BIRTH_MAX && (
+        <p className="text-sm text-red-600 font-medium mt-1">
+          La date de naissance ne peut pas être postérieure au 01/01/2010
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function CartSummaryPage() {
   const params = useParams();
@@ -28,6 +101,9 @@ export default function CartSummaryPage() {
 
   // Infos danseurs complètes (Phase 2b validation)
   const [dancersInfo, setDancersInfo] = useState<any[]>([]);
+
+  // Date de naissance saisie partiellement (jour, mois ou année manquant)
+  const [birthParts, setBirthParts] = useState<Record<number, BirthParts>>({});
 
   // Danseurs disponibles du compte utilisateur
   const [profileDancers, setProfileDancers] = useState<any[]>([]);
@@ -170,6 +246,23 @@ export default function CartSummaryPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateBirthPart = (idx: number, field: keyof BirthParts, value: string) => {
+    const current = dancersInfo[idx].dateOfBirth
+      ? parseBirth(dancersInfo[idx].dateOfBirth)
+      : birthParts[idx] ?? EMPTY_BIRTH;
+    const next: BirthParts = { ...current, [field]: value };
+    if (next.year === String(DATE_OF_BIRTH_MAX_YEAR)) {
+      if (next.month !== '1') next.month = '';
+      if (next.day !== '1') next.day = '';
+    }
+    if (next.day && Number(next.day) > daysInMonth(next)) next.day = '';
+
+    setBirthParts((prev) => ({ ...prev, [idx]: next }));
+    const newDancers = [...dancersInfo];
+    newDancers[idx] = { ...newDancers[idx], dateOfBirth: birthToIso(next) };
+    setDancersInfo(newDancers);
   };
 
   const handleContinueToPayment = async () => {
@@ -449,6 +542,7 @@ export default function CartSummaryPage() {
                         value={selectedDancerIndices[idx] ?? -1}
                         onChange={(e) => {
                           const selectedIndex = parseInt(e.target.value);
+                          setBirthParts((prev) => ({ ...prev, [idx]: EMPTY_BIRTH }));
                           const newIndices = [...selectedDancerIndices];
                           newIndices[idx] = selectedIndex;
                           setSelectedDancerIndices(newIndices);
@@ -558,28 +652,11 @@ export default function CartSummaryPage() {
                   </div>
 
                   {/* Date de naissance */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-900 mb-2">Date de naissance*</label>
-                    <input
-                      type="date"
-                      value={dancer.dateOfBirth}
-                      max={DATE_OF_BIRTH_MAX}
-                      onChange={(e) => {
-                        const newDancers = [...dancersInfo];
-                        newDancers[idx].dateOfBirth = e.target.value;
-                        setDancersInfo(newDancers);
-                      }}
-                      onBlur={(e) => {
-                        if (!dancer.dateOfBirth) e.currentTarget.value = '';
-                      }}
-                      className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900"
-                    />
-                    {dancer.dateOfBirth > DATE_OF_BIRTH_MAX && (
-                      <p className="text-sm text-red-600 font-medium mt-1">
-                        La date de naissance ne peut pas être postérieure au 01/01/2010
-                      </p>
-                    )}
-                  </div>
+                  <BirthDateSelect
+                    dateOfBirth={dancer.dateOfBirth}
+                    partialBirth={birthParts[idx]}
+                    onChange={(field, value) => updateBirthPart(idx, field, value)}
+                  />
 
                   {/* Adresse */}
                   <div>
