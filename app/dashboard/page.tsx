@@ -100,6 +100,9 @@ export default function DashboardPage() {
             <Link href="/admin/stages" className="bg-gold-deep text-white px-4 py-2 rounded hover:bg-gold-ink text-center">
               Gérer les stages
             </Link>
+            <Link href="/admin/seasons" className="bg-ink text-white px-4 py-2 rounded hover:bg-ink-soft text-center font-semibold">
+              📆 Gérer les saisons
+            </Link>
             <Link href="/admin/inscriptions" className="bg-ink text-white px-4 py-2 rounded hover:bg-ink-soft text-center font-semibold">
               📋 Inscriptions aux stages
             </Link>
