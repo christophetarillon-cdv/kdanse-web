@@ -106,7 +106,7 @@ export default function SeasonList({ seasons, onEdit, onRefresh }: SeasonListPro
                 <div className="flex gap-2 justify-end">
                   <button
                     onClick={() => onEdit?.(season)}
-                    className="px-3 py-1 bg-gold-500 hover:bg-ink text-white text-sm rounded transition"
+                    className="px-3 py-1 bg-gold-deep hover:bg-gold-ink text-white text-sm rounded transition"
                   >
                     Éditer
                   </button>

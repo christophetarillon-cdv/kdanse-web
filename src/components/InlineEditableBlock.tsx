@@ -147,14 +147,14 @@ export default function InlineEditableBlock({
           <div className="absolute top-1 right-1 flex gap-1">
             <button
               onMouseDown={(e) => { e.preventDefault(); onBringToFront?.(); }}
-              className="px-2 py-1 text-xs bg-gold-500 text-white rounded hover:bg-ink font-medium"
+              className="px-2 py-1 text-xs bg-gold-deep text-white rounded hover:bg-gold-ink font-medium"
               title="Avancer devant"
             >
               ↑
             </button>
             <button
               onMouseDown={(e) => { e.preventDefault(); onSendToBack?.(); }}
-              className="px-2 py-1 text-xs bg-gold-500 text-white rounded hover:bg-ink font-medium"
+              className="px-2 py-1 text-xs bg-gold-deep text-white rounded hover:bg-gold-ink font-medium"
               title="Reculer derrière"
             >
               ↓

@@ -137,7 +137,7 @@ export default function TextStyleEditor({
                     onClick={() => handleStyleChange('textAlign', align)}
                     className={`flex-1 px-2 py-1 text-xs rounded border ${
                       style.textAlign === align
-                        ? 'bg-gold-500 text-white border-gold'
+                        ? 'bg-gold-deep text-white border-gold'
                         : 'border-gray-300 hover:bg-gray-100'
                     }`}
                   >

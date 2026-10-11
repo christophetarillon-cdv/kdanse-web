@@ -47,7 +47,9 @@ export default function SeasonForm({ season, onSuccess, onCancel }: SeasonFormPr
   };
 
   const formatDate = (date: Date) => {
-    return date.toISOString().split('T')[0];
+    if (isNaN(date.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   };
 
   return (
