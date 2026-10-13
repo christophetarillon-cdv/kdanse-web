@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Membership, PaymentDetailsDraft, PaymentInstallment } from '@/types';
+import { getUserProfile } from '@/services/userService';
 import {
   getPendingInstallments,
   getPaymentPlanWithMembership,
@@ -39,6 +40,9 @@ export default function AdminPaymentsConsolidatedPage() {
 
   // Plan info for display (planId -> membership)
   const [planMemberships, setPlanMemberships] = useState<{ [key: string]: Membership }>({});
+
+  // Compte payeur de chaque plan (planId -> profil)
+  const [planPayers, setPlanPayers] = useState<{ [key: string]: { name: string; email: string } }>({});
 
   // Plan totals vs. sum of all its installments (received ones included)
   const [planTotals, setPlanTotals] = useState<{ [key: string]: { total: number; sum: number } }>({});
@@ -77,6 +81,7 @@ export default function AdminPaymentsConsolidatedPage() {
       const planIds = [...new Set(installmentsData.map(inst => inst.paymentPlanId))];
       const planMembershipMap: { [key: string]: Membership } = {};
       const planTotalMap: { [key: string]: { total: number; sum: number } } = {};
+      const planPayerMap: { [key: string]: { name: string; email: string } } = {};
 
       for (const planId of planIds) {
         try {
@@ -90,12 +95,20 @@ export default function AdminPaymentsConsolidatedPage() {
           if (planData?.membership) {
             planMembershipMap[planId] = planData.membership;
           }
+          if (planData?.userId) {
+            const payer = await getUserProfile(planData.userId);
+            planPayerMap[planId] = {
+              name: `${payer?.profile?.firstName ?? ''} ${payer?.profile?.lastName ?? ''}`.trim() || payer?.displayName || '',
+              email: payer?.email ?? planData.userId,
+            };
+          }
         } catch (err) {
           console.error(`Error fetching membership for plan ${planId}:`, err);
         }
       }
       setPlanMemberships(planMembershipMap);
       setPlanTotals(planTotalMap);
+      setPlanPayers(planPayerMap);
 
       // Fetch pending simple payments
       const q = query(
@@ -353,6 +366,25 @@ export default function AdminPaymentsConsolidatedPage() {
 
                   {expandedPlan === planId && (
                     <div className="border-t divide-y">
+                      <div className="p-6 bg-gold-50 text-sm space-y-1">
+                        <p className="text-gray-900">
+                          <strong>Payeur:</strong> {planPayers[planId]?.name || 'Nom inconnu'}
+                          {planPayers[planId]?.email && ` (${planPayers[planId].email})`}
+                        </p>
+                        {planMemberships[planId] && (
+                          <p className="text-gray-900">
+                            <strong>Stage:</strong> {planMemberships[planId].stageName}
+                            {(planMemberships[planId].registrationDetails?.dancers as { firstName?: string; lastName?: string }[] | undefined)?.length ? (
+                              <>
+                                {' — '}<strong>Danseurs:</strong>{' '}
+                                {(planMemberships[planId].registrationDetails.dancers as { firstName?: string; lastName?: string }[])
+                                  .map((d) => `${d.firstName ?? ''} ${d.lastName ?? ''}`.trim())
+                                  .join(', ')}
+                              </>
+                            ) : null}
+                          </p>
+                        )}
+                      </div>
                       {planInstallments.map((inst) => {
                         const isEditing = editingInstallment?.id === inst.id;
                         return (
