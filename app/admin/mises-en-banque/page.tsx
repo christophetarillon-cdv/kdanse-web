@@ -469,6 +469,7 @@ export default function AdminMisesEnBanquePage() {
                     <th className="px-4 py-3">Référence</th>
                     <th className="px-4 py-3 text-right">Nombre</th>
                     <th className="px-4 py-3 text-right">Montant</th>
+                    <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -478,6 +479,11 @@ export default function AdminMisesEnBanquePage() {
                       <td className="px-4 py-3 font-semibold">{b.reference}</td>
                       <td className="px-4 py-3 text-right">{b.count} chèque(s)</td>
                       <td className="px-4 py-3 text-right">{eur(b.amount)}</td>
+                      <td className="px-4 py-3 text-right">
+                        <Link href={`/admin/mises-en-banque/${b.id}`} className="text-gold-deep font-semibold underline">
+                          Voir / Imprimer
+                        </Link>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
