@@ -505,9 +505,17 @@ export default function AdminMisesEnBanquePage() {
         </div>
 
         <div className="bg-white rounded-lg shadow p-6 space-y-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Virements et HelloAsso</h2>
-            <p className="text-sm text-gray-900 font-medium">Encaissés directement, sans remise à la banque</p>
+          <div className="flex flex-wrap justify-between items-start gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Virements et HelloAsso</h2>
+              <p className="text-sm text-gray-900 font-medium">Encaissés directement, sans remise à la banque</p>
+            </div>
+            <Link
+              href="/admin/mises-en-banque/virements"
+              className="bg-ink hover:bg-ink-soft text-white px-4 py-2 rounded font-semibold transition"
+            >
+              🖨️ Voir / Imprimer
+            </Link>
           </div>
           {others.length === 0 ? (
             <p className="text-gray-900 font-medium">Aucun virement ni paiement HelloAsso encaissé</p>
