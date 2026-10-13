@@ -37,6 +37,7 @@ interface Installment {
   chequeBank: string;
   chequeCity: string;
   chequeName: string;
+  chequeVacancesCount: number | null;
 }
 
 interface Cheque {
@@ -49,9 +50,23 @@ interface Cheque {
   chequeBank: string;
   chequeCity: string;
   chequeName: string;
+  vacancesCount: number | null;
   amount: number;
   remiseId: string | null;
 }
+
+interface OtherPayment {
+  key: string;
+  method: 'virement' | 'helloasso';
+  date: Date | null;
+  donor: string;
+  amount: number;
+}
+
+const OTHER_METHOD_LABELS: Record<OtherPayment['method'], string> = {
+  virement: 'Virement',
+  helloasso: 'HelloAsso',
+};
 
 interface Bordereau {
   id: string;
@@ -103,6 +118,7 @@ const toInstallment = (id: string, data: DocumentData): Installment => ({
   chequeBank: data.chequeBank ?? '',
   chequeCity: data.chequeCity ?? '',
   chequeName: data.chequeName ?? '',
+  chequeVacancesCount: data.chequeVacancesCount == null ? null : Number(data.chequeVacancesCount),
 });
 
 const csvCell = (value: string) => `"${value.replace(/"/g, '""')}"`;
@@ -112,6 +128,7 @@ export default function AdminMisesEnBanquePage() {
   const router = useRouter();
 
   const [cheques, setCheques] = useState<Cheque[]>([]);
+  const [others, setOthers] = useState<OtherPayment[]>([]);
   const [bordereaux, setBordereaux] = useState<Bordereau[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -139,7 +156,7 @@ export default function AdminMisesEnBanquePage() {
       const memberships = membershipsSnap.docs.map((d) => toMembership(d.id, d.data()));
       const installments = installmentsSnap.docs
         .map((d) => toInstallment(d.id, d.data()))
-        .filter((i) => i.paymentPlanId && i.method === 'cheque' && i.status === 'received');
+        .filter((i) => i.paymentPlanId && i.status === 'received');
 
       const planUser: Record<string, string> = {};
       memberships.forEach((m) => {
@@ -172,23 +189,54 @@ export default function AdminMisesEnBanquePage() {
           chequeBank: m.chequeBank,
           chequeCity: m.chequeCity,
           chequeName: m.chequeName,
+          vacancesCount: null,
           amount: m.amount,
           remiseId: m.remiseId,
         }));
 
-      const installmentCheques: Cheque[] = installments.map((i) => ({
-        key: `i_${i.id}`,
-        kind: 'installment',
-        sourceId: i.id,
-        date: i.receivedDate,
-        donor: names[planUser[i.paymentPlanId] ?? ''] ?? 'Inconnu',
-        chequeNumber: i.chequeNumber,
-        chequeBank: i.chequeBank,
-        chequeCity: i.chequeCity,
-        chequeName: i.chequeName,
-        amount: i.amount,
-        remiseId: i.remiseId,
-      }));
+      const installmentCheques: Cheque[] = installments
+        .filter((i) => i.method === 'cheque' || i.method === 'cheque_vacances')
+        .map((i) => ({
+          key: `i_${i.id}`,
+          kind: 'installment',
+          sourceId: i.id,
+          date: i.receivedDate,
+          donor: names[planUser[i.paymentPlanId] ?? ''] ?? 'Inconnu',
+          chequeNumber: i.chequeNumber,
+          chequeBank: i.chequeBank,
+          chequeCity: i.chequeCity,
+          chequeName: i.chequeName,
+          vacancesCount: i.method === 'cheque_vacances' ? (i.chequeVacancesCount ?? 0) : null,
+          amount: i.amount,
+          remiseId: i.remiseId,
+        }));
+
+      const others: OtherPayment[] = [
+        ...memberships
+          .filter(
+            (m) =>
+              !m.paymentPlanId &&
+              m.status === 'paid' &&
+              (m.paymentMethod === 'virement' || m.paymentMethod === 'helloasso')
+          )
+          .map((m) => ({
+            key: `m_${m.id}`,
+            method: m.paymentMethod as OtherPayment['method'],
+            date: m.paymentDate ?? m.updatedAt,
+            donor: names[m.userId] ?? 'Inconnu',
+            amount: m.amount,
+          })),
+        ...installments
+          .filter((i) => i.method === 'virement')
+          .map((i) => ({
+            key: `i_${i.id}`,
+            method: 'virement' as const,
+            date: i.receivedDate,
+            donor: names[planUser[i.paymentPlanId] ?? ''] ?? 'Inconnu',
+            amount: i.amount,
+          })),
+      ].sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0));
+      setOthers(others);
 
       setCheques(
         [...simpleCheques, ...installmentCheques].sort((a, b) => (b.date?.getTime() ?? 0) - (a.date?.getTime() ?? 0))
@@ -269,6 +317,7 @@ export default function AdminMisesEnBanquePage() {
           chequeBank: c.chequeBank,
           chequeCity: c.chequeCity,
           chequeName: c.chequeName,
+          vacancesCount: c.vacancesCount,
           amount: c.amount,
           date: c.date,
         })),
@@ -298,7 +347,7 @@ export default function AdminMisesEnBanquePage() {
       ...source.map((c) => [
         formatDate(c.date),
         c.donor,
-        c.chequeNumber,
+        c.vacancesCount ? `${c.vacancesCount} chèque(s) vacances` : c.chequeNumber,
         c.chequeBank,
         c.chequeCity,
         c.chequeName,
@@ -432,7 +481,9 @@ export default function AdminMisesEnBanquePage() {
                     </td>
                     <td className="px-4 py-3">{formatDate(c.date)}</td>
                     <td className="px-4 py-3 font-semibold">{c.donor}</td>
-                    <td className="px-4 py-3">{c.chequeNumber || '—'}</td>
+                    <td className="px-4 py-3">
+                      {c.vacancesCount ? `${c.vacancesCount} chèque(s) vacances` : c.chequeNumber || '—'}
+                    </td>
                     <td className="px-4 py-3">{c.chequeBank || '—'}</td>
                     <td className="px-4 py-3">{c.chequeCity || '—'}</td>
                     <td className="px-4 py-3">{c.chequeName || '—'}</td>
@@ -450,6 +501,39 @@ export default function AdminMisesEnBanquePage() {
                 ))}
               </tbody>
             </table>
+          )}
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6 space-y-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Virements et HelloAsso</h2>
+            <p className="text-sm text-gray-900 font-medium">Encaissés directement, sans remise à la banque</p>
+          </div>
+          {others.length === 0 ? (
+            <p className="text-gray-900 font-medium">Aucun virement ni paiement HelloAsso encaissé</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-100 border-b">
+                  <tr className="text-left font-semibold text-gray-900">
+                    <th className="px-4 py-3">Reçu le</th>
+                    <th className="px-4 py-3">Donneur d&apos;ordre</th>
+                    <th className="px-4 py-3">Mode</th>
+                    <th className="px-4 py-3 text-right">Montant</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {others.map((o) => (
+                    <tr key={o.key} className="text-gray-900">
+                      <td className="px-4 py-3">{formatDate(o.date)}</td>
+                      <td className="px-4 py-3 font-semibold">{o.donor}</td>
+                      <td className="px-4 py-3">{OTHER_METHOD_LABELS[o.method]}</td>
+                      <td className="px-4 py-3 text-right font-semibold">{eur(o.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 

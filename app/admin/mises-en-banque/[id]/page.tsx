@@ -13,6 +13,7 @@ interface BordereauItem {
   chequeBank?: string;
   chequeCity?: string;
   chequeName?: string;
+  vacancesCount?: number | null;
   amount: number;
   date: Date | null;
 }
@@ -74,6 +75,7 @@ export default function BordereauDetailPage() {
             chequeBank: item.chequeBank as string | undefined,
             chequeCity: item.chequeCity as string | undefined,
             chequeName: item.chequeName as string | undefined,
+            vacancesCount: item.vacancesCount == null ? null : Number(item.vacancesCount),
             amount: Number(item.amount ?? 0),
             date: toDate(item.date),
           })),
@@ -143,7 +145,9 @@ export default function BordereauDetailPage() {
               <tr key={index} className="text-gray-900">
                 <td className="px-4 py-3">{formatDate(item.date)}</td>
                 <td className="px-4 py-3 font-semibold">{item.donor}</td>
-                <td className="px-4 py-3">{item.chequeNumber || '—'}</td>
+                <td className="px-4 py-3">
+                  {item.vacancesCount ? `${item.vacancesCount} chèque(s) vacances` : item.chequeNumber || '—'}
+                </td>
                 <td className="px-4 py-3">{item.chequeBank || '—'}</td>
                 <td className="px-4 py-3">{item.chequeCity || '—'}</td>
                 <td className="px-4 py-3">{item.chequeName || '—'}</td>
