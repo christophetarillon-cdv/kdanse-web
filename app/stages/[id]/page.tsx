@@ -8,6 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { CartItem } from '@/types/cart';
+import { isStagePast } from '@/lib/stageDates';
 
 const formatDateFr = (isoDate: string) =>
   new Date(`${isoDate}T00:00:00`).toLocaleDateString('fr-FR', {
@@ -71,6 +72,7 @@ export default function StageDetailPage() {
   const stageId = params.id as string;
   const { firebaseUser, loading: authLoading } = useAuth();
   const { addToCart } = useCart();
+  const [isPast, setIsPast] = useState(false);
   const router = useRouter();
   const [stage, setStage] = useState<Stage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -97,6 +99,7 @@ export default function StageDetailPage() {
 
       if (docSnap.exists()) {
         const data = docSnap.data();
+        setIsPast(isStagePast(data.endDate));
         setStage({
           id: stageId,
           name: data.name,
@@ -169,7 +172,7 @@ export default function StageDetailPage() {
   };
 
   const handleAddToCart = async () => {
-    if (!stage) return;
+    if (!stage || isPast) return;
 
     // Valider que tous les noms/prénoms sont remplis
     if (form.dancers.some(d => !d.firstName.trim() || !d.lastName.trim())) {
@@ -233,7 +236,14 @@ export default function StageDetailPage() {
               )}
             </div>
 
-            {/* Formulaire d'inscription flexible */}
+            {/* Formulaire d'inscription flexible, fermé une fois le stage terminé (lien direct) */}
+            {isPast ? (
+              <div className="border-t pt-8">
+                <p className="text-gray-900 font-medium">
+                  Ce stage est terminé : les inscriptions sont fermées.
+                </p>
+              </div>
+            ) : (
             <div className="border-t pt-8">
               <h2 className="text-2xl font-semibold mb-6">Configurez votre inscription</h2>
 
@@ -520,6 +530,7 @@ export default function StageDetailPage() {
                 {submitting ? 'Ajout au panier...' : `Ajouter au panier (${calculatePrice()}€)`}
               </button>
             </div>
+            )}
           </div>
         </div>
       </div>

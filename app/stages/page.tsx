@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { isStagePast } from '@/lib/stageDates';
 
 interface Stage {
   id: string;
@@ -35,7 +36,8 @@ export default function StagesPage() {
   const fetchStages = async () => {
     try {
       const snapshot = await getDocs(collection(db, 'stages'));
-      const data = snapshot.docs.map(doc => ({
+      // Les stages terminés restent dans l'admin et dans l'app, mais ne sont plus proposés ici
+      const data = snapshot.docs.filter(doc => !isStagePast(doc.data().endDate)).map(doc => ({
         id: doc.id,
         name: doc.data().name,
         description: doc.data().description,
