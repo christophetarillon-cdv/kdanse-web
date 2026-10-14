@@ -69,7 +69,7 @@ export default function StagesPage() {
             {stages.map(stage => (
               <div key={stage.id} className="bg-white rounded-lg shadow-md p-6">
                 {stage.imageUrl && (
-                  <img src={stage.imageUrl} alt={stage.name} className="w-full h-48 object-cover rounded mb-4" />
+                  <img src={stage.imageUrl} alt={stage.name} className="w-full h-auto rounded mb-4" />
                 )}
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{stage.name}</h2>
                 {stage.startDate && stage.endDate && (
