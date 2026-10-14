@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -112,6 +113,13 @@ export default function LoginPage() {
               {loading ? 'Connexion en cours...' : 'Se connecter'}
             </button>
           </div>
+
+          <p className="text-center text-sm text-gray-700">
+            Pas encore de compte ?{' '}
+            <Link href="/register" className="font-medium text-gray-900 underline">
+              Créer mon compte
+            </Link>
+          </p>
         </form>
       </div>
     </div>
