@@ -145,6 +145,18 @@ export default function AdminBankSettingsPage() {
               className="w-full border rounded px-4 py-2"
             />
           </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Ordre du chèque</label>
+            <input
+              type="text"
+              value={settings.chequePayee || ''}
+              onChange={(e) => setSettings({ ...settings, chequePayee: e.target.value })}
+              placeholder="Kdanse SARL"
+              className="w-full border rounded px-4 py-2"
+            />
+            <p className="text-xs text-gray-800 mt-1">Nom à écrire sur les chèques envoyés par les clients</p>
+          </div>
         </div>
 
         <hr />
@@ -241,6 +253,13 @@ export default function AdminBankSettingsPage() {
               <p><strong>Titulaire:</strong> {settings.bankAccount?.accountName || '-'}</p>
               <p><strong>IBAN:</strong> {settings.bankAccount?.iban || '-'}</p>
               <p><strong>BIC:</strong> {settings.bankAccount?.bic || '-'}</p>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-900 font-medium">Chèques (affiché aux clients):</p>
+            <div className="mt-2 bg-white p-3 rounded border border-gray-200 text-sm">
+              <p><strong>Ordre du chèque:</strong> {settings.chequePayee || '-'}</p>
             </div>
           </div>
 

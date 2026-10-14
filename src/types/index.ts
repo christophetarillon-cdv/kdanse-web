@@ -165,6 +165,7 @@ export interface PaymentSettings {
     postalCode: string;
     country: string;
   };
+  chequePayee?: string;
   updatedAt: Date;
 }
 
