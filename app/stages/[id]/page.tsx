@@ -418,7 +418,7 @@ export default function StageDetailPage() {
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
                         <label className="block font-medium text-gray-900 mb-3">
-                          Chambres solo ({stage?.pricing?.housing.solo}€ chacune)
+                          Chambre 1 personne ({stage?.pricing?.housing.solo}€ chacune)
                         </label>
                         <div className="flex items-center gap-3">
                           <button
@@ -444,7 +444,7 @@ export default function StageDetailPage() {
                       </div>
                       <div>
                         <label className="block font-medium text-gray-900 mb-3">
-                          Lits couples ({stage?.pricing?.housing.couple}€ chacun)
+                          Chambre 2 personnes ({stage?.pricing?.housing.couple}€ chacune)
                         </label>
                         <div className="flex items-center gap-3">
                           <button
