@@ -182,6 +182,13 @@ service cloud.firestore {
         'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles
       );
     }
+    match /acquisitionSources/{document=**} {
+      allow read: if request.auth != null;
+      allow write, delete: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        'admin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles
+      );
+    }
     match /courses/{document=**} {
       allow read: if request.auth != null;
       allow write, delete: if request.auth != null && (

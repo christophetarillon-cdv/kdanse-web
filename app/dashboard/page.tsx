@@ -144,6 +144,9 @@ export default function DashboardPage() {
             <Link href="/admin/courses" className="bg-gold-deep text-white px-4 py-2 rounded hover:bg-gold-ink text-center">
               🎵 Gérer les cours
             </Link>
+            <Link href="/admin/acquisition-sources" className="bg-gold-deep text-white px-4 py-2 rounded hover:bg-gold-ink text-center">
+              📣 Origine des inscriptions
+            </Link>
           </div>
         </div>
       )}

@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Dance, Level } from '@/types/courses';
+import { AcquisitionSource, Dance, Level } from '@/types/courses';
+import { getAcquisitionSources } from '@/services/acquisitionSourceService';
+
+const OTHER_SOURCE = 'autre';
 
 interface Dancer {
   firstName: string;
@@ -27,6 +30,10 @@ export default function CoursesPage() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [currentDancerIndex, setCurrentDancerIndex] = useState(0);
   const [selections, setSelections] = useState<CourseSelection[]>([]);
+  const [isNewClient, setIsNewClient] = useState(false);
+  const [acquisitionSources, setAcquisitionSources] = useState<AcquisitionSource[]>([]);
+  const [acquisitionSourceId, setAcquisitionSourceId] = useState('');
+  const [acquisitionSourceOther, setAcquisitionSourceOther] = useState('');
 
   useEffect(() => {
     loadData();
@@ -48,6 +55,18 @@ export default function CoursesPage() {
       const membership = membershipSnap.data();
       const dancersData = membership.registrationDetails?.dancers || [];
       setDancers(dancersData);
+
+      const previousPaidSnap = await getDocs(
+        query(
+          collection(db, 'memberships'),
+          where('userId', '==', membership.userId),
+          where('status', '==', 'paid')
+        )
+      );
+      setIsNewClient(!previousPaidSnap.docs.some((d) => d.id !== membershipId));
+      setAcquisitionSourceId(membership.acquisitionSourceId ?? '');
+      setAcquisitionSourceOther(membership.acquisitionSourceOther ?? '');
+      setAcquisitionSources(await getAcquisitionSources(true));
 
       // Initialize selections (empty for all dancers/dances)
       const initSelections = dancersData.map(() => ({}));
@@ -99,7 +118,24 @@ export default function CoursesPage() {
     }
   };
 
-  const handleViewSummary = () => {
+  const acquisitionAnswerMissing =
+    isNewClient &&
+    (!acquisitionSourceId ||
+      (acquisitionSourceId === OTHER_SOURCE && !acquisitionSourceOther.trim()));
+
+  const handleViewSummary = async () => {
+    if (isNewClient) {
+      try {
+        await updateDoc(doc(db, 'memberships', membershipId), {
+          acquisitionSourceId,
+          acquisitionSourceOther: acquisitionSourceId === OTHER_SOURCE ? acquisitionSourceOther.trim() : '',
+        });
+      } catch (error) {
+        console.error('Error saving acquisition source:', error);
+        alert("Erreur lors de l'enregistrement de votre réponse");
+        return;
+      }
+    }
     // Save selections to localStorage temporarily
     localStorage.setItem(
       `courses_${membershipId}`,
@@ -193,12 +229,53 @@ export default function CoursesPage() {
           </button>
         </div>
 
+        {currentDancerIndex === dancers.length - 1 && isNewClient && (
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Comment avez-vous connu notre stage ?</h2>
+            <p className="text-gray-600 mb-4">Merci de répondre pour valider votre inscription</p>
+            <div className="space-y-3">
+              {acquisitionSources.map((source) => (
+                <label key={source.id} className="flex items-center gap-3 p-3 border border-gray-200 rounded cursor-pointer">
+                  <input
+                    type="radio"
+                    name="acquisitionSource"
+                    value={source.id}
+                    checked={acquisitionSourceId === source.id}
+                    onChange={() => setAcquisitionSourceId(source.id)}
+                  />
+                  <span className="text-gray-900">{source.label}</span>
+                </label>
+              ))}
+              <label className="flex items-center gap-3 p-3 border border-gray-200 rounded cursor-pointer">
+                <input
+                  type="radio"
+                  name="acquisitionSource"
+                  value={OTHER_SOURCE}
+                  checked={acquisitionSourceId === OTHER_SOURCE}
+                  onChange={() => setAcquisitionSourceId(OTHER_SOURCE)}
+                />
+                <span className="text-gray-900">Autre</span>
+              </label>
+              {acquisitionSourceId === OTHER_SOURCE && (
+                <input
+                  type="text"
+                  value={acquisitionSourceOther}
+                  onChange={(e) => setAcquisitionSourceOther(e.target.value)}
+                  placeholder="Précisez"
+                  className="w-full border-2 border-gray-300 rounded px-4 py-2 text-gray-900"
+                />
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Summary Button */}
         {currentDancerIndex === dancers.length - 1 && (
           <div>
             <button
               onClick={handleViewSummary}
-              className="w-full bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700"
+              disabled={acquisitionAnswerMissing}
+              className="w-full bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               📋 Voir le récapitulatif
             </button>

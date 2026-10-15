@@ -124,6 +124,8 @@ export interface Membership {
   chequeName?: string;
   paymentPlanId?: string;
   cartId?: string;
+  acquisitionSourceId?: string;
+  acquisitionSourceOther?: string;
   createdAt: Date;
   updatedAt?: Date;
 }

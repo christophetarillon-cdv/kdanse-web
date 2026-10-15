@@ -14,6 +14,13 @@ export interface Level {
   updatedAt: Date;
 }
 
+export interface AcquisitionSource {
+  id: string;
+  label: string;
+  order: number;
+  active: boolean;
+}
+
 export interface Course {
   id: string;
   danceId: string;
