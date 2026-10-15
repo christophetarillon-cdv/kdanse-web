@@ -354,6 +354,8 @@ export default function CartSummaryPage() {
           prenom: holder.firstName,
           nom: holder.lastName,
           role: 'user',
+          // Validé dans l'app au premier paiement de la commande (Cloud Function orderAccess de kdanse-app)
+          createdFrom: 'checkout',
           profile: { firstName: holder.firstName, lastName: holder.lastName, dancers: [], lastUpdated: new Date() },
           createdAt: new Date(),
           updatedAt: new Date(),

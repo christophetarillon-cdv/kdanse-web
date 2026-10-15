@@ -9,8 +9,8 @@ import { registerEmailIndex } from '@/services/userService';
 
 // Création de compte hors commande : pour un danseur inscrit à un stage par quelqu'un d'autre.
 // Le compte est relié à ses inscriptions par l'email (Cloud Function onUserCreatedSyncStageAccess
-// dans kdanse-app), puis validé par un admin dans l'app avant la première connexion.
-// Pas de champ validated : l'app le traite comme un compte à valider.
+// dans kdanse-app). Il est validé dans l'app au premier paiement d'une commande où figure cet email,
+// sinon par un admin. Pas de champ validated : l'app le traite comme un compte à valider.
 
 const errorMessage = (code?: string) => {
   switch (code) {
@@ -58,6 +58,7 @@ export default function RegisterPage() {
         prenom,
         nom,
         role: 'user',
+        createdFrom: 'register',
         profile: { firstName: prenom, lastName: nom, dancers: [], lastUpdated: new Date() },
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -84,8 +85,8 @@ export default function RegisterPage() {
             reliées à votre compte.
           </p>
           <p className="text-gray-700 text-sm">
-            L&apos;équipe Kdanse doit valider votre compte avant votre première connexion à l&apos;application
-            mobile. Vous pouvez déjà utiliser le site.
+            Votre accès à l&apos;application mobile s&apos;ouvre dès le premier paiement de votre inscription
+            reçu. Vous pouvez déjà utiliser le site.
           </p>
           {/* Rechargement complet : le profil vient d'être créé, le contexte d'authentification doit le relire */}
           <a
