@@ -1,4 +1,4 @@
-import { collection, doc, getDocs, addDoc, updateDoc, query, orderBy, where, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDocs, addDoc, updateDoc, deleteDoc, query, orderBy, where, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { AcquisitionSource } from '@/types/courses';
 
@@ -25,6 +25,10 @@ export const createAcquisitionSource = async (label: string, order: number): Pro
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+};
+
+export const deleteAcquisitionSource = async (id: string): Promise<void> => {
+  await deleteDoc(doc(db, ACQUISITION_SOURCES_COLLECTION, id));
 };
 
 export const updateAcquisitionSource = async (

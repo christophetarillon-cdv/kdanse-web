@@ -9,6 +9,7 @@ import {
   getAcquisitionSources,
   createAcquisitionSource,
   updateAcquisitionSource,
+  deleteAcquisitionSource,
 } from '@/services/acquisitionSourceService';
 
 export default function AdminAcquisitionSourcesPage() {
@@ -79,6 +80,19 @@ export default function AdminAcquisitionSourcesPage() {
       alert('Erreur lors de la modification');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async (source: AcquisitionSource) => {
+    if (!window.confirm(`Supprimer la réponse « ${source.label} » ? Les inscriptions déjà répondues la garderont, mais sans libellé à afficher.`)) {
+      return;
+    }
+    try {
+      await deleteAcquisitionSource(source.id);
+      await loadSources();
+    } catch (error) {
+      console.error('Error deleting acquisition source:', error);
+      alert('Erreur lors de la suppression');
     }
   };
 
@@ -206,9 +220,14 @@ export default function AdminAcquisitionSourcesPage() {
                             </button>
                           </>
                         ) : (
-                          <button onClick={() => setEditing(source)} className="text-gold-deep underline">
-                            Modifier
-                          </button>
+                          <>
+                            <button onClick={() => setEditing(source)} className="text-gold-deep underline mr-3">
+                              Modifier
+                            </button>
+                            <button onClick={() => handleDelete(source)} className="text-red-600 underline">
+                              Supprimer
+                            </button>
+                          </>
                         )}
                       </td>
                     </tr>
