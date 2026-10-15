@@ -6,6 +6,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { registerEmailIndex } from '@/services/userService';
+import PasswordInput from '@/components/PasswordInput';
 
 // Création de compte hors commande : pour un danseur inscrit à un stage par quelqu'un d'autre.
 // Le compte est relié à ses inscriptions par l'email (Cloud Function onUserCreatedSyncStageAccess
@@ -164,9 +165,8 @@ export default function RegisterPage() {
             <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-1">
               Mot de passe
             </label>
-            <input
+            <PasswordInput
               id="password"
-              type="password"
               autoComplete="new-password"
               required
               minLength={6}
@@ -179,9 +179,8 @@ export default function RegisterPage() {
             <label htmlFor="confirm" className="block text-sm font-medium text-gray-900 mb-1">
               Confirmer le mot de passe
             </label>
-            <input
+            <PasswordInput
               id="confirm"
-              type="password"
               autoComplete="new-password"
               required
               minLength={6}

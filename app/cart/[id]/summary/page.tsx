@@ -9,6 +9,7 @@ import { Cart } from '@/types/cart';
 import { collection, query, where, getDocs, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
+import PasswordInput from '@/components/PasswordInput';
 import {
   findUserUidByEmail,
   linkDancerAccount,
@@ -798,8 +799,7 @@ export default function CartSummaryPage() {
 
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-2">Mot de passe*</label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     value={accountInfo.password}
                     onChange={(e) => setAccountInfo({ ...accountInfo, password: e.target.value })}
                     placeholder="Au moins 6 caractères"
@@ -809,8 +809,7 @@ export default function CartSummaryPage() {
 
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-2">Confirmer mot de passe*</label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     value={accountInfo.confirmPassword}
                     onChange={(e) => setAccountInfo({ ...accountInfo, confirmPassword: e.target.value })}
                     placeholder="Confirmer le mot de passe"
