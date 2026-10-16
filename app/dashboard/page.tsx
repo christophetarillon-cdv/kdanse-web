@@ -147,6 +147,9 @@ export default function DashboardPage() {
             <Link href="/admin/acquisition-sources" className="bg-gold-deep text-white px-4 py-2 rounded hover:bg-gold-ink text-center">
               📣 Origine des inscriptions
             </Link>
+            <Link href="/admin/reductions" className="bg-gold-deep text-white px-4 py-2 rounded hover:bg-gold-ink text-center">
+              🏷️ Codes promo
+            </Link>
           </div>
         </div>
       )}

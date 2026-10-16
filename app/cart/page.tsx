@@ -5,15 +5,47 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
-import { updateCartItem } from '@/services/cartService';
+import { updateCartItem, applyDiscountCodeToCart, removeDiscountCodeFromCart } from '@/services/cartService';
 import { CartItem } from '@/types/cart';
 
 export default function CartPage() {
   const { firebaseUser, loading: authLoading } = useAuth();
-  const { cart, loading, removeFromCart } = useCart();
+  const { cart, loading, removeFromCart, refreshCart } = useCart();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [couponCode, setCouponCode] = useState('');
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponBusy, setCouponBusy] = useState(false);
+
+  const handleApplyCoupon = async () => {
+    if (!cart) return;
+    setCouponBusy(true);
+    setCouponError(null);
+    try {
+      await applyDiscountCodeToCart(cart.id, couponCode);
+      setCouponCode('');
+      await refreshCart();
+    } catch (error) {
+      setCouponError(error instanceof Error ? error.message : 'Erreur lors de la vérification du code');
+    } finally {
+      setCouponBusy(false);
+    }
+  };
+
+  const handleRemoveCoupon = async () => {
+    if (!cart) return;
+    setCouponBusy(true);
+    setCouponError(null);
+    try {
+      await removeDiscountCodeFromCart(cart.id);
+      await refreshCart();
+    } catch (error) {
+      setCouponError(error instanceof Error ? error.message : 'Erreur lors du retrait du code');
+    } finally {
+      setCouponBusy(false);
+    }
+  };
 
   // Pas besoin de redirection - permettre l'accès au panier sans connexion
 
@@ -175,6 +207,39 @@ export default function CartPage() {
 
             {/* Totals and CTA */}
             <div className="bg-gradient-to-r from-gold-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6">
+              <div className="mb-6 space-y-2">
+                <label className="block text-sm font-medium text-gray-900">Code promo</label>
+                {cart.appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-white border border-green-300 rounded px-4 py-2">
+                    <span className="font-semibold text-green-700">{cart.appliedCoupon}</span>
+                    <button
+                      onClick={handleRemoveCoupon}
+                      disabled={couponBusy}
+                      className="text-red-600 underline text-sm disabled:opacity-50"
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="Votre code"
+                      className="flex-1 border-2 border-gray-300 rounded px-4 py-2 text-gray-900"
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      disabled={!couponCode.trim() || couponBusy}
+                      className="bg-ink text-white px-4 py-2 rounded font-semibold hover:bg-ink-soft disabled:opacity-50"
+                    >
+                      Appliquer
+                    </button>
+                  </div>
+                )}
+                {couponError && <p className="text-sm text-red-600">{couponError}</p>}
+              </div>
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-gray-700">
                   <span>Total stages:</span>
@@ -184,6 +249,12 @@ export default function CartPage() {
                   <div className="flex justify-between text-gray-700">
                     <span>Total hébergement:</span>
                     <span className="font-medium">{cart.totals.housingTotal}€</span>
+                  </div>
+                )}
+                {(cart.totals.discount ?? 0) > 0 && (
+                  <div className="flex justify-between text-green-700">
+                    <span>Réduction ({cart.appliedCoupon}) :</span>
+                    <span className="font-medium">-{cart.totals.discount}€</span>
                   </div>
                 )}
                 <div className="flex justify-between text-lg font-bold text-orange-600 pt-3 border-t border-orange-200">

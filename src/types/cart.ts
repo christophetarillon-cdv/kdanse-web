@@ -30,6 +30,28 @@ export interface CartItem {
   };
   quantity: number;
   totals?: CartTotals;
+  discount?: ItemDiscount | null;
+}
+
+export interface ItemDiscount {
+  code: string;
+  target: 'stage' | 'housing';
+  type: 'percent' | 'amount';
+  value: number;
+}
+
+export interface DiscountCode {
+  code: string;
+  label: string;
+  target: 'stage' | 'housing';
+  type: 'percent' | 'amount';
+  value: number;
+  stageId: string;
+  active: boolean;
+  startsAt: Date | null;
+  endsAt: Date | null;
+  maxUses: number | null;
+  usedCount: number;
 }
 
 export interface CartTotals {
@@ -38,6 +60,7 @@ export interface CartTotals {
   subtotal: number;
   tax: number;
   total: number;
+  discount?: number;
 }
 
 export interface Cart {
@@ -47,6 +70,7 @@ export interface Cart {
   items: CartItem[];
   totals: CartTotals;
   appliedCoupon: string | null;
+  couponCounted?: boolean;
   createdAt: Date;
   updatedAt: Date;
   expiresAt: Date;

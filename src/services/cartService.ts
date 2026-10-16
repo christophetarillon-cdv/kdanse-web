@@ -10,7 +10,8 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Cart, CartItem, RegistrationConfiguration, CartTotals } from '@/types/cart';
+import { Cart, CartItem, RegistrationConfiguration, CartTotals, DiscountCode, ItemDiscount } from '@/types/cart';
+import { getDiscountCode, isDiscountUsable } from '@/services/discountCodeService';
 
 const CART_COLLECTION = 'carts';
 const CART_EXPIRY_HOURS = 24;
@@ -45,6 +46,13 @@ export const calculateItemPrice = (item: CartItem): CartTotals => {
       configuration.housingCouple * housingPrices.couple;
   }
 
+  const stageDiscount = discountOn(stagePrice, item.discount, 'stage');
+  const housingDiscount = discountOn(housingTotal, item.discount, 'housing');
+  const discount = stageDiscount + housingDiscount;
+
+  stagePrice -= stageDiscount;
+  housingTotal -= housingDiscount;
+
   const subtotal = stagePrice + housingTotal;
 
   return {
@@ -53,23 +61,43 @@ export const calculateItemPrice = (item: CartItem): CartTotals => {
     subtotal,
     tax: 0,
     total: subtotal,
+    discount,
   };
 };
+
+const discountOn = (base: number, discount: ItemDiscount | null | undefined, target: 'stage' | 'housing') => {
+  if (!discount || discount.target !== target || base <= 0) return 0;
+  const raw = discount.type === 'percent' ? (base * discount.value) / 100 : discount.value;
+  return Math.min(base, Math.round(raw * 100) / 100);
+};
+
+export const itemsWithDiscount = (items: CartItem[], discountCode: DiscountCode | null): CartItem[] =>
+  items.map((item) => {
+    const discount: ItemDiscount | null =
+      discountCode && item.stageId === discountCode.stageId
+        ? {
+            code: discountCode.code,
+            target: discountCode.target,
+            type: discountCode.type,
+            value: discountCode.value,
+          }
+        : null;
+    const updated = { ...item, discount };
+    updated.totals = calculateItemPrice(updated);
+    return updated;
+  });
 
 export const calculateCartTotals = (items: CartItem[]): CartTotals => {
   let stageTotal = 0;
   let housingTotal = 0;
+  let discount = 0;
 
   items.forEach((item) => {
     // Use cached totals if available, otherwise calculate
-    if (item.totals) {
-      stageTotal += item.totals.stageTotal;
-      housingTotal += item.totals.housingTotal;
-    } else {
-      const itemTotals = calculateItemPrice(item);
-      stageTotal += itemTotals.stageTotal;
-      housingTotal += itemTotals.housingTotal;
-    }
+    const itemTotals = item.totals ?? calculateItemPrice(item);
+    stageTotal += itemTotals.stageTotal;
+    housingTotal += itemTotals.housingTotal;
+    discount += itemTotals.discount ?? 0;
   });
 
   const subtotal = stageTotal + housingTotal;
@@ -80,6 +108,7 @@ export const calculateCartTotals = (items: CartItem[]): CartTotals => {
     subtotal,
     tax: 0,
     total: subtotal,
+    discount,
   };
 };
 
@@ -186,6 +215,10 @@ export const addToCart = async (
     cart.items.push(item);
   }
 
+  if (cart.appliedCoupon) {
+    cart.items = itemsWithDiscount(cart.items, await getDiscountCode(cart.appliedCoupon));
+  }
+
   // Update cart
   cart.totals = calculateCartTotals(cart.items);
   cart.updatedAt = new Date();
@@ -233,12 +266,60 @@ export const updateCartItem = async (
   if (itemIndex < 0) throw new Error('Item not found in cart');
 
   cart.items[itemIndex].configuration = configuration;
+  cart.items[itemIndex].totals = calculateItemPrice(cart.items[itemIndex]);
   cart.totals = calculateCartTotals(cart.items);
   cart.updatedAt = new Date();
 
   await updateDoc(doc(db, CART_COLLECTION, cartId), {
     items: cart.items,
     totals: cart.totals,
+    updatedAt: cart.updatedAt,
+  });
+
+  return cart;
+};
+
+export const applyDiscountCodeToCart = async (cartId: string, code: string): Promise<Cart> => {
+  const cart = await getCart(cartId);
+  if (!cart) throw new Error('Cart not found');
+
+  const discount = await getDiscountCode(code);
+  if (!discount) throw new Error('Code promo inconnu');
+
+  const matchingItem = cart.items.find((item) => item.stageId === discount.stageId);
+  if (!matchingItem) throw new Error("Ce code promo ne s'applique à aucun stage de votre panier");
+
+  const reason = isDiscountUsable(discount, matchingItem.stageId);
+  if (reason) throw new Error(reason);
+
+  cart.items = itemsWithDiscount(cart.items, discount);
+  cart.totals = calculateCartTotals(cart.items);
+  cart.appliedCoupon = discount.code;
+  cart.updatedAt = new Date();
+
+  await updateDoc(doc(db, CART_COLLECTION, cartId), {
+    items: cart.items,
+    totals: cart.totals,
+    appliedCoupon: cart.appliedCoupon,
+    updatedAt: cart.updatedAt,
+  });
+
+  return cart;
+};
+
+export const removeDiscountCodeFromCart = async (cartId: string): Promise<Cart> => {
+  const cart = await getCart(cartId);
+  if (!cart) throw new Error('Cart not found');
+
+  cart.items = itemsWithDiscount(cart.items, null);
+  cart.totals = calculateCartTotals(cart.items);
+  cart.appliedCoupon = null;
+  cart.updatedAt = new Date();
+
+  await updateDoc(doc(db, CART_COLLECTION, cartId), {
+    items: cart.items,
+    totals: cart.totals,
+    appliedCoupon: null,
     updatedAt: cart.updatedAt,
   });
 

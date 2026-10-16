@@ -86,6 +86,8 @@ export default function CartPaymentPage() {
             dancers: enrichedDancers,
           },
           amount: item.totals?.total || 0,
+          discountCode: item.discount?.code ?? null,
+          discountAmount: item.totals?.discount ?? 0,
           paymentMethod: method,
           status: method === 'helloasso' ? 'paid' : 'pending_confirmation',
           cartId: cart.id,

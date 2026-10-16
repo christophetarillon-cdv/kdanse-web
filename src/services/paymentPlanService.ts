@@ -128,6 +128,8 @@ export const createPaymentPlan = async (
           stageName: item.stageName,
           registrationDetails: item.configuration,
           amount: item.totals?.total || 0,
+          discountCode: item.discount?.code ?? null,
+          discountAmount: item.totals?.discount ?? 0,
           paymentMethod: 'plan',
           status: 'pending_plan',
           paymentPlanId: planId,

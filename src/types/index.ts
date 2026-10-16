@@ -126,6 +126,8 @@ export interface Membership {
   cartId?: string;
   acquisitionSourceId?: string;
   acquisitionSourceOther?: string;
+  discountCode?: string | null;
+  discountAmount?: number;
   createdAt: Date;
   updatedAt?: Date;
 }

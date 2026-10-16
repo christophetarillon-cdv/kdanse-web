@@ -10,6 +10,7 @@ import { collection, query, where, getDocs, getDoc, doc, updateDoc, setDoc } fro
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import PasswordInput from '@/components/PasswordInput';
+import { redeemDiscountCode } from '@/services/discountCodeService';
 import {
   findUserUidByEmail,
   linkDancerAccount,
@@ -467,6 +468,8 @@ export default function CartSummaryPage() {
       });
 
       // Mark cart as submitted
+      step = 'comptabilisation du code promo';
+      await redeemDiscountCode(cart.id);
       step = 'validation du panier';
       await submitCart(cart.id);
       if (accountCreated) {
