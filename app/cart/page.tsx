@@ -86,7 +86,7 @@ export default function CartPage() {
             <p className="text-gray-900 font-medium mb-4">Vous avez déjà un compte?</p>
             <div className="flex gap-3">
               <Link
-                href={`/login?redirect=/cart/${cart.id}/summary`}
+                href="/login?redirect=/cart"
                 className="flex-1 text-center bg-ink hover:bg-ink-soft text-white py-3 rounded font-semibold transition"
               >
                 Connectez-vous
