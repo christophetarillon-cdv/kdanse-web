@@ -8,8 +8,6 @@ import {
   deleteDoc,
   runTransaction,
   serverTimestamp,
-  query,
-  orderBy,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { DiscountCode } from '@/types/cart';
@@ -62,8 +60,10 @@ export const isDiscountUsable = (discount: DiscountCode, stageId: string, now = 
 };
 
 export const getDiscountCodes = async (): Promise<DiscountCode[]> => {
-  const snapshot = await getDocs(query(collection(db, DISCOUNT_CODES_COLLECTION), orderBy('code', 'asc')));
-  return snapshot.docs.map((d) => fromSnapshot(d.id, d.data()));
+  const snapshot = await getDocs(collection(db, DISCOUNT_CODES_COLLECTION));
+  return snapshot.docs
+    .map((d) => fromSnapshot(d.id, d.data()))
+    .sort((a, b) => a.code.localeCompare(b.code));
 };
 
 export const createDiscountCode = async (
