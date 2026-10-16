@@ -7,7 +7,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getDances, getLevels } from '@/services/coursesService';
-import { Dance, Level } from '@/types/courses';
+import { getAcquisitionSources } from '@/services/acquisitionSourceService';
+import { AcquisitionSource, Dance, Level } from '@/types/courses';
 
 type StatusFilter = 'active' | 'paid' | 'pending' | 'cancelled';
 type Courses = Record<string, string | null>;
@@ -30,6 +31,8 @@ interface Membership {
   createdAt: Date | null;
   coursesConfirmedAt: Date | null;
   dancers: StoredDancer[];
+  acquisitionSourceId: string | null;
+  acquisitionSourceOther: string;
 }
 
 interface Donor {
@@ -70,6 +73,8 @@ const toMembership = (id: string, data: DocumentData): Membership => ({
   createdAt: data.createdAt?.toDate?.() ?? null,
   coursesConfirmedAt: data.coursesConfirmedAt?.toDate?.() ?? null,
   dancers: data.registrationDetails?.dancers ?? [],
+  acquisitionSourceId: data.acquisitionSourceId ?? null,
+  acquisitionSourceOther: data.acquisitionSourceOther ?? '',
 });
 
 export default function AdminInscriptionsPage() {
@@ -81,6 +86,7 @@ export default function AdminInscriptionsPage() {
   const [coursesByDancer, setCoursesByDancer] = useState<Record<string, Courses>>({});
   const [dances, setDances] = useState<Dance[]>([]);
   const [levels, setLevels] = useState<Level[]>([]);
+  const [acquisitionSources, setAcquisitionSources] = useState<AcquisitionSource[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [stageFilter, setStageFilter] = useState('all');
@@ -99,11 +105,12 @@ export default function AdminInscriptionsPage() {
 
   const load = async () => {
     try {
-      const [membershipsSnap, coursesSnap, dancesData, levelsData] = await Promise.all([
+      const [membershipsSnap, coursesSnap, dancesData, levelsData, sourcesData] = await Promise.all([
         getDocs(collection(db, 'memberships')),
         getDocs(collection(db, 'membershipCourses')),
         getDances(),
         getLevels(),
+        getAcquisitionSources(),
       ]);
 
       const list = membershipsSnap.docs.map((d) => toMembership(d.id, d.data()));
@@ -126,6 +133,7 @@ export default function AdminInscriptionsPage() {
       );
       setDances([...dancesData].sort((a, b) => a.order - b.order));
       setLevels([...levelsData].sort((a, b) => a.order - b.order));
+      setAcquisitionSources(sourcesData);
     } catch (error) {
       console.error('Error loading inscriptions:', error);
     } finally {
@@ -199,6 +207,27 @@ export default function AdminInscriptionsPage() {
   });
   const bilanTotals = levels.map((_, i) => bilan.reduce((n, row) => n + row.byLevel[i], 0));
   const bilanNone = bilan.reduce((n, row) => n + row.none, 0);
+
+  const sourceCounts = new Map<string, number>();
+  const otherTexts: string[] = [];
+  let noAnswer = 0;
+  counted.forEach((m) => {
+    if (!m.acquisitionSourceId) {
+      noAnswer++;
+      return;
+    }
+    sourceCounts.set(m.acquisitionSourceId, (sourceCounts.get(m.acquisitionSourceId) ?? 0) + 1);
+    if (m.acquisitionSourceId === 'autre' && m.acquisitionSourceOther.trim()) otherTexts.push(m.acquisitionSourceOther.trim());
+  });
+  const sourceRows = [
+    ...acquisitionSources.map((source) => ({
+      key: source.id,
+      label: source.active ? source.label : `${source.label} (masquée)`,
+      count: sourceCounts.get(source.id) ?? 0,
+    })),
+    { key: 'autre', label: 'Autre', count: sourceCounts.get('autre') ?? 0 },
+    { key: 'none', label: 'Non renseigné', count: noAnswer },
+  ];
 
   const selectClass = 'border rounded px-3 py-2 text-sm text-gray-900 bg-white';
 
@@ -388,6 +417,42 @@ export default function AdminInscriptionsPage() {
               </table>
             </div>
           )}
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6 space-y-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Origine des inscriptions</h2>
+            <p className="text-sm text-gray-900 font-medium">
+              Réponse à « Comment avez-vous connu notre stage ? », pour les inscriptions non annulées affichées
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-100 border-b">
+                <tr className="text-left font-semibold text-gray-900">
+                  <th className="px-4 py-3">Réponse</th>
+                  <th className="px-4 py-3 text-right">Nombre</th>
+                  <th className="px-4 py-3 text-right">Part</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {sourceRows.map((row) => (
+                  <tr key={row.key} className="text-gray-900">
+                    <td className="px-4 py-3">
+                      {row.label}
+                      {row.key === 'autre' && otherTexts.length > 0 && (
+                        <span className="block text-xs text-gray-700">{otherTexts.join(' · ')}</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold">{row.count}</td>
+                    <td className="px-4 py-3 text-right">
+                      {counted.length > 0 ? `${Math.round((row.count / counted.length) * 100)} %` : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
