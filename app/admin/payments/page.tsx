@@ -520,6 +520,11 @@ export default function AdminPaymentsConsolidatedPage() {
                         <strong>Danseurs:</strong> {membership.registrationDetails.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
                         {membership.registrationDetails.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}
                       </p>
+                      {(membership.registrationDetails.dancers as { firstName?: string; lastName?: string }[]).map((d, index) => (
+                        <p key={index} className="text-gray-900">
+                          <strong>Nom:</strong> {`${d.firstName ?? ''} ${d.lastName ?? ''}`.trim() || 'Non renseigné'}
+                        </p>
+                      ))}
                       {membership.registrationDetails.accompanists > 0 && (
                         <p className="text-gray-900">
                           <strong>Accompagnateurs:</strong> {membership.registrationDetails.accompanists}
