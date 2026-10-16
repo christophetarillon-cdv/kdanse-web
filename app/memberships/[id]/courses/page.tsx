@@ -56,14 +56,12 @@ export default function CoursesPage() {
       const dancersData = membership.registrationDetails?.dancers || [];
       setDancers(dancersData);
 
-      const previousPaidSnap = await getDocs(
-        query(
-          collection(db, 'memberships'),
-          where('userId', '==', membership.userId),
-          where('status', '==', 'paid')
-        )
+      const accountMembershipsSnap = await getDocs(
+        query(collection(db, 'memberships'), where('userId', '==', membership.userId))
       );
-      setIsNewClient(!previousPaidSnap.docs.some((d) => d.id !== membershipId));
+      setIsNewClient(
+        !accountMembershipsSnap.docs.some((d) => d.id !== membershipId && d.data().status === 'paid')
+      );
       setAcquisitionSourceId(membership.acquisitionSourceId ?? '');
       setAcquisitionSourceOther(membership.acquisitionSourceOther ?? '');
       setAcquisitionSources(await getAcquisitionSources(true));
