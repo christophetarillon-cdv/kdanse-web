@@ -44,6 +44,9 @@ export default function AdminPaymentsConsolidatedPage() {
   // Compte payeur de chaque plan (planId -> profil)
   const [planPayers, setPlanPayers] = useState<{ [key: string]: { name: string; email: string } }>({});
 
+  // Réductions par plan (somme des inscriptions du plan et codes utilisés)
+  const [planDiscounts, setPlanDiscounts] = useState<{ [key: string]: { amount: number; codes: string[] } }>({});
+
   // Plan totals vs. sum of all its installments (received ones included)
   const [planTotals, setPlanTotals] = useState<{ [key: string]: { total: number; sum: number } }>({});
 
@@ -82,6 +85,7 @@ export default function AdminPaymentsConsolidatedPage() {
       const planMembershipMap: { [key: string]: Membership } = {};
       const planTotalMap: { [key: string]: { total: number; sum: number } } = {};
       const planPayerMap: { [key: string]: { name: string; email: string } } = {};
+      const planDiscountMap: { [key: string]: { amount: number; codes: string[] } } = {};
 
       for (const planId of planIds) {
         try {
@@ -95,6 +99,18 @@ export default function AdminPaymentsConsolidatedPage() {
           if (planData?.membership) {
             planMembershipMap[planId] = planData.membership;
           }
+          const planMembershipsSnap = await getDocs(
+            query(collection(db, 'memberships'), where('paymentPlanId', '==', planId))
+          );
+          const discountCodes = new Set<string>();
+          let discountAmount = 0;
+          planMembershipsSnap.docs.forEach((d) => {
+            const data = d.data();
+            discountAmount += Number(data.discountAmount ?? 0);
+            if (data.discountCode) discountCodes.add(data.discountCode as string);
+          });
+          planDiscountMap[planId] = { amount: discountAmount, codes: [...discountCodes] };
+
           if (planData?.userId) {
             const payer = await getUserProfile(planData.userId);
             planPayerMap[planId] = {
@@ -109,6 +125,7 @@ export default function AdminPaymentsConsolidatedPage() {
       setPlanMemberships(planMembershipMap);
       setPlanTotals(planTotalMap);
       setPlanPayers(planPayerMap);
+      setPlanDiscounts(planDiscountMap);
 
       // Fetch pending simple payments
       const q = query(
@@ -371,6 +388,12 @@ export default function AdminPaymentsConsolidatedPage() {
                           <strong>Payeur:</strong> {planPayers[planId]?.name || 'Nom inconnu'}
                           {planPayers[planId]?.email && ` (${planPayers[planId].email})`}
                         </p>
+                        {(planDiscounts[planId]?.amount ?? 0) > 0 && (
+                          <p className="text-gray-900">
+                            <strong>Réduction{planDiscounts[planId].codes.length ? ` (${planDiscounts[planId].codes.join(', ')})` : ''}:</strong>{' '}
+                            -{planDiscounts[planId].amount.toFixed(2)}€
+                          </p>
+                        )}
                         {planMemberships[planId] && (
                           <p className="text-gray-900">
                             <strong>Stage:</strong> {planMemberships[planId].stageName}
@@ -525,6 +548,11 @@ export default function AdminPaymentsConsolidatedPage() {
                           <strong>Nom:</strong> {`${d.firstName ?? ''} ${d.lastName ?? ''}`.trim() || 'Non renseigné'}
                         </p>
                       ))}
+                      {(membership.discountAmount ?? 0) > 0 && (
+                        <p className="text-gray-900">
+                          <strong>Réduction{membership.discountCode ? ` (${membership.discountCode})` : ''}:</strong> -{membership.discountAmount?.toFixed(2)}€
+                        </p>
+                      )}
                       {membership.registrationDetails.accompanists > 0 && (
                         <p className="text-gray-900">
                           <strong>Accompagnateurs:</strong> {membership.registrationDetails.accompanists}
