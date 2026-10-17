@@ -124,6 +124,7 @@ export interface Membership {
   chequeName?: string;
   paymentPlanId?: string;
   cartId?: string;
+  alreadyAttendedKdanse?: boolean | null;
   acquisitionSourceId?: string;
   acquisitionSourceOther?: string;
   discountCode?: string | null;

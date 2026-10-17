@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc, updateDoc, collection, getDocs, query, orderBy, where } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { AcquisitionSource, Dance, Level } from '@/types/courses';
 import { getAcquisitionSources } from '@/services/acquisitionSourceService';
@@ -30,7 +30,7 @@ export default function CoursesPage() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [currentDancerIndex, setCurrentDancerIndex] = useState(0);
   const [selections, setSelections] = useState<CourseSelection[]>([]);
-  const [isNewClient, setIsNewClient] = useState(false);
+  const [attendedKdanse, setAttendedKdanse] = useState<boolean | null>(null);
   const [acquisitionSources, setAcquisitionSources] = useState<AcquisitionSource[]>([]);
   const [acquisitionSourceId, setAcquisitionSourceId] = useState('');
   const [acquisitionSourceOther, setAcquisitionSourceOther] = useState('');
@@ -56,12 +56,7 @@ export default function CoursesPage() {
       const dancersData = membership.registrationDetails?.dancers || [];
       setDancers(dancersData);
 
-      const accountMembershipsSnap = await getDocs(
-        query(collection(db, 'memberships'), where('userId', '==', membership.userId))
-      );
-      setIsNewClient(
-        !accountMembershipsSnap.docs.some((d) => d.id !== membershipId && d.data().status === 'paid')
-      );
+      setAttendedKdanse(typeof membership.alreadyAttendedKdanse === 'boolean' ? membership.alreadyAttendedKdanse : null);
       setAcquisitionSourceId(membership.acquisitionSourceId ?? '');
       setAcquisitionSourceOther(membership.acquisitionSourceOther ?? '');
       setAcquisitionSources(await getAcquisitionSources(true));
@@ -116,17 +111,19 @@ export default function CoursesPage() {
     }
   };
 
+  const originRequired = attendedKdanse === false;
   const acquisitionAnswerMissing =
-    isNewClient &&
-    (!acquisitionSourceId ||
-      (acquisitionSourceId === OTHER_SOURCE && !acquisitionSourceOther.trim()));
+    attendedKdanse === null ||
+    (originRequired &&
+      (!acquisitionSourceId || (acquisitionSourceId === OTHER_SOURCE && !acquisitionSourceOther.trim())));
 
   const handleViewSummary = async () => {
-    if (isNewClient) {
+    if (attendedKdanse !== null) {
       try {
         await updateDoc(doc(db, 'memberships', membershipId), {
-          acquisitionSourceId,
-          acquisitionSourceOther: acquisitionSourceId === OTHER_SOURCE ? acquisitionSourceOther.trim() : '',
+          alreadyAttendedKdanse: attendedKdanse,
+          acquisitionSourceId: originRequired ? acquisitionSourceId : null,
+          acquisitionSourceOther: originRequired && acquisitionSourceId === OTHER_SOURCE ? acquisitionSourceOther.trim() : '',
         });
       } catch (error) {
         console.error('Error saving acquisition source:', error);
@@ -227,7 +224,34 @@ export default function CoursesPage() {
           </button>
         </div>
 
-        {currentDancerIndex === dancers.length - 1 && isNewClient && (
+        {currentDancerIndex === dancers.length - 1 && (
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Avez-vous déjà participé à un stage Kdanse ?</h2>
+            <p className="text-gray-600 mb-4">Merci de répondre pour valider votre inscription</p>
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 p-3 border border-gray-200 rounded cursor-pointer">
+                <input
+                  type="radio"
+                  name="attendedKdanse"
+                  checked={attendedKdanse === true}
+                  onChange={() => setAttendedKdanse(true)}
+                />
+                <span className="text-gray-900">Oui</span>
+              </label>
+              <label className="flex items-center gap-3 p-3 border border-gray-200 rounded cursor-pointer">
+                <input
+                  type="radio"
+                  name="attendedKdanse"
+                  checked={attendedKdanse === false}
+                  onChange={() => setAttendedKdanse(false)}
+                />
+                <span className="text-gray-900">Non</span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {currentDancerIndex === dancers.length - 1 && attendedKdanse === false && (
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <h2 className="text-xl font-bold text-gray-900 mb-2">Comment avez-vous connu notre stage ?</h2>
             <p className="text-gray-600 mb-4">Merci de répondre pour valider votre inscription</p>

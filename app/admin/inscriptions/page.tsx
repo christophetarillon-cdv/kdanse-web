@@ -31,6 +31,7 @@ interface Membership {
   createdAt: Date | null;
   coursesConfirmedAt: Date | null;
   dancers: StoredDancer[];
+  alreadyAttendedKdanse: boolean | null;
   acquisitionSourceId: string | null;
   acquisitionSourceOther: string;
 }
@@ -73,6 +74,7 @@ const toMembership = (id: string, data: DocumentData): Membership => ({
   createdAt: data.createdAt?.toDate?.() ?? null,
   coursesConfirmedAt: data.coursesConfirmedAt?.toDate?.() ?? null,
   dancers: data.registrationDetails?.dancers ?? [],
+  alreadyAttendedKdanse: typeof data.alreadyAttendedKdanse === 'boolean' ? data.alreadyAttendedKdanse : null,
   acquisitionSourceId: data.acquisitionSourceId ?? null,
   acquisitionSourceOther: data.acquisitionSourceOther ?? '',
 });
@@ -211,7 +213,12 @@ export default function AdminInscriptionsPage() {
   const sourceCounts = new Map<string, number>();
   const otherTexts: string[] = [];
   let noAnswer = 0;
+  let alreadyAttended = 0;
   counted.forEach((m) => {
+    if (m.alreadyAttendedKdanse === true) {
+      alreadyAttended++;
+      return;
+    }
     if (!m.acquisitionSourceId) {
       noAnswer++;
       return;
@@ -226,6 +233,7 @@ export default function AdminInscriptionsPage() {
       count: sourceCounts.get(source.id) ?? 0,
     })),
     { key: 'autre', label: 'Autre', count: sourceCounts.get('autre') ?? 0 },
+    { key: 'attended', label: 'Déjà venu à un stage Kdanse', count: alreadyAttended },
     { key: 'none', label: 'Non renseigné', count: noAnswer },
   ];
 
