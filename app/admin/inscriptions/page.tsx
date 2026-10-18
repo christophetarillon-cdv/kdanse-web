@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getDances, getLevels } from '@/services/coursesService';
 import { getAcquisitionSources } from '@/services/acquisitionSourceService';
+import { cancelMemberships, CancelTarget } from '@/services/membershipAdminService';
 import { AcquisitionSource, Dance, Level } from '@/types/courses';
 
 type StatusFilter = 'active' | 'paid' | 'pending' | 'cancelled';
@@ -32,6 +33,7 @@ interface Membership {
   coursesConfirmedAt: Date | null;
   dancers: StoredDancer[];
   alreadyAttendedKdanse: boolean | null;
+  cartId: string | null;
   acquisitionSourceId: string | null;
   acquisitionSourceOther: string;
 }
@@ -75,6 +77,7 @@ const toMembership = (id: string, data: DocumentData): Membership => ({
   coursesConfirmedAt: data.coursesConfirmedAt?.toDate?.() ?? null,
   dancers: data.registrationDetails?.dancers ?? [],
   alreadyAttendedKdanse: typeof data.alreadyAttendedKdanse === 'boolean' ? data.alreadyAttendedKdanse : null,
+  cartId: data.cartId ?? null,
   acquisitionSourceId: data.acquisitionSourceId ?? null,
   acquisitionSourceOther: data.acquisitionSourceOther ?? '',
 });
@@ -95,6 +98,13 @@ export default function AdminInscriptionsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   const [modeFilter, setModeFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [cancelling, setCancelling] = useState<Membership | null>(null);
+  const [cancelScope, setCancelScope] = useState<'one' | 'order'>('one');
+  const [cancelReason, setCancelReason] = useState('');
+  const [refundAmount, setRefundAmount] = useState('0');
+  const [refundDate, setRefundDate] = useState('');
+  const [refundNote, setRefundNote] = useState('');
+  const [cancelBusy, setCancelBusy] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -144,6 +154,58 @@ export default function AdminInscriptionsPage() {
   };
 
   if (authLoading || loading) return <div className="p-8 text-gray-900">Chargement...</div>;
+
+  const openCancel = (m: Membership) => {
+    setCancelling(m);
+    setCancelScope('one');
+    setCancelReason('');
+    setRefundAmount('0');
+    setRefundDate('');
+    setRefundNote('');
+  };
+
+  const cancelTargets: Membership[] =
+    cancelling === null
+      ? []
+      : cancelScope === 'order' && cancelling.cartId
+        ? memberships.filter((m) => m.cartId === cancelling.cartId && m.status !== 'cancelled')
+        : [cancelling];
+  const cancelTotal = cancelTargets.reduce((sum, m) => sum + m.amount, 0);
+
+  const confirmCancel = async () => {
+    if (!cancelling || !user) return;
+    if (!cancelReason.trim()) {
+      alert("Veuillez saisir le motif de l'annulation");
+      return;
+    }
+    const amount = Number(refundAmount.replace(',', '.'));
+    if (!(amount >= 0) || amount > cancelTotal) {
+      alert(`Le remboursement doit être compris entre 0 et ${eur(cancelTotal)}`);
+      return;
+    }
+    const targets: CancelTarget[] = cancelTargets.map((m) => ({
+      id: m.id,
+      amount: m.amount,
+      paymentPlanId: m.paymentPlanId,
+    }));
+    setCancelBusy(true);
+    try {
+      await cancelMemberships(targets, {
+        reason: cancelReason.trim(),
+        refundAmount: amount,
+        refundDate: refundDate || null,
+        refundNote: refundNote.trim(),
+        adminId: user.id,
+      });
+      setCancelling(null);
+      await load();
+    } catch (error) {
+      console.error('Error cancelling memberships:', error);
+      alert("Erreur lors de l'annulation");
+    } finally {
+      setCancelBusy(false);
+    }
+  };
 
   const dancerNames = (m: Membership) =>
     m.dancers.map((d, i) => [d.firstName, d.lastName].filter(Boolean).join(' ') || `Danseur ${i + 1}`);
@@ -331,6 +393,7 @@ export default function AdminInscriptionsPage() {
                   <th className="px-4 py-3 text-right">Montant</th>
                   <th className="px-4 py-3">Statut</th>
                   <th className="px-4 py-3">Cours</th>
+                  <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -364,6 +427,15 @@ export default function AdminInscriptionsPage() {
                             Non confirmés
                           </span>
                         )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => openCancel(m)}
+                          disabled={m.status === 'cancelled'}
+                          className="text-red-600 underline disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
+                        >
+                          Annuler
+                        </button>
                       </td>
                     </tr>
                   );
@@ -466,6 +538,89 @@ export default function AdminInscriptionsPage() {
           </div>
         </div>
       </div>
+
+      {cancelling && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 space-y-4">
+            <h2 className="text-xl font-bold text-gray-900">Annuler une inscription</h2>
+            <p className="text-sm text-gray-900">
+              {donorName(cancelling)} · {cancelling.stageName} · {eur(cancelling.amount)}
+            </p>
+
+            {cancelling.cartId && memberships.some((m) => m.cartId === cancelling.cartId && m.id !== cancelling.id && m.status !== 'cancelled') && (
+              <div className="space-y-2 text-sm text-gray-900">
+                <label className="flex items-center gap-2">
+                  <input type="radio" checked={cancelScope === 'one'} onChange={() => setCancelScope('one')} />
+                  Cette inscription seulement
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="radio" checked={cancelScope === 'order'} onChange={() => setCancelScope('order')} />
+                  Toute la commande ({cancelTargets.length} inscription(s), {eur(cancelTotal)})
+                </label>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-1">Motif (obligatoire)</label>
+              <textarea
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                rows={2}
+                className="w-full border rounded px-3 py-2 text-sm text-gray-900"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Remboursement (€)</label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={refundAmount}
+                  onChange={(e) => setRefundAmount(e.target.value)}
+                  className="w-full border rounded px-3 py-2 text-sm text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Date du remboursement</label>
+                <input
+                  type="date"
+                  value={refundDate}
+                  onChange={(e) => setRefundDate(e.target.value)}
+                  className="w-full border rounded px-3 py-2 text-sm text-gray-900"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-1">Note sur le remboursement</label>
+              <input
+                type="text"
+                value={refundNote}
+                onChange={(e) => setRefundNote(e.target.value)}
+                placeholder="Virement effectué, chèque n°…"
+                className="w-full border rounded px-3 py-2 text-sm text-gray-900"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={confirmCancel}
+                disabled={cancelBusy}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-semibold disabled:opacity-50"
+              >
+                {cancelBusy ? 'Annulation…' : "Confirmer l'annulation"}
+              </button>
+              <button
+                onClick={() => setCancelling(null)}
+                disabled={cancelBusy}
+                className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-2 rounded font-semibold disabled:opacity-50"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

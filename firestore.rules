@@ -191,6 +191,14 @@ service cloud.firestore {
       ) || (request.auth != null && isAdmin());
       allow list, create, delete: if request.auth != null && isAdmin();
     }
+    match /membershipHistory/{document=**} {
+      allow read, create: if request.auth != null && isAdmin();
+      allow update, delete: if false;
+    }
+    match /refunds/{document=**} {
+      allow read, create: if request.auth != null && isAdmin();
+      allow update, delete: if false;
+    }
     match /acquisitionSources/{document=**} {
       allow read: if request.auth != null;
       allow write, delete: if request.auth != null && (
