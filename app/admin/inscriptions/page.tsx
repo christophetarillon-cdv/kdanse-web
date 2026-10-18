@@ -214,16 +214,19 @@ export default function AdminInscriptionsPage() {
   const otherTexts: string[] = [];
   let noAnswer = 0;
   let alreadyAttended = 0;
+  const dancersOfMembership = (m: Membership) => m.dancers.length || 1;
+  const totalDancers = counted.reduce((n, m) => n + dancersOfMembership(m), 0);
   counted.forEach((m) => {
+    const weight = dancersOfMembership(m);
     if (m.alreadyAttendedKdanse === true) {
-      alreadyAttended++;
+      alreadyAttended += weight;
       return;
     }
     if (!m.acquisitionSourceId) {
-      noAnswer++;
+      noAnswer += weight;
       return;
     }
-    sourceCounts.set(m.acquisitionSourceId, (sourceCounts.get(m.acquisitionSourceId) ?? 0) + 1);
+    sourceCounts.set(m.acquisitionSourceId, (sourceCounts.get(m.acquisitionSourceId) ?? 0) + weight);
     if (m.acquisitionSourceId === 'autre' && m.acquisitionSourceOther.trim()) otherTexts.push(m.acquisitionSourceOther.trim());
   });
   const sourceRows = [
@@ -431,7 +434,7 @@ export default function AdminInscriptionsPage() {
           <div>
             <h2 className="text-xl font-bold text-gray-900">Origine des inscriptions</h2>
             <p className="text-sm text-gray-900 font-medium">
-              Réponse à « Comment avez-vous connu notre stage ? », pour les inscriptions non annulées affichées
+              Nombre de danseurs par réponse à « Comment avez-vous connu notre stage ? », pour les inscriptions non annulées affichées
             </p>
           </div>
           <div className="overflow-x-auto">
@@ -439,7 +442,7 @@ export default function AdminInscriptionsPage() {
               <thead className="bg-gray-100 border-b">
                 <tr className="text-left font-semibold text-gray-900">
                   <th className="px-4 py-3">Réponse</th>
-                  <th className="px-4 py-3 text-right">Nombre</th>
+                  <th className="px-4 py-3 text-right">Danseurs</th>
                   <th className="px-4 py-3 text-right">Part</th>
                 </tr>
               </thead>
@@ -454,7 +457,7 @@ export default function AdminInscriptionsPage() {
                     </td>
                     <td className="px-4 py-3 text-right font-semibold">{row.count}</td>
                     <td className="px-4 py-3 text-right">
-                      {counted.length > 0 ? `${Math.round((row.count / counted.length) * 100)} %` : '—'}
+                      {totalDancers > 0 ? `${Math.round((row.count / totalDancers) * 100)} %` : '—'}
                     </td>
                   </tr>
                 ))}
