@@ -155,7 +155,9 @@ export interface NewMembershipInput {
   registrationDetails: Record<string, unknown>;
   amount: number;
   paymentMethod: string;
-  status: 'paid' | 'pending_confirmation';
+  status: 'paid' | 'pending_confirmation' | 'pending_plan';
+  paymentPlanId?: string | null;
+  cartId?: string | null;
   courses: { index: number; name: string; courses: Record<string, string> }[];
   snapshot: Snapshot;
   summary: string;
@@ -178,7 +180,8 @@ export const createAdminMembership = async (input: NewMembershipInput): Promise<
     discountCode: null,
     paymentMethod: input.paymentMethod,
     status: input.status,
-    cartId: null,
+    cartId: input.cartId ?? null,
+    paymentPlanId: input.paymentPlanId ?? null,
     createdAt: now,
     createdBy: input.adminId,
     ...(input.status === 'paid' ? { paymentDate: now } : {}),

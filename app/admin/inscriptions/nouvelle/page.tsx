@@ -9,6 +9,7 @@ import app, { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { getDances, getLevels } from '@/services/coursesService';
 import { createAdminMembership, Snapshot } from '@/services/membershipAdminService';
+import { createPaymentPlan } from '@/services/paymentPlanService';
 import { calculateItemPrice } from '@/services/cartService';
 import { CartItem } from '@/types/cart';
 import { Dance, Level } from '@/types/courses';
@@ -37,6 +38,31 @@ const PAYMENT_LABELS: Record<string, string> = {
   cheque: 'Chèque',
   virement: 'Virement',
   helloasso: 'HelloAsso',
+  plan: 'Échéancier',
+};
+
+type InstallmentMethod = 'cheque' | 'virement' | 'cheque_vacances';
+
+interface InstallmentRow {
+  method: InstallmentMethod;
+  amount: number;
+  dueDate: string;
+}
+
+const INSTALLMENT_METHOD_LABELS: Record<InstallmentMethod, string> = {
+  cheque: 'Chèque',
+  virement: 'Virement',
+  cheque_vacances: 'Chèques vacances',
+};
+
+const buildRows = (total: number, count: number): InstallmentRow[] => {
+  const base = Math.floor((total / count) * 100) / 100;
+  const today = new Date();
+  return Array.from({ length: count }, (_, i) => {
+    const due = new Date(today.getFullYear(), today.getMonth() + i + 1, today.getDate());
+    const amount = i === count - 1 ? Math.round((total - base * (count - 1)) * 100) / 100 : base;
+    return { method: 'cheque', amount, dueDate: due.toISOString().slice(0, 10) };
+  });
 };
 
 export default function NewAdminMembershipPage() {
@@ -66,6 +92,8 @@ export default function NewAdminMembershipPage() {
 
   const [paymentMethod, setPaymentMethod] = useState('cheque');
   const [alreadyReceived, setAlreadyReceived] = useState(false);
+  const [installmentCount, setInstallmentCount] = useState(2);
+  const [rows, setRows] = useState<InstallmentRow[]>([]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -168,6 +196,17 @@ export default function NewAdminMembershipPage() {
     return calculateItemPrice(item).total;
   }, [stage, danceType, dancers, dancerCount, accompanists, wantHousing, housingSolo, housingCouple]);
 
+  const isPlan = paymentMethod === 'plan';
+  const rowsTotal = Math.round(rows.reduce((sum, r) => sum + Number(r.amount || 0), 0) * 100) / 100;
+  const rowsGap = Math.round((rowsTotal - total) * 100) / 100;
+
+  useEffect(() => {
+    if (isPlan && total > 0) setRows(buildRows(total, installmentCount));
+  }, [isPlan, total, installmentCount]);
+
+  const updateRow = (index: number, changes: Partial<InstallmentRow>) =>
+    setRows((prev) => prev.map((r, i) => (i === index ? { ...r, ...changes } : r)));
+
   const handleCreateAccount = async () => {
     const { email, password, prenom, nom } = newAccount;
     if (!email.includes('@') || password.length < 6 || !prenom.trim() || !nom.trim()) {
@@ -204,6 +243,10 @@ export default function NewAdminMembershipPage() {
       alert('Veuillez renseigner le prénom et le nom de chaque danseur');
       return;
     }
+    if (isPlan && (Math.abs(rowsGap) > 0.005 || rows.some((r) => !(r.amount > 0) || !r.dueDate))) {
+      alert('Les échéances doivent être renseignées et leur somme doit correspondre au montant de l’inscription');
+      return;
+    }
     const people = dancers.slice(0, dancerCount).map((d) => ({
       firstName: d.firstName.trim(),
       lastName: d.lastName.trim(),
@@ -215,6 +258,7 @@ export default function NewAdminMembershipPage() {
       housingSolo: wantHousing ? housingSolo : 0,
       housingCouple: wantHousing ? housingCouple : 0,
     };
+    const status = isPlan ? 'pending_plan' : alreadyReceived ? 'paid' : 'pending_confirmation';
     const snapshot: Snapshot = {
       amount: total,
       danceType,
@@ -224,12 +268,28 @@ export default function NewAdminMembershipPage() {
       housingSolo: extras.housingSolo,
       housingCouple: extras.housingCouple,
       paymentMethod,
-      status: alreadyReceived ? 'paid' : 'pending_confirmation',
+      status,
+      ...(isPlan ? { installments: rows.map((r) => `${r.dueDate} · ${INSTALLMENT_METHOD_LABELS[r.method]} · ${r.amount}€`) } : {}),
     };
 
     setSaving(true);
     try {
+      let paymentPlanId: string | null = null;
+      let cartId: string | null = null;
+      if (isPlan) {
+        cartId = `adm-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+        const plan = await createPaymentPlan(
+          cartId,
+          donor.id,
+          total,
+          rows.length,
+          rows.map((r) => ({ method: r.method, amount: r.amount, dueDate: r.dueDate }))
+        );
+        paymentPlanId = plan.id;
+      }
       await createAdminMembership({
+        paymentPlanId,
+        cartId,
         userId: donor.id,
         stageId: stage.id,
         stageName: stage.name,
@@ -239,15 +299,15 @@ export default function NewAdminMembershipPage() {
           ...extras,
         },
         amount: total,
-        paymentMethod,
-        status: alreadyReceived ? 'paid' : 'pending_confirmation',
+        paymentMethod: isPlan ? 'plan' : paymentMethod,
+        status,
         courses: people.map((d, index) => ({
           index,
           name: `${d.firstName} ${d.lastName}`,
           courses: selections[index] ?? {},
         })),
         snapshot,
-        summary: `Inscription saisie par l’admin · ${PAYMENT_LABELS[paymentMethod]} · ${alreadyReceived ? 'déjà reçu' : 'à confirmer'}`,
+        summary: `Inscription saisie par l’admin · ${PAYMENT_LABELS[paymentMethod]}${isPlan ? ` (${rows.length} échéances)` : ` · ${alreadyReceived ? 'déjà reçu' : 'à confirmer'}`}`,
         adminId: user.id,
       });
       router.push('/admin/inscriptions');
@@ -422,16 +482,74 @@ export default function NewAdminMembershipPage() {
               </option>
             ))}
           </select>
-          <label className="flex items-center gap-2 text-gray-900">
-            <input type="checkbox" checked={alreadyReceived} onChange={(e) => setAlreadyReceived(e.target.checked)} />
-            Le paiement est déjà reçu
-          </label>
-          <p className="text-sm text-gray-900">
-            Sans case cochée, l&apos;inscription reste « à valider » jusqu&apos;à la réception du paiement.
-          </p>
-          <p className="text-sm text-orange-800 font-medium">
-            Pour un échéancier, créez l&apos;inscription ici puis ajustez les échéances depuis la page Paiements.
-          </p>
+          {isPlan ? (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Nombre d&apos;échéances</label>
+                <input
+                  type="number"
+                  min={2}
+                  max={12}
+                  value={installmentCount}
+                  onChange={(e) => setInstallmentCount(Math.min(12, Math.max(2, Number(e.target.value))))}
+                  className={`w-24 ${inputClass}`}
+                />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-100 border-b">
+                    <tr className="text-left font-semibold text-gray-900">
+                      <th className="px-3 py-2">N°</th>
+                      <th className="px-3 py-2">Mode</th>
+                      <th className="px-3 py-2">Montant (€)</th>
+                      <th className="px-3 py-2">Échéance</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {rows.map((r, i) => (
+                      <tr key={i} className="text-gray-900">
+                        <td className="px-3 py-2">{i + 1}</td>
+                        <td className="px-3 py-2">
+                          <select value={r.method} onChange={(e) => updateRow(i, { method: e.target.value as InstallmentMethod })} className={inputClass}>
+                            {Object.entries(INSTALLMENT_METHOD_LABELS).map(([value, label]) => (
+                              <option key={value} value={value}>
+                                {label}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-3 py-2">
+                          <input type="number" min={0} step="0.01" value={r.amount} onChange={(e) => updateRow(i, { amount: Number(e.target.value) })} className={`w-32 ${inputClass}`} />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input type="date" value={r.dueDate} onChange={(e) => updateRow(i, { dueDate: e.target.value })} className={inputClass} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className={`text-sm font-medium ${Math.abs(rowsGap) > 0.005 ? 'text-orange-800' : 'text-green-700'}`}>
+                Somme des échéances : {eur(rowsTotal)}
+                {Math.abs(rowsGap) > 0.005
+                  ? ` · ${rowsGap < 0 ? `il manque ${eur(-rowsGap)}` : `${eur(rowsGap)} en trop`} pour atteindre ${eur(total)}`
+                  : ' · concordant'}
+              </p>
+              <p className="text-sm text-gray-900">
+                Les échéances sont enregistrées en attente : elles seront marquées reçues depuis la page Paiements.
+              </p>
+            </div>
+          ) : (
+            <>
+              <label className="flex items-center gap-2 text-gray-900">
+                <input type="checkbox" checked={alreadyReceived} onChange={(e) => setAlreadyReceived(e.target.checked)} />
+                Le paiement est déjà reçu
+              </label>
+              <p className="text-sm text-gray-900">
+                Sans case cochée, l&apos;inscription reste « à valider » jusqu&apos;à la réception du paiement.
+              </p>
+            </>
+          )}
         </div>
 
         <button
