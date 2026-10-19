@@ -274,10 +274,9 @@ export default function NewAdminMembershipPage() {
 
     setSaving(true);
     try {
+      const cartId = `adm-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
       let paymentPlanId: string | null = null;
-      let cartId: string | null = null;
       if (isPlan) {
-        cartId = `adm-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
         const plan = await createPaymentPlan(
           cartId,
           donor.id,
