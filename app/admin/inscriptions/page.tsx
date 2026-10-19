@@ -204,6 +204,47 @@ export default function AdminInscriptionsPage() {
 
   if (authLoading || loading) return <div className="p-8 text-gray-900">Chargement...</div>;
 
+  const HISTORY_FIELD_LABELS: Record<string, string> = {
+    amount: 'Montant',
+    discountAmount: 'Réduction',
+    danceType: 'Formule',
+    dancers: 'Danseurs',
+    accompanists: 'Accompagnateurs',
+    wantHousing: 'Hébergement',
+    housingSolo: 'Chambres 1 personne',
+    housingCouple: 'Chambres 2 personnes',
+    courses: 'Cours',
+    status: 'Statut',
+    cancelReason: 'Motif',
+  };
+
+  const coursesLabel = (value: unknown) => {
+    if (!Array.isArray(value) || value.length === 0) return '—';
+    return value
+      .map((raw, index) => {
+        let parsed: Record<string, string> = {};
+        try {
+          parsed = JSON.parse(String(raw));
+        } catch {
+          parsed = {};
+        }
+        const parts = Object.entries(parsed).map(
+          ([danceId, levelId]) => `${danceName(danceId)} : ${levels.find((l) => l.id === levelId)?.name ?? levelId}`
+        );
+        return `Danseur ${index + 1} (${parts.join(', ') || 'aucun cours'})`;
+      })
+      .join(' · ');
+  };
+
+  const historyValue = (field: string, value: unknown): string => {
+    if (field === 'amount' || field === 'discountAmount') return value == null ? '—' : eur(Number(value));
+    if (field === 'courses') return coursesLabel(value);
+    if (field === 'danceType') return value === 'couple' ? 'Couple' : value === 'solo' ? 'Solo' : formatValue(value);
+    if (field === 'wantHousing') return value ? 'Oui' : 'Non';
+    if (field === 'status') return STATUS_LABELS[String(value)]?.label ?? formatValue(value);
+    return formatValue(value);
+  };
+
   const openHistory = async (m: Membership) => {
     setHistoryOf(m);
     setHistoryLoading(true);
@@ -667,7 +708,8 @@ export default function AdminInscriptionsPage() {
                       <ul className="space-y-1">
                         {entry.changes.map((c) => (
                           <li key={c.field}>
-                            <span className="font-medium">{c.field}</span> : {formatValue(c.before)} → {formatValue(c.after)}
+                            <span className="font-medium">{HISTORY_FIELD_LABELS[c.field] ?? c.field}</span> :{' '}
+                            {historyValue(c.field, c.before)} → {historyValue(c.field, c.after)}
                           </li>
                         ))}
                       </ul>
