@@ -65,3 +65,62 @@ export const cancelMemberships = async (targets: CancelTarget[], input: CancelIn
   await batch.commit();
   return { receivedTotal };
 };
+
+export interface MembershipUpdateInput {
+  registrationDetails: Record<string, unknown>;
+  amount: number;
+  discountAmount: number;
+  courses: { index: number; name: string; courses: Record<string, string> }[];
+  refundAmount: number;
+  refundDate: string | null;
+  refundNote: string;
+  summary: string;
+  adminId: string;
+}
+
+export const updateMembershipDetails = async (membershipId: string, input: MembershipUpdateInput): Promise<void> => {
+  const batch = writeBatch(db);
+  const now = serverTimestamp();
+
+  batch.update(doc(db, 'memberships', membershipId), {
+    registrationDetails: input.registrationDetails,
+    amount: input.amount,
+    discountAmount: input.discountAmount,
+    updatedAt: now,
+  });
+
+  input.courses.forEach((entry) => {
+    batch.set(
+      doc(db, 'membershipCourses', `${membershipId}_dancer_${entry.index}`),
+      {
+        membershipId,
+        dancerIndex: entry.index,
+        dancerName: entry.name,
+        courses: entry.courses,
+        updatedAt: now,
+      },
+      { merge: true }
+    );
+  });
+
+  if (input.refundAmount > 0) {
+    batch.set(doc(collection(db, 'refunds')), {
+      membershipIds: [membershipId],
+      amount: input.refundAmount,
+      date: input.refundDate,
+      note: input.refundNote,
+      by: input.adminId,
+      createdAt: now,
+    });
+  }
+
+  batch.set(doc(collection(db, 'membershipHistory')), {
+    membershipId,
+    action: 'update',
+    detail: input.summary,
+    by: input.adminId,
+    at: now,
+  });
+
+  await batch.commit();
+};

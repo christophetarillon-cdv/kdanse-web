@@ -428,7 +428,10 @@ export default function AdminInscriptionsPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <Link href={`/admin/inscriptions/${m.id}`} className="text-gold-deep underline mr-3">
+                          Modifier
+                        </Link>
                         <button
                           onClick={() => openCancel(m)}
                           disabled={m.status === 'cancelled'}
