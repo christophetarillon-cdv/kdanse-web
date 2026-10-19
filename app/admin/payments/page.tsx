@@ -93,7 +93,9 @@ export default function AdminPaymentsConsolidatedPage() {
           if (planData) {
             planTotalMap[planId] = {
               total: planData.totalAmount,
-              sum: planData.installments.reduce((acc, inst) => acc + inst.amount, 0),
+              sum: planData.installments
+                .filter((inst) => inst.status !== 'cancelled')
+                .reduce((acc, inst) => acc + inst.amount, 0),
             };
           }
           if (planData?.membership) {
@@ -110,6 +112,12 @@ export default function AdminPaymentsConsolidatedPage() {
             if (data.discountCode) discountCodes.add(data.discountCode as string);
           });
           planDiscountMap[planId] = { amount: discountAmount, codes: [...discountCodes] };
+
+          const activeMemberships = planMembershipsSnap.docs.filter((d) => d.data().status !== 'cancelled');
+          if (activeMemberships.length > 0 && planTotalMap[planId]) {
+            planTotalMap[planId].total =
+              Math.round(activeMemberships.reduce((sum, d) => sum + Number(d.data().amount ?? 0), 0) * 100) / 100;
+          }
 
           if (planData?.userId) {
             const payer = await getUserProfile(planData.userId);
@@ -377,12 +385,30 @@ export default function AdminPaymentsConsolidatedPage() {
 
                   {gap !== null && Math.abs(gap) > 0.005 && (
                     <p className="px-6 pb-4 text-sm font-medium text-orange-800">
-                      ⚠️ Les échéances ne correspondent pas au montant du plan ({planTotals[planId].total.toFixed(2)}€) : écart de {gap.toFixed(2)}€
+                      ⚠️ Les échéances ne correspondent pas au montant du plan ({planTotals[planId].total.toFixed(2)}€) :{' '}
+                      {gap < 0
+                        ? `il manque ${Math.abs(gap).toFixed(2)}€ d'échéances (ajouter ou augmenter une échéance)`
+                        : `${gap.toFixed(2)}€ d'échéances en trop (réduire une échéance)`}
                     </p>
                   )}
 
                   {expandedPlan === planId && (
                     <div className="border-t divide-y">
+                      {planTotals[planId] && (
+                        <div className="px-6 py-3 text-sm text-gray-900 grid grid-cols-3 gap-2">
+                          <span>Attendu : <strong>{planTotals[planId].total.toFixed(2)}€</strong></span>
+                          <span>Échéances : <strong>{planTotals[planId].sum.toFixed(2)}€</strong></span>
+                          <span>
+                            {gap !== null && Math.abs(gap) > 0.005 ? (
+                              <strong className="text-orange-800">
+                                {gap < 0 ? `À ajouter : ${Math.abs(gap).toFixed(2)}€` : `En trop : ${gap.toFixed(2)}€`}
+                              </strong>
+                            ) : (
+                              <strong className="text-green-700">Concordant</strong>
+                            )}
+                          </span>
+                        </div>
+                      )}
                       <div className="p-6 bg-gold-50 text-sm space-y-1">
                         <p className="text-gray-900">
                           <strong>Payeur:</strong> {planPayers[planId]?.name || 'Nom inconnu'}
