@@ -240,7 +240,7 @@ export default function AdminInscriptionsPage() {
     if (field === 'amount' || field === 'discountAmount') return value == null ? '—' : eur(Number(value));
     if (field === 'courses') return coursesLabel(value);
     if (field === 'danceType') return value === 'couple' ? 'Couple' : value === 'solo' ? 'Solo' : formatValue(value);
-    if (field === 'wantHousing') return value ? 'Oui' : 'Non';
+    if (field === 'wantHousing') return value === null || value === undefined ? '—' : value ? 'Oui' : 'Non';
     if (field === 'status') return STATUS_LABELS[String(value)]?.label ?? formatValue(value);
     return formatValue(value);
   };
