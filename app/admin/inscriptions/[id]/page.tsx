@@ -21,7 +21,7 @@ interface EditableDancer {
 
 const eur = (n: number) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
-const dancerLicensed = (d: DocumentData) => (typeof d.licensed === 'boolean' ? d.licensed : !!d.license?.active);
+const dancerLicensed = (d: DocumentData) => d.licensed === true;
 
 export default function EditMembershipPage() {
   const { user, loading: authLoading } = useAuth();
