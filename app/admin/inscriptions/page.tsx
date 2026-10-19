@@ -440,6 +440,7 @@ export default function AdminInscriptionsPage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">📋 Inscriptions aux stages</h1>
             <p className="text-gray-900 font-medium">Une ligne par inscription, avec le bilan des cours par danse</p>
+            <Link href="/admin/inscriptions/nouvelle" className="inline-block mt-2 text-gold-deep underline font-semibold">+ Nouvelle inscription</Link>
           </div>
           <Link
             href="/dashboard"

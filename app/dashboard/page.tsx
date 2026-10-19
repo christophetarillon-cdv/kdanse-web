@@ -26,6 +26,10 @@ export default function DashboardPage() {
     const email = (firebaseUser.email || '').trim().toLowerCase();
     getUserProfile(firebaseUser.uid)
       .then((userData) => {
+        if ((userData as unknown as { mustChangePassword?: boolean })?.mustChangePassword === true) {
+          router.push('/change-password');
+          return;
+        }
         const profile = userData?.profile as any;
         const holder = ((profile?.dancers || []) as SavedDancer[]).find(
           (d) => d.uid === firebaseUser.uid || (!!d.email && d.email.trim().toLowerCase() === email)

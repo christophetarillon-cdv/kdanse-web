@@ -147,3 +147,63 @@ export const updateMembershipDetails = async (membershipId: string, input: Membe
 
   await batch.commit();
 };
+
+export interface NewMembershipInput {
+  userId: string;
+  stageId: string;
+  stageName: string;
+  registrationDetails: Record<string, unknown>;
+  amount: number;
+  paymentMethod: string;
+  status: 'paid' | 'pending_confirmation';
+  courses: { index: number; name: string; courses: Record<string, string> }[];
+  snapshot: Snapshot;
+  summary: string;
+  adminId: string;
+}
+
+export const createAdminMembership = async (input: NewMembershipInput): Promise<string> => {
+  const batch = writeBatch(db);
+  const now = serverTimestamp();
+  const ref = doc(collection(db, 'memberships'));
+
+  batch.set(ref, {
+    userId: input.userId,
+    visibleUserIds: [],
+    stageId: input.stageId,
+    stageName: input.stageName,
+    registrationDetails: input.registrationDetails,
+    amount: input.amount,
+    discountAmount: 0,
+    discountCode: null,
+    paymentMethod: input.paymentMethod,
+    status: input.status,
+    cartId: null,
+    createdAt: now,
+    createdBy: input.adminId,
+    ...(input.status === 'paid' ? { paymentDate: now } : {}),
+  });
+
+  input.courses.forEach((entry) => {
+    batch.set(doc(db, 'membershipCourses', `${ref.id}_dancer_${entry.index}`), {
+      membershipId: ref.id,
+      dancerIndex: entry.index,
+      dancerName: entry.name,
+      courses: entry.courses,
+      createdAt: now,
+      updatedAt: now,
+    });
+  });
+
+  batch.set(doc(collection(db, 'membershipHistory')), {
+    membershipId: ref.id,
+    action: 'create',
+    detail: input.summary,
+    changes: diffSnapshots({}, input.snapshot),
+    by: input.adminId,
+    at: now,
+  });
+
+  await batch.commit();
+  return ref.id;
+};
