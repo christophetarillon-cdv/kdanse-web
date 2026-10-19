@@ -3,9 +3,25 @@ import { db } from '@/lib/firebase';
 
 export interface CancelTarget {
   id: string;
+  status: string;
   amount: number;
   paymentPlanId: string | null;
 }
+
+export interface FieldChange {
+  field: string;
+  before: unknown;
+  after: unknown;
+}
+
+export type Snapshot = Record<string, unknown>;
+
+const isSameValue = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+
+export const diffSnapshots = (before: Snapshot, after: Snapshot): FieldChange[] =>
+  Object.keys({ ...before, ...after })
+    .filter((field) => !isSameValue(before[field], after[field]))
+    .map((field) => ({ field, before: before[field] ?? null, after: after[field] ?? null }));
 
 export interface CancelInput {
   reason: string;
@@ -46,6 +62,10 @@ export const cancelMemberships = async (targets: CancelTarget[], input: CancelIn
       membershipId: target.id,
       action: 'cancel',
       detail: input.reason,
+      changes: diffSnapshots(
+        { status: target.status, cancelReason: null },
+        { status: 'cancelled', cancelReason: input.reason }
+      ),
       by: input.adminId,
       at: now,
     });
@@ -75,6 +95,8 @@ export interface MembershipUpdateInput {
   refundDate: string | null;
   refundNote: string;
   summary: string;
+  before: Snapshot;
+  after: Snapshot;
   adminId: string;
 }
 
@@ -118,6 +140,7 @@ export const updateMembershipDetails = async (membershipId: string, input: Membe
     membershipId,
     action: 'update',
     detail: input.summary,
+    changes: diffSnapshots(input.before, input.after),
     by: input.adminId,
     at: now,
   });

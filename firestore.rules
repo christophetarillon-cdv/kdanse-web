@@ -195,6 +195,10 @@ service cloud.firestore {
       allow read, create: if request.auth != null && isAdmin();
       allow update, delete: if false;
     }
+    match /notificationLog/{document=**} {
+      allow read: if request.auth != null && isAdmin();
+      allow create, update, delete: if false;
+    }
     match /refunds/{document=**} {
       allow read, create: if request.auth != null && isAdmin();
       allow update, delete: if false;

@@ -8,7 +8,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { getDances, getLevels } from '@/services/coursesService';
 import { getDiscountCode } from '@/services/discountCodeService';
-import { updateMembershipDetails } from '@/services/membershipAdminService';
+import { updateMembershipDetails, Snapshot } from '@/services/membershipAdminService';
 import { calculateItemPrice } from '@/services/cartService';
 import { CartItem, ItemDiscount } from '@/types/cart';
 import { Dance, Level } from '@/types/courses';
@@ -45,6 +45,7 @@ export default function EditMembershipPage() {
   const [housingSolo, setHousingSolo] = useState(0);
   const [housingCouple, setHousingCouple] = useState(0);
   const [selections, setSelections] = useState<Record<string, string>[]>([]);
+  const [originalSelections, setOriginalSelections] = useState<Record<string, string>[]>([]);
 
   const [refundAmount, setRefundAmount] = useState('0');
   const [refundDate, setRefundDate] = useState('');
@@ -99,7 +100,9 @@ export default function EditMembershipPage() {
         setWantHousing(!!details.wantHousing);
         setHousingSolo(Number(details.housingSolo ?? 0));
         setHousingCouple(Number(details.housingCouple ?? 0));
-        setSelections(storedDancers.map((_, i) => ((coursesSnaps[i] as { data: () => DocumentData | undefined }).data()?.courses ?? {}) as Record<string, string>));
+        const loadedSelections = storedDancers.map((_, i) => ((coursesSnaps[i] as { data: () => DocumentData | undefined }).data()?.courses ?? {}) as Record<string, string>);
+        setSelections(loadedSelections);
+        setOriginalSelections(loadedSelections);
       } catch (error) {
         console.error('Error loading membership:', error);
         setNotFound(true);
@@ -188,6 +191,51 @@ export default function EditMembershipPage() {
       licensed: d.licensed,
     }));
 
+    const snapshotOf = (
+      type: 'solo' | 'couple',
+      people: { firstName: string; lastName: string; licensed: boolean }[],
+      extras: { accompanists: number; wantHousing: boolean; housingSolo: number; housingCouple: number },
+      amount: number,
+      discountAmount: number,
+      courses: Record<string, string>[]
+    ): Snapshot => ({
+      amount,
+      discountAmount,
+      danceType: type,
+      dancers: people.map((d) => `${d.firstName} ${d.lastName}${d.licensed ? ' (licencié)' : ''}`),
+      accompanists: extras.accompanists,
+      wantHousing: extras.wantHousing,
+      housingSolo: extras.housingSolo,
+      housingCouple: extras.housingCouple,
+      courses: courses.map((c) => JSON.stringify(c)),
+    });
+    const beforeSnapshot = snapshotOf(
+      previousDetails.danceType === 'couple' ? 'couple' : 'solo',
+      previousDancers.map((d) => ({ firstName: d.firstName ?? '', lastName: d.lastName ?? '', licensed: dancerLicensed(d) })),
+      {
+        accompanists: Number(previousDetails.accompanists ?? 0),
+        wantHousing: !!previousDetails.wantHousing,
+        housingSolo: Number(previousDetails.housingSolo ?? 0),
+        housingCouple: Number(previousDetails.housingCouple ?? 0),
+      },
+      oldAmount,
+      Number(stored.discountAmount ?? 0),
+      originalSelections
+    );
+    const afterSnapshot = snapshotOf(
+      danceType,
+      nextDancers.map((d) => ({ firstName: d.firstName, lastName: d.lastName, licensed: d.licensed })),
+      {
+        accompanists,
+        wantHousing,
+        housingSolo: wantHousing ? housingSolo : 0,
+        housingCouple: wantHousing ? housingCouple : 0,
+      },
+      newAmount,
+      newTotals.discount ?? 0,
+      selections
+    );
+
     const summary = [
       `Montant ${eur(oldAmount)} → ${eur(newAmount)}`,
       `Danse : ${danceType === 'couple' ? 'couple' : 'solo'}`,
@@ -219,6 +267,8 @@ export default function EditMembershipPage() {
         refundDate: refundDate || null,
         refundNote: refundNote.trim(),
         summary,
+        before: beforeSnapshot,
+        after: afterSnapshot,
         adminId: user.id,
       });
       router.push('/admin/inscriptions');

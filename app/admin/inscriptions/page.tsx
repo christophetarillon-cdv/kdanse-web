@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, doc, getDoc, getDocs, DocumentData } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
@@ -37,6 +37,51 @@ interface Membership {
   acquisitionSourceId: string | null;
   acquisitionSourceOther: string;
 }
+
+interface FieldChangeEntry {
+  field: string;
+  before: unknown;
+  after: unknown;
+}
+
+interface HistoryEntry {
+  id: string;
+  action: string;
+  at: Date | null;
+  by: string;
+  detail: string;
+  changes: FieldChangeEntry[];
+}
+
+interface NotificationEntry {
+  id: string;
+  historyId: string;
+  recipient: string;
+  role: string;
+  status: string;
+  error: string;
+}
+
+const formatValue = (value: unknown) => {
+  if (value === null || value === undefined || value === '') return '—';
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (typeof parsed === 'object') return JSON.stringify(parsed);
+    } catch {
+      return value;
+    }
+    return value;
+  }
+  if (Array.isArray(value)) return value.join(', ') || '—';
+  return String(value);
+};
+
+const timestampToDate = (v: unknown): Date | null => {
+  if (!v) return null;
+  if (typeof (v as { toDate?: unknown }).toDate === 'function') return (v as { toDate: () => Date }).toDate();
+  return null;
+};
 
 interface Donor {
   name: string;
@@ -105,6 +150,10 @@ export default function AdminInscriptionsPage() {
   const [refundDate, setRefundDate] = useState('');
   const [refundNote, setRefundNote] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
+  const [historyOf, setHistoryOf] = useState<Membership | null>(null);
+  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
+  const [historyNotifications, setHistoryNotifications] = useState<NotificationEntry[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -155,6 +204,44 @@ export default function AdminInscriptionsPage() {
 
   if (authLoading || loading) return <div className="p-8 text-gray-900">Chargement...</div>;
 
+  const openHistory = async (m: Membership) => {
+    setHistoryOf(m);
+    setHistoryLoading(true);
+    try {
+      const [historySnap, notificationsSnap] = await Promise.all([
+        getDocs(query(collection(db, 'membershipHistory'), where('membershipId', '==', m.id))),
+        getDocs(query(collection(db, 'notificationLog'), where('membershipId', '==', m.id))),
+      ]);
+      setHistoryEntries(
+        historySnap.docs
+          .map((d) => ({
+            id: d.id,
+            action: d.data().action ?? '',
+            at: timestampToDate(d.data().at),
+            by: d.data().by ?? '',
+            detail: d.data().detail ?? '',
+            changes: (d.data().changes ?? []) as FieldChangeEntry[],
+          }))
+          .sort((a, b) => (b.at?.getTime() ?? 0) - (a.at?.getTime() ?? 0))
+      );
+      setHistoryNotifications(
+        notificationsSnap.docs.map((d) => ({
+          id: d.id,
+          historyId: d.data().historyId ?? '',
+          recipient: d.data().recipient ?? '',
+          role: d.data().role ?? '',
+          status: d.data().status ?? '',
+          error: d.data().error ?? '',
+        }))
+      );
+    } catch (error) {
+      console.error('Error loading history:', error);
+      alert("Erreur lors du chargement de l'historique");
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   const openCancel = (m: Membership) => {
     setCancelling(m);
     setCancelScope('one');
@@ -185,6 +272,7 @@ export default function AdminInscriptionsPage() {
     }
     const targets: CancelTarget[] = cancelTargets.map((m) => ({
       id: m.id,
+      status: m.status,
       amount: m.amount,
       paymentPlanId: m.paymentPlanId,
     }));
@@ -432,6 +520,9 @@ export default function AdminInscriptionsPage() {
                         <Link href={`/admin/inscriptions/${m.id}`} className="text-gold-deep underline mr-3">
                           Modifier
                         </Link>
+                        <button onClick={() => openHistory(m)} className="text-gray-900 underline mr-3">
+                          Historique
+                        </button>
                         <button
                           onClick={() => openCancel(m)}
                           disabled={m.status === 'cancelled'}
@@ -541,6 +632,68 @@ export default function AdminInscriptionsPage() {
           </div>
         </div>
       </div>
+
+      {historyOf && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4">
+            <div className="flex justify-between items-start gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Historique</h2>
+                <p className="text-sm text-gray-900">
+                  {donorName(historyOf)} · {historyOf.stageName}
+                </p>
+              </div>
+              <button onClick={() => setHistoryOf(null)} className="text-gray-900 underline text-sm">
+                Fermer
+              </button>
+            </div>
+            {historyLoading ? (
+              <p className="text-gray-900">Chargement…</p>
+            ) : historyEntries.length === 0 ? (
+              <p className="text-gray-900">Aucune action enregistrée pour cette inscription.</p>
+            ) : (
+              historyEntries.map((entry) => {
+                const mails = historyNotifications.filter((n) => n.historyId === entry.id);
+                return (
+                  <div key={entry.id} className="border rounded p-4 space-y-2 text-sm text-gray-900">
+                    <div className="flex justify-between gap-4">
+                      <span className="font-semibold">
+                        {entry.action === 'cancel' ? 'Annulation' : entry.action === 'update' ? 'Modification' : entry.action}
+                      </span>
+                      <span>{entry.at ? entry.at.toLocaleString('fr-FR') : '—'}</span>
+                    </div>
+                    {entry.detail && <p className="text-gray-900">{entry.detail}</p>}
+                    {entry.changes.length > 0 && (
+                      <ul className="space-y-1">
+                        {entry.changes.map((c) => (
+                          <li key={c.field}>
+                            <span className="font-medium">{c.field}</span> : {formatValue(c.before)} → {formatValue(c.after)}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <div className="pt-2 border-t space-y-1">
+                      <p className="font-medium">Emails</p>
+                      {mails.length === 0 ? (
+                        <p className="text-gray-700">Aucun email enregistré</p>
+                      ) : (
+                        mails.map((n) => (
+                          <p key={n.id}>
+                            {n.role} · {n.recipient} ·{' '}
+                            <span className={n.status === 'sent' ? 'text-green-700' : 'text-red-700'}>
+                              {n.status === 'sent' ? 'envoyé' : `échec${n.error ? ` (${n.error})` : ''}`}
+                            </span>
+                          </p>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
 
       {cancelling && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
