@@ -41,6 +41,7 @@ export default function EditMembershipPage() {
   const [danceType, setDanceType] = useState<'solo' | 'couple'>('solo');
   const [dancers, setDancers] = useState<EditableDancer[]>([]);
   const [accompanists, setAccompanists] = useState(0);
+  const [accompanistDetails, setAccompanistDetails] = useState<{ firstName: string; lastName: string }[]>([]);
   const [wantHousing, setWantHousing] = useState(false);
   const [housingSolo, setHousingSolo] = useState(0);
   const [housingCouple, setHousingCouple] = useState(0);
@@ -97,6 +98,12 @@ export default function EditMembershipPage() {
           }))
         );
         setAccompanists(Number(details.accompanists ?? 0));
+        setAccompanistDetails(
+          ((details.accompanistDetails ?? []) as { firstName?: string; lastName?: string }[]).map((a) => ({
+            firstName: a.firstName ?? '',
+            lastName: a.lastName ?? '',
+          }))
+        );
         setWantHousing(!!details.wantHousing);
         setHousingSolo(Number(details.housingSolo ?? 0));
         setHousingCouple(Number(details.housingCouple ?? 0));
@@ -121,6 +128,16 @@ export default function EditMembershipPage() {
     setDancers((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? { firstName: '', lastName: '', licensed: false }));
     setSelections((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? {}));
   };
+
+  const setAccompanistCount = (count: number) => {
+    setAccompanists(count);
+    setAccompanistDetails((prev) =>
+      Array.from({ length: count }, (_, i) => prev[i] ?? { firstName: '', lastName: '' })
+    );
+  };
+
+  const updateAccompanistDetail = (index: number, changes: Partial<{ firstName: string; lastName: string }>) =>
+    setAccompanistDetails((prev) => prev.map((a, i) => (i === index ? { ...a, ...changes } : a)));
 
   const updateDancer = (index: number, changes: Partial<EditableDancer>) =>
     setDancers((prev) => prev.map((d, i) => (i === index ? { ...d, ...changes } : d)));
@@ -174,6 +191,10 @@ export default function EditMembershipPage() {
     const incomplete = dancers.slice(0, dancerCount).some((d) => !d.firstName.trim() || !d.lastName.trim());
     if (incomplete) {
       alert('Veuillez renseigner le prénom et le nom de chaque danseur');
+      return;
+    }
+    if (accompanistDetails.slice(0, accompanists).some((a) => !a.firstName.trim() || !a.lastName.trim())) {
+      alert('Veuillez renseigner le prénom et le nom de chaque accompagnateur');
       return;
     }
     const refund = Number(refundAmount.replace(',', '.'));
@@ -252,6 +273,10 @@ export default function EditMembershipPage() {
           danceType,
           dancers: nextDancers,
           accompanists,
+          accompanistDetails: accompanistDetails.slice(0, accompanists).map((a) => ({
+            firstName: a.firstName.trim(),
+            lastName: a.lastName.trim(),
+          })),
           wantHousing,
           housingSolo: wantHousing ? housingSolo : 0,
           housingCouple: wantHousing ? housingCouple : 0,
@@ -367,10 +392,21 @@ export default function EditMembershipPage() {
               type="number"
               min={0}
               value={accompanists}
-              onChange={(e) => setAccompanists(Number(e.target.value))}
+              onChange={(e) => setAccompanistCount(Math.max(0, Number(e.target.value)))}
               className={`w-32 ${inputClass}`}
             />
           </div>
+          {accompanists > 0 && (
+            <div className="space-y-3">
+              {Array.from({ length: accompanists }, (_, i) => (
+                <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input type="text" placeholder={`Prénom accompagnateur ${i + 1}`} value={accompanistDetails[i]?.firstName ?? ''} onChange={(e) => updateAccompanistDetail(i, { firstName: e.target.value })} className={inputClass} />
+                  <input type="text" placeholder={`Nom accompagnateur ${i + 1}`} value={accompanistDetails[i]?.lastName ?? ''} onChange={(e) => updateAccompanistDetail(i, { lastName: e.target.value })} className={inputClass} />
+                </div>
+              ))}
+            </div>
+          )}
+
         </div>
 
         <div className="bg-white rounded-lg shadow p-6 space-y-4">

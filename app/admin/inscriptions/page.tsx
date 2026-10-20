@@ -34,6 +34,7 @@ interface Membership {
   dancers: StoredDancer[];
   alreadyAttendedKdanse: boolean | null;
   cartId: string | null;
+  accompanistNames: string[];
   acquisitionSourceId: string | null;
   acquisitionSourceOther: string;
 }
@@ -123,6 +124,9 @@ const toMembership = (id: string, data: DocumentData): Membership => ({
   dancers: data.registrationDetails?.dancers ?? [],
   alreadyAttendedKdanse: typeof data.alreadyAttendedKdanse === 'boolean' ? data.alreadyAttendedKdanse : null,
   cartId: data.cartId ?? null,
+  accompanistNames: ((data.registrationDetails?.accompanistDetails ?? []) as { firstName?: string; lastName?: string }[]).map((a) =>
+    [a.firstName, a.lastName].filter(Boolean).join(' ')
+  ),
   acquisitionSourceId: data.acquisitionSourceId ?? null,
   acquisitionSourceOther: data.acquisitionSourceOther ?? '',
 });
@@ -538,7 +542,12 @@ export default function AdminInscriptionsPage() {
                         <div className="text-gray-700">{formatDate(m.createdAt)}</div>
                         <div className="text-gray-700">{m.stageName}</div>
                       </td>
-                      <td className="px-4 py-3">{dancerNames(m).join(', ') || '—'}</td>
+                      <td className="px-4 py-3">
+                        <div>{dancerNames(m).join(', ') || '—'}</div>
+                        {m.accompanistNames.length > 0 && (
+                          <div className="text-gray-700 text-xs">Accompagnateurs : {m.accompanistNames.join(', ')}</div>
+                        )}
+                      </td>
                       <td className="px-4 py-3">{danses.length > 0 ? danses.join(', ') : '—'}</td>
                       <td className="px-4 py-3">{MODE_LABELS[modeOf(m)] ?? (modeOf(m) || '—')}</td>
                       <td className="px-4 py-3 text-right font-semibold">{eur(m.amount)}</td>

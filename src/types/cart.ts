@@ -7,9 +7,15 @@ export interface RegistrationConfiguration {
   danceType: 'solo' | 'couple';
   dancers: Dancer[];
   accompanists: number;
+  accompanistDetails?: AccompanistDetail[];
   wantHousing: boolean;
   housingSolo: number;
   housingCouple: number;
+}
+
+export interface AccompanistDetail {
+  firstName: string;
+  lastName: string;
 }
 
 export interface CartItem {

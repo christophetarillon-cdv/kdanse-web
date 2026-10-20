@@ -63,6 +63,7 @@ interface RegistrationForm {
   danceType: 'solo' | 'couple';
   dancers: Dancer[];
   accompanists: number;
+  accompanistDetails: { firstName: string; lastName: string }[];
   wantHousing: boolean;
   housingSolo: number;
   housingCouple: number;
@@ -85,6 +86,7 @@ export default function StageDetailPage() {
     danceType: 'solo',
     dancers: [{ firstName: '', lastName: '', licensed: false }],
     accompanists: 0,
+    accompanistDetails: [],
     wantHousing: false,
     housingSolo: 0,
     housingCouple: 0,
@@ -105,6 +107,7 @@ export default function StageDetailPage() {
       danceType: item.configuration.danceType,
       dancers: item.configuration.dancers as Dancer[],
       accompanists: item.configuration.accompanists,
+      accompanistDetails: item.configuration.accompanistDetails ?? [],
       wantHousing: item.configuration.wantHousing,
       housingSolo: item.configuration.housingSolo,
       housingCouple: item.configuration.housingCouple,
@@ -138,6 +141,22 @@ export default function StageDetailPage() {
       setLoading(false);
     }
   };
+
+  const setAccompanistCount = (count: number) =>
+    setForm((prev) => ({
+      ...prev,
+      accompanists: count,
+      accompanistDetails: Array.from(
+        { length: count },
+        (_, i) => prev.accompanistDetails[i] ?? { firstName: '', lastName: '' }
+      ),
+    }));
+
+  const updateAccompanist = (index: number, changes: Partial<{ firstName: string; lastName: string }>) =>
+    setForm((prev) => ({
+      ...prev,
+      accompanistDetails: prev.accompanistDetails.map((a, i) => (i === index ? { ...a, ...changes } : a)),
+    }));
 
   const getTotalPersons = (): number => {
     const dancers = form.danceType === 'solo' ? 1 : 2;
@@ -196,6 +215,10 @@ export default function StageDetailPage() {
     // Valider que tous les noms/prénoms sont remplis
     if (form.dancers.some(d => !d.firstName.trim() || !d.lastName.trim())) {
       alert('Veuillez remplir les noms et prénoms de tous les danseurs');
+      return;
+    }
+    if (form.accompanistDetails.some(a => !a.firstName.trim() || !a.lastName.trim())) {
+      alert('Veuillez remplir les noms et prénoms de tous les accompagnateurs');
       return;
     }
 
@@ -402,20 +425,42 @@ export default function StageDetailPage() {
                   </label>
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() => setForm({ ...form, accompanists: Math.max(0, form.accompanists - 1) })}
+                      onClick={() => setAccompanistCount(Math.max(0, form.accompanists - 1))}
                       className="w-10 h-10 bg-gray-300 hover:bg-gray-400 rounded font-bold"
                     >
                       −
                     </button>
                     <span className="w-16 text-center font-semibold text-lg">{form.accompanists}</span>
                     <button
-                      onClick={() => setForm({ ...form, accompanists: Math.min(2, form.accompanists + 1) })}
+                      onClick={() => setAccompanistCount(Math.min(2, form.accompanists + 1))}
                       className="w-10 h-10 bg-amber-500 hover:bg-amber-600 text-white rounded font-bold"
                     >
                       +
                     </button>
                   </div>
                 </div>
+                {form.accompanists > 0 && (
+                  <div className="mt-4 space-y-3">
+                    {form.accompanistDetails.map((a, index) => (
+                      <div key={index} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input
+                          type="text"
+                          placeholder={`Prénom accompagnateur ${index + 1}`}
+                          value={a.firstName}
+                          onChange={(e) => updateAccompanist(index, { firstName: e.target.value })}
+                          className="border-2 border-gray-300 rounded px-4 py-2 text-gray-900"
+                        />
+                        <input
+                          type="text"
+                          placeholder={`Nom accompagnateur ${index + 1}`}
+                          value={a.lastName}
+                          onChange={(e) => updateAccompanist(index, { lastName: e.target.value })}
+                          className="border-2 border-gray-300 rounded px-4 py-2 text-gray-900"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="mt-4 p-3 bg-amber-100 rounded text-amber-900 text-sm font-medium">
                   📊 <strong>{form.danceType === 'solo' ? 1 : 2} danseur(s) + {form.accompanists} accompagnateur(s) = {getTotalPersons()} personnes</strong>
                 </div>
@@ -529,7 +574,10 @@ export default function StageDetailPage() {
                     {form.dancers.some(d => d.licensed) && ' (licencié FFDanse)'}
                   </p>
                   {form.accompanists > 0 && (
-                    <p><strong>Accompagnateurs:</strong> {form.accompanists}</p>
+                    <p>
+                      <strong>Accompagnateurs:</strong>{' '}
+                      {form.accompanistDetails.map((a) => `${a.firstName} ${a.lastName}`.trim()).join(', ')}
+                    </p>
                   )}
                   <p className="text-gray-900 font-medium italic">
                     Total: {getTotalPersons()} personne(s)
