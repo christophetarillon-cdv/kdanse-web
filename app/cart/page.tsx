@@ -188,7 +188,7 @@ export default function CartPage() {
                     {/* Actions */}
                     <div className="flex gap-2">
                       <Link
-                        href={`/stages/${item.stageId}`}
+                        href={`/stages/${item.stageId}?editItem=${item.id}`}
                         className="px-4 py-2 text-gold-deep border border-ink rounded hover:bg-gold-50 text-sm font-medium"
                       >
                         Modifier configuration

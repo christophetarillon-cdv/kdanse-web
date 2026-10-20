@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { doc, getDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { updateCartItem } from '@/services/cartService';
 import Link from 'next/link';
 import { CartItem } from '@/types/cart';
 import { isStagePast } from '@/lib/stageDates';
@@ -71,7 +72,10 @@ export default function StageDetailPage() {
   const params = useParams();
   const stageId = params.id as string;
   const { firebaseUser, loading: authLoading } = useAuth();
-  const { addToCart } = useCart();
+  const { cart, addToCart, refreshCart } = useCart();
+  const searchParams = useSearchParams();
+  const editItemId = searchParams.get('editItem');
+  const prefilledRef = useRef(false);
   const [isPast, setIsPast] = useState(false);
   const router = useRouter();
   const [stage, setStage] = useState<Stage | null>(null);
@@ -91,6 +95,21 @@ export default function StageDetailPage() {
       fetchStage();
     }
   }, [authLoading, stageId]);
+
+  useEffect(() => {
+    if (prefilledRef.current || !editItemId || !cart) return;
+    const item = cart.items.find((i) => i.id === editItemId);
+    if (!item) return;
+    prefilledRef.current = true;
+    setForm({
+      danceType: item.configuration.danceType,
+      dancers: item.configuration.dancers as Dancer[],
+      accompanists: item.configuration.accompanists,
+      wantHousing: item.configuration.wantHousing,
+      housingSolo: item.configuration.housingSolo,
+      housingCouple: item.configuration.housingCouple,
+    });
+  }, [cart, editItemId]);
 
   const fetchStage = async () => {
     try {
@@ -184,6 +203,13 @@ export default function StageDetailPage() {
     try {
       if (!stage.pricing) {
         throw new Error('Tarifs non disponibles');
+      }
+
+      if (editItemId && cart) {
+        await updateCartItem(cart.id, editItemId, form);
+        await refreshCart();
+        router.push('/cart');
+        return;
       }
 
       const cartItem: CartItem = {
