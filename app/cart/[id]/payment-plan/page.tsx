@@ -281,6 +281,7 @@ export default function PaymentPlanPage() {
                   <label className="block text-sm font-medium mb-2">Montant à payer</label>
                   <input
                     type="number"
+                    onWheel={(e) => e.currentTarget.blur()}
                     value={inst.amount || ''}
                     onChange={(e) => updateInstallment(inst.id, { amount: parseFloat(e.target.value) || 0 })}
                     className="w-full border rounded px-3 py-2 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
@@ -383,6 +384,7 @@ export default function PaymentPlanPage() {
                   <div className="bg-gold-50 p-4 rounded space-y-3">
                     <input
                       type="number"
+                      onWheel={(e) => e.currentTarget.blur()}
                       placeholder="Nombre de chèques vacances"
                       value={inst.chequeVacancesCount || ''}
                       onChange={(e) =>
