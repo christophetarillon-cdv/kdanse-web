@@ -11,6 +11,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import PasswordInput from '@/components/PasswordInput';
 import { redeemDiscountCode } from '@/services/discountCodeService';
+import { isValidPostalCode, isValidEmail, isValidPassword } from '@/lib/validation';
 import {
   findUserUidByEmail,
   linkDancerAccount,
@@ -279,6 +280,14 @@ export default function CartSummaryPage() {
         alert('Veuillez remplir toutes les informations des danseurs');
         return;
       }
+      if (!isValidPostalCode(dancer.postalAddress.postalCode)) {
+        alert('Le code postal des danseurs doit comporter 4 ou 5 chiffres');
+        return;
+      }
+      if (dancer.email?.trim() && !isValidEmail(dancer.email)) {
+        alert('Adresse email invalide pour un danseur');
+        return;
+      }
       if (dancer.dateOfBirth > DATE_OF_BIRTH_MAX) {
         alert('La date de naissance des danseurs ne peut pas être postérieure au 01/01/2010');
         return;
@@ -293,6 +302,14 @@ export default function CartSummaryPage() {
     if (!firebaseUser) {
       if (!accountInfo.email || !accountInfo.password || accountInfo.password !== accountInfo.confirmPassword) {
         alert('Veuillez remplir les informations de compte correctement');
+        return;
+      }
+      if (!isValidEmail(accountInfo.email)) {
+        alert('Adresse email invalide');
+        return;
+      }
+      if (!isValidPassword(accountInfo.password)) {
+        alert('Le mot de passe doit contenir au moins 6 caractères');
         return;
       }
     }

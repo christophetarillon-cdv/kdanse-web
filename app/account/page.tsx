@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User, SavedDancer } from '@/types';
 import { updateUserProfile, getUserProfile, updateSavedDancer, resolveLinkedDancers } from '@/services/userService';
+import { isValidPhone, isValidPostalCode, isValidEmail } from '@/lib/validation';
 
 interface DancerDraft {
   firstName: string;
@@ -124,9 +125,17 @@ export default function AccountPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
     setError(null);
     setSuccess(false);
+    if (formData.phone && !isValidPhone(formData.phone)) {
+      setError('Le numéro de téléphone doit comporter 10 chiffres (ex : 06 12 34 56 78)');
+      return;
+    }
+    if (formData.postalCode && !isValidPostalCode(formData.postalCode)) {
+      setError('Le code postal doit comporter 5 chiffres');
+      return;
+    }
+    setSaving(true);
 
     try {
       const profileData: any = {};
@@ -248,6 +257,15 @@ export default function AccountPage() {
   const handleSaveDancer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingIndex === null || !dancerDraft) return;
+
+    if (!isValidPostalCode(dancerDraft.postalCode)) {
+      setDancerError('Le code postal doit comporter 5 chiffres');
+      return;
+    }
+    if (dancerDraft.email.trim() && !isValidEmail(dancerDraft.email)) {
+      setDancerError('Adresse email invalide');
+      return;
+    }
 
     setSavingDancer(true);
     setDancerError(null);
@@ -434,6 +452,8 @@ export default function AccountPage() {
                 <input
                   type="text"
                   name="postalCode"
+                  inputMode="numeric"
+                  maxLength={5}
                   value={formData.postalCode}
                   onChange={handleInputChange}
                   className="w-full border-2 border-gray-300 rounded px-3 py-2 text-gray-900 font-medium"
@@ -560,7 +580,7 @@ export default function AccountPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-sm font-bold text-gray-900 mb-1">Code postal</label>
-                          <input type="text" name="postalCode" value={dancerDraft.postalCode} onChange={handleDancerFieldChange} className={inputClass} />
+                          <input type="text" name="postalCode" inputMode="numeric" maxLength={5} value={dancerDraft.postalCode} onChange={handleDancerFieldChange} className={inputClass} />
                         </div>
                         <div>
                           <label className="block text-sm font-bold text-gray-900 mb-1">Ville</label>

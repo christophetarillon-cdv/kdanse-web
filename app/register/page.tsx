@@ -7,6 +7,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { registerEmailIndex } from '@/services/userService';
 import PasswordInput from '@/components/PasswordInput';
+import { isValidEmail, isValidPassword } from '@/lib/validation';
 
 // Création de compte hors commande : pour un danseur inscrit à un stage par quelqu'un d'autre.
 // Le compte est relié à ses inscriptions par l'email (Cloud Function onUserCreatedSyncStageAccess
@@ -42,6 +43,14 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!isValidEmail(email)) {
+      setError('Adresse email invalide.');
+      return;
+    }
+    if (!isValidPassword(password)) {
+      setError('Le mot de passe doit contenir au moins 6 caractères.');
+      return;
+    }
     if (password !== confirm) {
       setError('Les deux mots de passe ne sont pas identiques.');
       return;

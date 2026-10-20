@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getCart } from '@/services/cartService';
 import { getPaymentSettings, createPaymentPlan } from '@/services/paymentPlanService';
 import { Cart, PaymentSettings } from '@/types';
+import { isValidAmount } from '@/lib/validation';
 
 type InstallmentMethod = 'cheque' | 'virement' | 'cheque_vacances';
 
@@ -134,6 +135,10 @@ export default function PaymentPlanPage() {
 
   const handleSubmit = async () => {
     if (!cart || !firebaseUser) return;
+    if (installments.some((inst) => !isValidAmount(Number(inst.amount)))) {
+      alert('Chaque échéance doit avoir un montant positif, avec au plus 2 décimales');
+      return;
+    }
     if (!isVacationChecksValid) {
       alert(`Chèques vacances (${vacationChecksTotal.toFixed(2)}€) ne peuvent pas dépasser l'hébergement (${hotelBudget.toFixed(2)}€)`);
       return;
