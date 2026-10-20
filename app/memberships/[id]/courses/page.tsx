@@ -206,23 +206,26 @@ export default function CoursesPage() {
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="flex gap-4 mb-8">
-          <button
-            onClick={handlePrevious}
-            disabled={currentDancerIndex === 0}
-            className="flex-1 bg-gray-300 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            ← Précédent
-          </button>
-          <button
-            onClick={handleNext}
-            disabled={currentDancerIndex === dancers.length - 1}
-            className="flex-1 bg-gray-300 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Suivant →
-          </button>
-        </div>
+        {dancers.length > 1 && (
+          <div className="flex gap-4 mb-8">
+            <button
+              onClick={handlePrevious}
+              disabled={currentDancerIndex === 0}
+              className="flex-1 bg-gray-300 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {currentDancerIndex > 0 ? `← Danseur précédent : ${dancers[currentDancerIndex - 1].firstName}` : '← Danseur précédent'}
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={currentDancerIndex === dancers.length - 1}
+              className="flex-1 bg-gray-300 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {currentDancerIndex < dancers.length - 1
+                ? `Danseur suivant : ${dancers[currentDancerIndex + 1].firstName} →`
+                : 'Danseur suivant →'}
+            </button>
+          </div>
+        )}
 
         {currentDancerIndex === dancers.length - 1 && (
           <div className="bg-white rounded-lg shadow p-6 mb-8">
