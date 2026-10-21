@@ -199,6 +199,16 @@ service cloud.firestore {
       allow read: if request.auth != null && isAdmin();
       allow create, update, delete: if false;
     }
+    match /legalSettings/{document=**} {
+      allow read, write: if request.auth != null && isAdmin();
+    }
+    match /documents/{document=**} {
+      allow read: if request.auth != null && (
+        isAdmin() ||
+        request.auth.uid == resource.data.userId
+      );
+      allow create, update, delete: if false;
+    }
     match /refunds/{document=**} {
       allow read, create: if request.auth != null && isAdmin();
       allow update, delete: if false;
