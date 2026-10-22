@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Membership, PaymentPlan } from '@/types';
 import { getPaymentPlan } from '@/services/paymentPlanService';
 import { Dance, Level } from '@/types/courses';
+import MembershipDocuments from '@/components/MembershipDocuments';
 
 export default function MembershipsPage() {
   const { firebaseUser, loading: authLoading } = useAuth();
@@ -247,6 +248,11 @@ export default function MembershipsPage() {
               </div>
 
               <div className="p-4 sm:p-6 space-y-4">
+                <div className="bg-gray-50 rounded border p-4 space-y-2">
+                  <p className="font-semibold text-gray-900">🧾 Factures et attestations</p>
+                  <MembershipDocuments membershipId={membership.id} userId={membership.userId} />
+                </div>
+
                 {/* Danseurs et Cours */}
                 {membership.registrationDetails?.dancers && membership.registrationDetails.dancers.length > 0 && (
                   <div className="bg-purple-50 rounded border border-purple-200 p-4 space-y-3">

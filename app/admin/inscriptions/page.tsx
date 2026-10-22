@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { getDances, getLevels } from '@/services/coursesService';
 import { getAcquisitionSources } from '@/services/acquisitionSourceService';
 import { cancelMemberships, CancelTarget } from '@/services/membershipAdminService';
+import MembershipDocuments from '@/components/MembershipDocuments';
 import { AcquisitionSource, Dance, Level } from '@/types/courses';
 
 type StatusFilter = 'active' | 'paid' | 'pending' | 'cancelled';
@@ -155,6 +156,7 @@ export default function AdminInscriptionsPage() {
   const [refundNote, setRefundNote] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
   const [historyOf, setHistoryOf] = useState<Membership | null>(null);
+  const [documentsOf, setDocumentsOf] = useState<Membership | null>(null);
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
   const [historyNotifications, setHistoryNotifications] = useState<NotificationEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -574,6 +576,9 @@ export default function AdminInscriptionsPage() {
                         <button onClick={() => openHistory(m)} className="text-gray-900 underline mr-3">
                           Historique
                         </button>
+                        <button onClick={() => setDocumentsOf(m)} className="text-gray-900 underline mr-3">
+                          Documents
+                        </button>
                         <button
                           onClick={() => openCancel(m)}
                           disabled={m.status === 'cancelled'}
@@ -683,6 +688,25 @@ export default function AdminInscriptionsPage() {
           </div>
         </div>
       </div>
+
+      {documentsOf && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex justify-between items-start gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Factures et attestations</h2>
+                <p className="text-sm text-gray-900">
+                  {donorName(documentsOf)} · {documentsOf.stageName}
+                </p>
+              </div>
+              <button onClick={() => setDocumentsOf(null)} className="text-gray-900 underline text-sm">
+                Fermer
+              </button>
+            </div>
+            <MembershipDocuments membershipId={documentsOf.id} userId={documentsOf.userId} />
+          </div>
+        </div>
+      )}
 
       {historyOf && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">

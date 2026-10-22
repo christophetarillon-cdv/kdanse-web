@@ -7,6 +7,8 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { isValidPostalCode, isValidEmail, isValidPhone } from '@/lib/validation';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import app from '@/lib/firebase';
 
 export const LEGAL_SETTINGS_PATH = 'legalSettings/club';
 
@@ -44,6 +46,7 @@ export default function LegalSettingsPage() {
   const [form, setForm] = useState<LegalSettings>(EMPTY);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [backfilling, setBackfilling] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -76,6 +79,24 @@ export default function LegalSettingsPage() {
     };
     load();
   }, [authLoading, user, router]);
+
+  const handleBackfill = async () => {
+    if (!window.confirm('Générer les factures et attestations manquantes pour les inscriptions déjà validées ?')) return;
+    setBackfilling(true);
+    try {
+      const callable = httpsCallable<Record<string, never>, { invoices: number; attestations: number }>(
+        getFunctions(app, 'europe-west3'),
+        'backfillDocuments'
+      );
+      const result = await callable({});
+      alert(`${result.data.invoices} facture(s) et ${result.data.attestations} attestation(s) générée(s)`);
+    } catch (error) {
+      console.error('Error backfilling documents:', error);
+      alert('Erreur lors de la génération des documents');
+    } finally {
+      setBackfilling(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!form.raisonSociale.trim() || !form.street.trim() || !form.city.trim()) {
@@ -202,6 +223,20 @@ export default function LegalSettingsPage() {
             className="w-full bg-ink hover:bg-ink-soft text-white py-3 rounded font-semibold disabled:opacity-50"
           >
             {saving ? 'Enregistrement…' : 'Enregistrer'}
+          </button>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6 space-y-3">
+          <h2 className="text-xl font-bold text-gray-900">Documents des inscriptions existantes</h2>
+          <p className="text-sm text-gray-900">
+            Génère les factures des inscriptions payées et les attestations des échéances reçues qui n&apos;en ont pas encore.
+          </p>
+          <button
+            onClick={handleBackfill}
+            disabled={backfilling}
+            className="bg-ink hover:bg-ink-soft text-white px-4 py-2 rounded font-semibold disabled:opacity-50"
+          >
+            {backfilling ? 'Génération…' : 'Générer les documents manquants'}
           </button>
         </div>
       </div>
