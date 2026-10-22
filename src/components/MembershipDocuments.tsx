@@ -49,9 +49,12 @@ export default function MembershipDocuments({ membershipId, userId }: { membersh
   const open = async (documentId: string) => {
     const win = window.open('', '_blank');
     try {
-      const callable = httpsCallable<{ documentId: string }, { url: string }>(getFunctions(app, 'europe-west3'), 'getDocumentUrl');
+      const callable = httpsCallable<{ documentId: string }, { base64: string }>(getFunctions(app, 'europe-west3'), 'getDocumentPdf');
       const result = await callable({ documentId });
-      if (win) win.location.href = result.data.url;
+      const bytes = Uint8Array.from(atob(result.data.base64), (c) => c.charCodeAt(0));
+      const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      if (win) win.location.href = url;
+      else window.open(url, '_blank');
     } catch (err) {
       console.error('Error opening document:', err);
       if (win) win.close();
