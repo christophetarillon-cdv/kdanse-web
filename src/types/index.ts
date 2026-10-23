@@ -106,7 +106,7 @@ export interface Membership {
   visibleUserIds?: string[];
   stageId: string;
   stageName: string;
-  status: 'paid' | 'pending_confirmation' | 'pending_plan' | 'cancelled' | 'active' | 'completed';
+  status: 'paid' | 'pending_confirmation' | 'pending_plan' | 'pending_payment' | 'cancelled' | 'active' | 'completed';
   registrationDetails: {
     danceType: 'solo' | 'couple';
     dancers: { licensed: boolean }[];

@@ -1,5 +1,6 @@
 'use client';
 
+import { startHelloAssoPayment } from '@/services/helloassoService';
 import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -73,10 +74,17 @@ export default function PaymentPage() {
     setSubmitting(true);
     try {
       // Update membership status based on payment method
-      const newStatus = method === 'helloasso' ? 'paid' : 'pending_confirmation';
+      if (method === 'helloasso') {
+        await updateDoc(doc(db, 'memberships', membershipId), {
+          status: 'pending_payment',
+          paymentMethod: 'helloasso',
+        });
+        await startHelloAssoPayment([membershipId]);
+        return;
+      }
 
       await updateDoc(doc(db, 'memberships', membershipId), {
-        status: newStatus,
+        status: 'pending_confirmation',
         paymentMethod: method,
         paymentDate: new Date(),
       });

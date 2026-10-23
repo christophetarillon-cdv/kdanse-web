@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Membership, PaymentPlan } from '@/types';
 import { getPaymentPlan } from '@/services/paymentPlanService';
 import { Dance, Level } from '@/types/courses';
+import { startHelloAssoPayment } from '@/services/helloassoService';
 import MembershipDocuments from '@/components/MembershipDocuments';
 
 export default function MembershipsPage() {
@@ -242,6 +243,7 @@ export default function MembershipsPage() {
                     {membership.status === 'paid' && '✅ Validée'}
                     {membership.status === 'pending_confirmation' && '⏳ En attente'}
                     {membership.status === 'pending_plan' && '📋 Plan de paiement'}
+                    {membership.status === 'pending_payment' && '⏳ Paiement HelloAsso à finaliser'}
                     {membership.status === 'cancelled' && '❌ Annulée'}
                   </span>
                 </div>
@@ -354,6 +356,15 @@ export default function MembershipsPage() {
                       ))}
                     </div>
                   </div>
+                )}
+
+                {membership.status === 'pending_payment' && (
+                  <button
+                    onClick={() => startHelloAssoPayment([membership.id]).catch(() => alert('Impossible de lancer le paiement HelloAsso'))}
+                    className="w-full bg-ink hover:bg-ink-soft text-white py-3 rounded font-semibold"
+                  >
+                    💳 Payer avec HelloAsso
+                  </button>
                 )}
 
                 {membership.status === 'pending_plan' && membership.paymentPlanId && paymentPlans[membership.paymentPlanId] && (

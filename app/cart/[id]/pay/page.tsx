@@ -1,5 +1,6 @@
 'use client';
 
+import { startHelloAssoPayment } from '@/services/helloassoService';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -89,7 +90,7 @@ export default function CartPaymentPage() {
           discountCode: item.discount?.code ?? null,
           discountAmount: item.totals?.discount ?? 0,
           paymentMethod: method,
-          status: method === 'helloasso' ? 'paid' : 'pending_confirmation',
+          status: method === 'helloasso' ? 'pending_payment' : 'pending_confirmation',
           cartId: cart.id,
           createdAt: new Date(),
         });
@@ -100,6 +101,11 @@ export default function CartPaymentPage() {
 
       // Clear cart
       await clearCart(cart.id);
+
+      if (method === 'helloasso') {
+        await startHelloAssoPayment(membershipRefs.map((ref) => ref.id));
+        return;
+      }
 
       // Show success message
       alert('Paiement enregistré ! Vous serez redirigé vers la sélection des cours.');
