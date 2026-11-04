@@ -1,6 +1,7 @@
 'use client';
 
 import { startHelloAssoPayment } from '@/services/helloassoService';
+import PaymentInstructions from '@/components/PaymentInstructions';
 import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -213,21 +214,9 @@ export default function PaymentPage() {
             {submitting ? 'Traitement...' : `Confirmer le paiement (${membership.amount}€)`}
           </button>
 
-          {method === 'virement' && (
-            <div className="mt-6 p-4 bg-gold-50 border border-gold-200 rounded-lg">
-              <p className="text-sm text-ink">
-                <strong>Virement :</strong> Après confirmation, vous recevrez les coordonnées bancaires par email.
-              </p>
-            </div>
-          )}
-
-          {method === 'cheque' && (
-            <div className="mt-6 p-4 bg-gold-50 border border-gold-200 rounded-lg">
-              <p className="text-sm text-ink">
-                <strong>Chèque :</strong> Après confirmation, vous recevrez l'adresse d'envoi par email.
-              </p>
-            </div>
-          )}
+          <div className="mt-6">
+            <PaymentInstructions method={method} />
+          </div>
         </div>
       </div>
     </div>

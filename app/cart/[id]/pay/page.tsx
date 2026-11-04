@@ -1,6 +1,7 @@
 'use client';
 
 import { startHelloAssoPayment } from '@/services/helloassoService';
+import PaymentInstructions from '@/components/PaymentInstructions';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -300,32 +301,7 @@ export default function CartPaymentPage() {
           </button>
 
           {/* Instructions */}
-          {method === 'virement' && (
-            <div className="p-4 bg-gold-50 border border-gold-200 rounded-lg">
-              <p className="text-sm text-ink">
-                <strong>Virement bancaire :</strong> Après confirmation, vous recevrez les coordonnées bancaires par email.
-                Votre inscription sera confirmée une fois le virement reçu.
-              </p>
-            </div>
-          )}
-
-          {method === 'cheque' && (
-            <div className="p-4 bg-gold-50 border border-gold-200 rounded-lg">
-              <p className="text-sm text-ink">
-                <strong>Chèque :</strong> Après confirmation, vous recevrez l'adresse d'envoi par email.
-                Votre inscription sera confirmée une fois le chèque reçu.
-              </p>
-            </div>
-          )}
-
-          {method === 'helloasso' && (
-            <div className="p-4 bg-gold-50 border border-gold-200 rounded-lg">
-              <p className="text-sm text-ink">
-                <strong>HelloAsso :</strong> Vous serez redirigé vers le paiement sécurisé HelloAsso.
-                Votre inscription sera confirmée immédiatement après le paiement.
-              </p>
-            </div>
-          )}
+          <PaymentInstructions method={method} />
         </div>
       </div>
     </div>
