@@ -1,14 +1,23 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { doc, getDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { updateCartItem } from '@/services/cartService';
+import {
+  applyDiscountCodeToCart,
+  calculateItemPrice,
+  insuranceAmountFor,
+  removeDiscountCodeFromCart,
+  updateCartItem,
+} from '@/services/cartService';
+import { getDiscountCode, isDiscountUsable } from '@/services/discountCodeService';
+import { getInsuranceSettings } from '@/services/insuranceService';
 import Link from 'next/link';
-import { CartItem } from '@/types/cart';
+import { CartItem, DiscountCode, ItemDiscount } from '@/types/cart';
+import { InsuranceSettings } from '@/types';
 import { isStagePast } from '@/lib/stageDates';
 
 const formatDateFr = (isoDate: string) =>
@@ -17,6 +26,18 @@ const formatDateFr = (isoDate: string) =>
     month: 'long',
     year: 'numeric',
   });
+
+// Montant d'une étape, affiché à droite du titre une fois la réponse donnée
+const PriceTag = ({ children }: { children: ReactNode }) => (
+  <span className="ml-auto text-sm font-semibold text-ink bg-white border rounded-full px-3 py-1">{children}</span>
+);
+
+const toItemDiscount = (discount: DiscountCode): ItemDiscount => ({
+  code: discount.code,
+  target: discount.target,
+  type: discount.type,
+  value: discount.value,
+});
 
 interface Stage {
   id: string;
@@ -82,6 +103,12 @@ export default function StageDetailPage() {
   const [stage, setStage] = useState<Stage | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [insuranceSettings, setInsuranceSettings] = useState<InsuranceSettings | null>(null);
+  const [insurance, setInsurance] = useState<boolean | null>(null);
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponBusy, setCouponBusy] = useState(false);
   const [form, setForm] = useState<RegistrationForm>({
     danceType: 'solo',
     dancers: [{ firstName: '', lastName: '', licensed: false }],
@@ -112,6 +139,13 @@ export default function StageDetailPage() {
       housingSolo: item.configuration.housingSolo,
       housingCouple: item.configuration.housingCouple,
     });
+    setInsurance(item.insurance ? item.insurance.selected : null);
+    if (item.discount) {
+      setCouponInput(item.discount.code);
+      validateCoupon(item.discount.code)
+        .then(setAppliedDiscount)
+        .catch((error: Error) => setCouponError(error.message));
+    }
   }, [cart, editItemId]);
 
   const fetchStage = async () => {
@@ -132,6 +166,7 @@ export default function StageDetailPage() {
           maxParticipants: data.maxParticipants,
           pricing: data.pricing,
         });
+        setInsuranceSettings(await getInsuranceSettings().catch(() => null));
       } else {
         router.push('/stages');
       }
@@ -177,37 +212,56 @@ export default function StageDetailPage() {
     return 'ok';
   };
 
-  const calculatePrice = (): number => {
-    if (!stage?.pricing) return 0;
+  const insuranceEnabled = !!insuranceSettings?.enabled;
 
-    let stagePrice = 0;
-    const p = stage.pricing.stage;
-
-    // Calcul du prix du stage
-    if (form.danceType === 'solo') {
-      stagePrice = form.dancers[0]?.licensed ? p.soloLicensed : p.soloUnlicensed;
-    } else if (form.danceType === 'couple') {
-      const d1Licensed = form.dancers[0]?.licensed;
-      const d2Licensed = form.dancers[1]?.licensed;
-
-      if (d1Licensed && d2Licensed) {
-        stagePrice = p.coupleLicensed;
-      } else if (!d1Licensed && !d2Licensed) {
-        stagePrice = p.coupleUnlicensed;
-      } else {
-        stagePrice = p.coupleMixed;
-      }
-    }
-
-    // Calcul du prix d'hébergement
-    let housingPrice = 0;
-    if (form.wantHousing) {
-      housingPrice = (form.housingSolo * stage.pricing.housing.solo) +
-                     (form.housingCouple * stage.pricing.housing.couple);
-    }
-
-    return stagePrice + housingPrice;
+  // Validation du code promo : mêmes règles que le panier (actif, dates, quota, stage)
+  const validateCoupon = async (code: string): Promise<DiscountCode> => {
+    const discount = await getDiscountCode(code);
+    if (!discount) throw new Error('Code promo inconnu');
+    const reason = isDiscountUsable(discount, stageId);
+    if (reason) throw new Error(reason);
+    return discount;
   };
+
+  const handleApplyCoupon = async () => {
+    setCouponBusy(true);
+    setCouponError(null);
+    try {
+      setAppliedDiscount(await validateCoupon(couponInput));
+    } catch (error) {
+      setAppliedDiscount(null);
+      setCouponError(error instanceof Error ? error.message : 'Erreur lors de la vérification du code');
+    } finally {
+      setCouponBusy(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedDiscount(null);
+    setCouponInput('');
+    setCouponError(null);
+  };
+
+  // Même construction pour l'aperçu des tarifs et pour l'ajout au panier
+  const buildCartItem = (id: string): CartItem | null => {
+    if (!stage?.pricing) return null;
+    return {
+      id,
+      stageId: stage.id,
+      stageName: stage.name,
+      configuration: form,
+      stagePrices: stage.pricing.stage,
+      housingPrices: stage.pricing.housing,
+      quantity: 1,
+      discount: appliedDiscount ? toItemDiscount(appliedDiscount) : null,
+      insurance: insuranceEnabled && insuranceSettings
+        ? { selected: insurance === true, percent: insuranceSettings.percent }
+        : null,
+    };
+  };
+
+  const priceItem = buildCartItem('preview');
+  const totals = priceItem ? calculateItemPrice(priceItem) : null;
 
   const handleAddToCart = async () => {
     if (!stage || isPast) return;
@@ -221,6 +275,14 @@ export default function StageDetailPage() {
       alert('Veuillez remplir les noms et prénoms de tous les accompagnateurs');
       return;
     }
+    if (couponInput.trim() && !appliedDiscount) {
+      alert('Appliquez le code promo ou effacez-le avant d\'ajouter au panier');
+      return;
+    }
+    if (insuranceEnabled && insurance === null) {
+      alert('Choisissez Oui ou Non pour l\'assurance annulation');
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -229,23 +291,25 @@ export default function StageDetailPage() {
       }
 
       if (editItemId && cart) {
-        await updateCartItem(cart.id, editItemId, form);
+        const editedItem = buildCartItem(editItemId);
+        await updateCartItem(cart.id, editItemId, form, editedItem?.insurance ?? null);
+        if (appliedDiscount) {
+          await applyDiscountCodeToCart(cart.id, appliedDiscount.code);
+        } else if (cart.items.find((i) => i.id === editItemId)?.discount) {
+          await removeDiscountCodeFromCart(cart.id);
+        }
         await refreshCart();
         router.push('/cart');
         return;
       }
 
-      const cartItem: CartItem = {
-        id: `${stage.id}-${Date.now()}`,
-        stageId: stage.id,
-        stageName: stage.name,
-        configuration: form,
-        stagePrices: stage.pricing.stage,
-        housingPrices: stage.pricing.housing,
-        quantity: 1,
-      };
+      const cartItem = buildCartItem(`${stage.id}-${Date.now()}`);
+      if (!cartItem) throw new Error('Tarifs non disponibles');
 
-      await addToCart(cartItem);
+      const updatedCart = await addToCart(cartItem);
+      if (appliedDiscount) {
+        await applyDiscountCodeToCart(updatedCart.id, appliedDiscount.code);
+      }
       router.push('/cart');
     } catch (error) {
       console.error('Error:', error);
@@ -371,6 +435,7 @@ export default function StageDetailPage() {
                 <h3 className="font-semibold text-purple-900 mb-4 flex items-center">
                   <span className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">2</span>
                   Licence FFDanse
+                  {totals && <PriceTag>Stage : {totals.stageTotal}€</PriceTag>}
                 </h3>
                 <div className="space-y-3">
                   {form.dancers.map((dancer, idx) => (
@@ -471,6 +536,7 @@ export default function StageDetailPage() {
                 <h3 className="font-semibold text-green-900 mb-4 flex items-center">
                   <span className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">4</span>
                   Hébergement
+                  {totals && form.wantHousing && <PriceTag>+{totals.housingTotal}€</PriceTag>}
                 </h3>
 
                 <div className="flex items-center gap-3 mb-6 p-4 bg-white rounded border">
@@ -565,6 +631,82 @@ export default function StageDetailPage() {
                 )}
               </div>
 
+              {/* Étape 5: Code de réduction */}
+              <div className="bg-gold-50 border border-gold-200 rounded-lg p-6 mb-6">
+                <h3 className="font-semibold text-ink mb-4 flex items-center">
+                  <span className="bg-ink text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">5</span>
+                  Code de réduction
+                  {totals && !!totals.discount && <PriceTag>−{totals.discount}€</PriceTag>}
+                </h3>
+                {appliedDiscount ? (
+                  <div className="flex items-center justify-between bg-white border border-green-300 rounded px-4 py-2">
+                    <span className="font-semibold text-green-700">{appliedDiscount.code}</span>
+                    <button onClick={handleRemoveCoupon} className="text-red-600 underline text-sm">
+                      Retirer
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      placeholder="Votre code"
+                      className="flex-1 border-2 border-gray-300 rounded px-4 py-2 text-gray-900"
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      disabled={!couponInput.trim() || couponBusy}
+                      className="bg-ink text-white px-4 py-2 rounded font-semibold hover:bg-ink-soft disabled:opacity-50"
+                    >
+                      Appliquer
+                    </button>
+                  </div>
+                )}
+                {couponError && <p className="mt-2 text-sm text-red-600">{couponError}</p>}
+              </div>
+
+              {/* Étape 6: Assurance annulation (réponse Oui ou Non obligatoire) */}
+              {insuranceEnabled && insuranceSettings && (
+                <div className="bg-sky-50 border border-sky-200 rounded-lg p-6 mb-6">
+                  <h3 className="font-semibold text-sky-900 mb-2 flex items-center">
+                    <span className="bg-sky-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">6</span>
+                    Assurance annulation
+                    {totals && insurance === true && <PriceTag>+{totals.insurance}€</PriceTag>}
+                  </h3>
+                  <p className="text-sm text-gray-900 mb-4">
+                    Protégez votre inscription en cas d&apos;annulation : {insuranceSettings.percent} % du montant à payer
+                    après réduction, arrondi à l&apos;euro supérieur. Cette assurance n&apos;est pas remboursable.
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <button
+                      onClick={() => setInsurance(true)}
+                      className={`p-4 border-2 rounded-lg text-left transition bg-white text-gray-900 ${
+                        insurance === true ? 'border-ink font-bold' : 'border-gray-300 font-semibold hover:border-sky-400'
+                      }`}
+                    >
+                      Oui, je souscris l&apos;assurance
+                      {totals && (
+                        <span className="block text-sm font-medium text-gray-700">
+                          +{insuranceAmountFor(totals.subtotal, insuranceSettings.percent)}€
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setInsurance(false)}
+                      className={`p-4 border-2 rounded-lg text-left transition bg-white text-gray-900 ${
+                        insurance === false ? 'border-ink font-bold' : 'border-gray-300 font-semibold hover:border-sky-400'
+                      }`}
+                    >
+                      Non, je ne souscris pas
+                    </button>
+                  </div>
+                  {insurance === null && (
+                    <p className="mt-3 text-sm text-red-700 font-medium">Choisissez Oui ou Non pour continuer</p>
+                  )}
+                </div>
+              )}
+
               {/* Résumé du prix */}
               <div className="bg-gradient-to-r from-gold-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6 mb-6">
                 <h3 className="font-semibold text-orange-900 mb-4">📋 Résumé de votre inscription</h3>
@@ -589,19 +731,21 @@ export default function StageDetailPage() {
                     </>
                   )}
                   {!form.wantHousing && <p className="text-gray-900 font-medium italic">Pas d'hébergement</p>}
+                  {!!totals?.discount && <p><strong>Réduction ({appliedDiscount?.code}) :</strong> −{totals.discount}€</p>}
+                  {!!totals?.insurance && <p><strong>Assurance annulation :</strong> {totals.insurance}€</p>}
                 </div>
                 <div className="text-3xl font-bold text-orange-600">
-                  Total: {calculatePrice()}€
+                  Total: {totals?.total ?? 0}€
                 </div>
               </div>
 
               {/* Bouton ajout au panier */}
               <button
                 onClick={handleAddToCart}
-                disabled={submitting}
+                disabled={submitting || (insuranceEnabled && insurance === null)}
                 className="w-full bg-ink text-white py-4 rounded-lg font-semibold text-lg hover:bg-ink-soft disabled:opacity-50"
               >
-                {submitting ? 'Ajout au panier...' : `Ajouter au panier (${calculatePrice()}€)`}
+                {submitting ? 'Ajout au panier...' : `Ajouter au panier (${totals?.total ?? 0}€)`}
               </button>
             </div>
             )}

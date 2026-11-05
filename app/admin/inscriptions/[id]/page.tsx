@@ -171,6 +171,9 @@ export default function EditMembershipPage() {
       housingPrices: stagePricing.housing,
       quantity: 1,
       discount,
+      insurance: stored.insuranceChosen
+        ? { selected: true, percent: Number(stored.insurancePercent ?? 0) }
+        : null,
     };
   };
 
@@ -283,6 +286,7 @@ export default function EditMembershipPage() {
         },
         amount: newAmount,
         discountAmount: newTotals.discount ?? 0,
+        insuranceAmount: newTotals.insurance ?? 0,
         courses: nextDancers.map((d, index) => ({
           index,
           name: `${d.firstName} ${d.lastName}`,

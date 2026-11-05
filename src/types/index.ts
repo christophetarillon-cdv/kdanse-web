@@ -129,6 +129,9 @@ export interface Membership {
   acquisitionSourceOther?: string;
   discountCode?: string | null;
   discountAmount?: number;
+  insuranceChosen?: boolean;
+  insurancePercent?: number | null;
+  insuranceAmount?: number;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -172,6 +175,12 @@ export interface PaymentSettings {
   };
   chequePayee?: string;
   updatedAt: Date;
+}
+
+// Assurance annulation (document lisible par tous, affiché sur la page stage)
+export interface InsuranceSettings {
+  enabled: boolean;
+  percent: number;
 }
 
 // Payment installment (échéance individuelle)

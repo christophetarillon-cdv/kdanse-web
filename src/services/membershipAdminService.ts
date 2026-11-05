@@ -90,6 +90,7 @@ export interface MembershipUpdateInput {
   registrationDetails: Record<string, unknown>;
   amount: number;
   discountAmount: number;
+  insuranceAmount: number;
   courses: { index: number; name: string; courses: Record<string, string> }[];
   refundAmount: number;
   refundDate: string | null;
@@ -108,6 +109,7 @@ export const updateMembershipDetails = async (membershipId: string, input: Membe
     registrationDetails: input.registrationDetails,
     amount: input.amount,
     discountAmount: input.discountAmount,
+    insuranceAmount: input.insuranceAmount,
     updatedAt: now,
   });
 

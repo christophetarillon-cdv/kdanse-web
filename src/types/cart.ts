@@ -37,6 +37,13 @@ export interface CartItem {
   quantity: number;
   totals?: CartTotals;
   discount?: ItemDiscount | null;
+  insurance?: ItemInsurance | null;
+}
+
+// Assurance annulation : pourcentage figé au moment de l'ajout au panier
+export interface ItemInsurance {
+  selected: boolean;
+  percent: number;
 }
 
 export interface ItemDiscount {
@@ -67,6 +74,7 @@ export interface CartTotals {
   tax: number;
   total: number;
   discount?: number;
+  insurance?: number;
 }
 
 export interface Cart {

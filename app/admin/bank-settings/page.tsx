@@ -5,13 +5,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getPaymentSettings, savePaymentSettings } from '@/services/paymentPlanService';
-import { PaymentSettings } from '@/types';
+import { getInsuranceSettings, saveInsuranceSettings } from '@/services/insuranceService';
+import { InsuranceSettings, PaymentSettings } from '@/types';
 
 export default function AdminBankSettingsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [insurance, setInsurance] = useState<InsuranceSettings>({ enabled: false, percent: 2 });
   const [settings, setSettings] = useState<PaymentSettings>({
     id: 'settings',
     bankAccount: {
@@ -44,6 +46,10 @@ export default function AdminBankSettingsPage() {
       if (data) {
         setSettings(data);
       }
+      const insuranceData = await getInsuranceSettings();
+      if (insuranceData) {
+        setInsurance(insuranceData);
+      }
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
@@ -56,6 +62,7 @@ export default function AdminBankSettingsPage() {
     try {
       const { id, updatedAt, ...dataToSave } = settings;
       await savePaymentSettings(dataToSave);
+      await saveInsuranceSettings(insurance);
       alert('Paramètres sauvegardés!');
     } catch (error) {
       console.error('Error:', error);
@@ -240,6 +247,43 @@ export default function AdminBankSettingsPage() {
               placeholder="France"
               className="w-full border rounded px-4 py-2"
             />
+          </div>
+        </div>
+
+        <hr />
+
+        {/* Assurance annulation */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-gray-900">🛡️ Assurance annulation</h2>
+
+          <label className="flex items-center gap-3 font-medium text-gray-900">
+            <input
+              type="checkbox"
+              checked={insurance.enabled}
+              onChange={(e) => setInsurance({ ...insurance, enabled: e.target.checked })}
+              className="w-5 h-5 cursor-pointer"
+            />
+            Proposer l&apos;assurance annulation sur la page stage
+          </label>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Pourcentage du montant à payer après réduction</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.5"
+                value={insurance.percent}
+                onChange={(e) => setInsurance({ ...insurance, percent: Math.max(0, Number(e.target.value) || 0) })}
+                onWheel={(e) => e.currentTarget.blur()}
+                className="w-24 border rounded px-4 py-2"
+              />
+              <span className="text-gray-900 font-medium">%</span>
+            </div>
+            <p className="text-xs text-gray-800 mt-1">
+              Arrondi à l&apos;euro supérieur. Non remboursable. Le pourcentage est figé dans chaque inscription à sa validation.
+            </p>
           </div>
         </div>
 

@@ -161,6 +161,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Paramètres de l'assurance annulation : lus par la page stage (visiteurs compris)
+    match /insuranceSettings/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Bordereaux de remise en banque : créés par les admins, jamais modifiés ni supprimés
     match /bordereaux/{bordereauId} {
       allow read, create: if isAdmin();

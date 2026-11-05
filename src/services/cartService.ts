@@ -10,11 +10,15 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Cart, CartItem, RegistrationConfiguration, CartTotals, DiscountCode, ItemDiscount } from '@/types/cart';
+import { Cart, CartItem, RegistrationConfiguration, CartTotals, DiscountCode, ItemDiscount, ItemInsurance } from '@/types/cart';
 import { getDiscountCode, isDiscountUsable } from '@/services/discountCodeService';
 
 const CART_COLLECTION = 'carts';
 const CART_EXPIRY_HOURS = 24;
+
+// Arrondi à l'euro supérieur, sur le montant à payer après réduction
+export const insuranceAmountFor = (base: number, percent: number): number =>
+  Math.ceil(Number(((base * percent) / 100).toFixed(2)));
 
 export const calculateItemPrice = (item: CartItem): CartTotals => {
   let stagePrice = 0;
@@ -54,13 +58,15 @@ export const calculateItemPrice = (item: CartItem): CartTotals => {
   housingTotal -= housingDiscount;
 
   const subtotal = stagePrice + housingTotal;
+  const insurance = item.insurance?.selected ? insuranceAmountFor(subtotal, item.insurance.percent) : 0;
 
   return {
     stageTotal: stagePrice,
     housingTotal,
     subtotal,
+    insurance,
     tax: 0,
-    total: subtotal,
+    total: subtotal + insurance,
     discount,
   };
 };
@@ -91,6 +97,7 @@ export const calculateCartTotals = (items: CartItem[]): CartTotals => {
   let stageTotal = 0;
   let housingTotal = 0;
   let discount = 0;
+  let insurance = 0;
 
   items.forEach((item) => {
     // Use cached totals if available, otherwise calculate
@@ -98,6 +105,7 @@ export const calculateCartTotals = (items: CartItem[]): CartTotals => {
     stageTotal += itemTotals.stageTotal;
     housingTotal += itemTotals.housingTotal;
     discount += itemTotals.discount ?? 0;
+    insurance += itemTotals.insurance ?? 0;
   });
 
   const subtotal = stageTotal + housingTotal;
@@ -106,8 +114,9 @@ export const calculateCartTotals = (items: CartItem[]): CartTotals => {
     stageTotal,
     housingTotal,
     subtotal,
+    insurance,
     tax: 0,
-    total: subtotal,
+    total: subtotal + insurance,
     discount,
   };
 };
@@ -257,7 +266,8 @@ export const removeFromCart = async (cartId: string, itemId: string): Promise<Ca
 export const updateCartItem = async (
   cartId: string,
   itemId: string,
-  configuration: RegistrationConfiguration
+  configuration: RegistrationConfiguration,
+  insurance: ItemInsurance | null
 ): Promise<Cart> => {
   const cart = await getCart(cartId);
   if (!cart) throw new Error('Cart not found');
@@ -266,6 +276,7 @@ export const updateCartItem = async (
   if (itemIndex < 0) throw new Error('Item not found in cart');
 
   cart.items[itemIndex].configuration = configuration;
+  cart.items[itemIndex].insurance = insurance;
   cart.items[itemIndex].totals = calculateItemPrice(cart.items[itemIndex]);
   cart.totals = calculateCartTotals(cart.items);
   cart.updatedAt = new Date();
