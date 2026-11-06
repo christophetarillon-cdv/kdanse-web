@@ -14,6 +14,7 @@ interface Stage {
   imageUrl?: string;
   startDate?: string;
   endDate?: string;
+  lastInstallmentDate?: string;
   pricing?: {
     stage: {
       soloLicensed: number;
@@ -53,6 +54,7 @@ export default function AdminStagesPage() {
     startDate: '',
     endDate: '',
     imageUrl: '',
+    lastInstallmentDate: '',
     pricing: defaultPricing,
   });
   const [editing, setEditing] = useState<string | null>(null);
@@ -89,7 +91,7 @@ export default function AdminStagesPage() {
           createdAt: new Date(),
         });
       }
-      setForm({ name: '', description: '', location: '', startDate: '', endDate: '', imageUrl: '', pricing: defaultPricing });
+      setForm({ name: '', description: '', location: '', startDate: '', endDate: '', imageUrl: '', lastInstallmentDate: '', pricing: defaultPricing });
       fetchStages();
     } catch (error) {
       console.error('Error:', error);
@@ -104,6 +106,7 @@ export default function AdminStagesPage() {
       startDate: stage.startDate || '',
       endDate: stage.endDate || '',
       imageUrl: stage.imageUrl || '',
+      lastInstallmentDate: stage.lastInstallmentDate || '',
       pricing: stage.pricing || defaultPricing,
     });
     setEditing(stage.id);
@@ -137,7 +140,7 @@ export default function AdminStagesPage() {
 
   const handleCancel = () => {
     setEditing(null);
-    setForm({ name: '', description: '', location: '', startDate: '', endDate: '', imageUrl: '', pricing: defaultPricing });
+    setForm({ name: '', description: '', location: '', startDate: '', endDate: '', imageUrl: '', lastInstallmentDate: '', pricing: defaultPricing });
   };
 
   if (loading) return <div className="p-8">Chargement...</div>;
@@ -232,6 +235,21 @@ export default function AdminStagesPage() {
               onChange={(e) => setForm({ ...form, endDate: e.target.value })}
               className="border rounded px-3 py-2 text-gray-900 placeholder-gray-500"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-1">
+              Date limite de la dernière échéance (paiements en plusieurs fois)
+            </label>
+            <input
+              type="date"
+              value={form.lastInstallmentDate}
+              onChange={(e) => setForm({ ...form, lastInstallmentDate: e.target.value })}
+              className="border rounded px-3 py-2 text-gray-900"
+            />
+            <p className="text-xs text-gray-800 mt-1">
+              Les échéances des paiements en plusieurs fois sont réparties entre la commande et cette date.
+            </p>
           </div>
 
           {/* Tarifs du stage */}

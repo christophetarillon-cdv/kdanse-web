@@ -5,9 +5,11 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { getCart } from '@/services/cartService';
-import { getPaymentSettings, createPaymentPlan } from '@/services/paymentPlanService';
+import { getPaymentSettings, createCartPaymentPlan } from '@/services/paymentPlanService';
 import { Cart, PaymentSettings } from '@/types';
 import { isValidAmount } from '@/lib/validation';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 type InstallmentMethod = 'cheque' | 'virement' | 'cheque_vacances';
 
@@ -29,6 +31,32 @@ interface Stats {
   remaining: number;
   isComplete: boolean;
 }
+
+const formatDateFr = (isoDate: string) =>
+  new Date(`${isoDate}T00:00:00`).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Sans date limite : une échéance tous les 30 jours.
+// Avec date limite : les échéances sont réparties à égale distance entre aujourd'hui et la date limite (la dernière la tombe)
+const defaultDueDates = (count: number, deadline?: string) => {
+  if (!deadline) {
+    return Array.from({ length: count }, (_, i) =>
+      new Date(Date.now() + (i + 1) * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    );
+  }
+  const start = Date.parse(`${new Date().toISOString().split('T')[0]}T00:00:00Z`);
+  const end = Date.parse(`${deadline}T00:00:00Z`);
+  const totalDays = Math.round((end - start) / DAY_MS);
+  return Array.from({ length: count }, (_, i) => {
+    const days = Math.round((totalDays * (i + 1)) / count);
+    return new Date(start + days * DAY_MS).toISOString().split('T')[0];
+  });
+};
 
 export default function PaymentPlanPage() {
   const params = useParams();
@@ -58,6 +86,7 @@ export default function PaymentPlanPage() {
   };
 
   const hotelBudget = calculateHotelBudget();
+  const [deadline, setDeadline] = useState('');
   const vacationChecksTotal = installments
     .filter(i => i.method === 'cheque_vacances')
     .reduce((sum, i) => sum + (i.amount || 0), 0);
@@ -89,15 +118,24 @@ export default function PaymentPlanPage() {
         return;
       }
       const settingsData = await getPaymentSettings();
+      // Date limite : celle du stage le plus tôt parmi les inscriptions de la commande
+      const stageSnaps = await Promise.all(cartData.items.map((item) => getDoc(doc(db, 'stages', item.stageId))));
+      const stageDeadlines = stageSnaps
+        .map((snap) => snap.data()?.lastInstallmentDate as string | undefined)
+        .filter((date): date is string => !!date)
+        .sort();
+      const stageDeadline = stageDeadlines[0] ?? '';
+      setDeadline(stageDeadline);
       setCart(cartData);
       setSettings(settingsData);
 
       // Initialize installments with empty amounts
+      const dueDates = defaultDueDates(3, stageDeadline);
       const defaultInstallments: InstallmentConfig[] = Array.from({ length: 3 }, (_, i) => ({
         id: `inst-${i}`,
         method: 'cheque',
         amount: 0,
-        dueDate: new Date(Date.now() + (i + 1) * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        dueDate: dueDates[i],
       }));
       setInstallments(defaultInstallments);
     } catch (error) {
@@ -110,11 +148,12 @@ export default function PaymentPlanPage() {
 
   const updateInstallmentCount = (count: 2 | 3 | 4) => {
     setInstallmentCount(count);
+    const dueDates = defaultDueDates(count, deadline);
     const newInstallments: InstallmentConfig[] = Array.from({ length: count }, (_, i) => ({
       id: `inst-${i}`,
       method: installments[i]?.method || 'cheque',
       amount: 0,
-      dueDate: installments[i]?.dueDate || new Date(Date.now() + (i + 1) * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      dueDate: dueDates[i],
     }));
     setInstallments(newInstallments);
   };
@@ -143,11 +182,15 @@ export default function PaymentPlanPage() {
       alert(`Chèques vacances (${vacationChecksTotal.toFixed(2)}€) ne peuvent pas dépasser l'hébergement (${hotelBudget.toFixed(2)}€)`);
       return;
     }
+    if (deadline && installments.some((inst) => inst.dueDate > deadline)) {
+      alert(`Les échéances doivent être prévues au plus tard le ${formatDateFr(deadline)}`);
+      return;
+    }
 
     setSubmitting(true);
     try {
       const plansData = installments.map(({ id, ...rest }) => ({
-        method: rest.method as 'cheque' | 'virement' | 'cheque_vacances',
+        method: rest.method,
         amount: rest.amount,
         dueDate: rest.dueDate,
         chequeNumber: rest.chequeNumber,
@@ -157,14 +200,7 @@ export default function PaymentPlanPage() {
         chequeVacancesCount: rest.chequeVacancesCount,
       }));
 
-      const result = await createPaymentPlan(
-        cart.id,
-        firebaseUser.uid,
-        cart.totals.total,
-        installmentCount,
-        plansData,
-        cart
-      );
+      const result = await createCartPaymentPlan(cart.id, installmentCount, plansData);
 
       alert('Plan de paiement créé! Vous serez redirigé vers la sélection des cours.');
 
@@ -176,7 +212,7 @@ export default function PaymentPlanPage() {
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Erreur lors de la création du plan de paiement');
+      alert(error instanceof Error ? error.message : 'Erreur lors de la création du plan de paiement');
     } finally {
       setSubmitting(false);
     }
@@ -196,6 +232,24 @@ export default function PaymentPlanPage() {
           <div>
             <h1 className="text-3xl font-bold mb-2">📋 Plan de paiement</h1>
             <p className="text-gray-700 font-medium">Configurez vos échéances de paiement</p>
+          </div>
+
+          {/* Règles des paiements en plusieurs fois */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3 text-sm text-blue-900">
+            {deadline && (
+              <p>
+                📅 <strong>Date limite :</strong> la dernière échéance doit être prévue au plus tard le{' '}
+                <strong>{formatDateFr(deadline)}</strong>.
+              </p>
+            )}
+            {hotelBudget > 0 ? (
+              <p>
+                🎟️ <strong>Chèques vacances acceptés :</strong> vous pouvez régler une échéance par chèques vacances, dans
+                la limite du montant de l&apos;hébergement de votre commande ({hotelBudget.toFixed(2)}€).
+              </p>
+            ) : (
+              <p>Votre commande ne comprend pas d&apos;hébergement : les chèques vacances ne sont pas acceptés.</p>
+            )}
           </div>
 
           {/* Résumé */}
@@ -302,9 +356,13 @@ export default function PaymentPlanPage() {
                   <input
                     type="date"
                     value={inst.dueDate}
+                    max={deadline || undefined}
                     onChange={(e) => updateInstallment(inst.id, { dueDate: e.target.value })}
                     className="w-full border rounded px-3 py-2"
                   />
+                  {deadline && (
+                    <p className="text-xs text-gray-600 mt-1">Au plus tard le {formatDateFr(deadline)}</p>
+                  )}
                 </div>
 
                 {/* Mode de paiement */}
@@ -319,7 +377,7 @@ export default function PaymentPlanPage() {
                   >
                     <option value="cheque">💳 Chèque</option>
                     <option value="virement">🏦 Virement</option>
-                    <option value="cheque_vacances">🎟️ Chèques vacances</option>
+                    {hotelBudget > 0 && <option value="cheque_vacances">🎟️ Chèques vacances</option>}
                   </select>
 
                   {/* Hint pour chèques vacances */}

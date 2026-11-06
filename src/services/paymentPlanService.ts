@@ -11,6 +11,8 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import app from '@/lib/firebase';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { PaymentPlan, PaymentInstallment, PaymentSettings, Cart, Membership, PaymentDetailsDraft } from '@/types';
 import { toPaymentDetailsUpdate } from '@/lib/paymentDetails';
 import { getDancerUids } from '@/services/userService';
@@ -33,7 +35,48 @@ const compareInstallments = (
   );
 };
 
-// Create payment plan with installments
+// Messages affichés pour les contrôles faits par la fonction serveur
+const PLAN_ERRORS: Record<string, string> = {
+  amounts_mismatch: 'Le total des échéances ne correspond pas au montant de la commande.',
+  vacation_checks_over_housing: "Les chèques vacances dépassent le montant de l'hébergement.",
+  due_date_after_deadline: 'Une échéance dépasse la date limite du stage.',
+  plan_exists: 'Un plan de paiement existe déjà pour cette commande.',
+  cart_total_mismatch: 'Le montant de la commande a changé : reprenez votre commande.',
+  cart_not_submitted: "La commande n'est plus validable : reprenez-la depuis le panier.",
+  cart_empty: 'La commande ne contient aucune inscription.',
+};
+
+export interface CartPaymentPlanInstallment {
+  method: 'cheque' | 'virement' | 'cheque_vacances';
+  amount: number;
+  dueDate: string;
+  chequeNumber?: string;
+  chequeBank?: string;
+  chequeCity?: string;
+  chequeName?: string;
+  chequeVacancesCount?: number;
+}
+
+// Plan de paiement d'une commande client : contrôlé et écrit par la fonction serveur
+export const createCartPaymentPlan = async (
+  cartId: string,
+  installmentCount: number,
+  installments: CartPaymentPlanInstallment[]
+): Promise<{ planId: string; membershipIds: string[] }> => {
+  const callable = httpsCallable<
+    { cartId: string; installmentCount: number; installments: CartPaymentPlanInstallment[] },
+    { planId: string; membershipIds: string[] }
+  >(getFunctions(app, 'europe-west3'), 'createCartPaymentPlan');
+  try {
+    const result = await callable({ cartId, installmentCount, installments });
+    return result.data;
+  } catch (error) {
+    const code = (error as { message?: string }).message ?? '';
+    throw new Error(PLAN_ERRORS[code] ?? 'Erreur lors de la création du plan de paiement');
+  }
+};
+
+// Create payment plan with installments (admin uniquement : les clients passent par createCartPaymentPlan)
 export const createPaymentPlan = async (
   cartId: string,
   userId: string,
