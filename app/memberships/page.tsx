@@ -11,6 +11,7 @@ import { getPaymentPlan } from '@/services/paymentPlanService';
 import { Dance, Level } from '@/types/courses';
 import { startHelloAssoPayment } from '@/services/helloassoService';
 import MembershipDocuments from '@/components/MembershipDocuments';
+import MembershipOrderSummary from '@/components/MembershipOrderSummary';
 
 export default function MembershipsPage() {
   const { firebaseUser, loading: authLoading } = useAuth();
@@ -284,26 +285,8 @@ export default function MembershipsPage() {
                   </div>
                 )}
 
-                {/* Détails */}
-                <div className="bg-gold-50 rounded border border-gold-200 p-4 space-y-2 text-sm">
-                  <p>
-                    <strong>Danseurs:</strong> {membership.registrationDetails.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
-                    {membership.registrationDetails.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}
-                  </p>
-                  {membership.registrationDetails.accompanists > 0 && (
-                    <p>
-                      <strong>Accompagnateurs:</strong> {membership.registrationDetails.accompanists}
-                    </p>
-                  )}
-                  {membership.registrationDetails.wantHousing && (
-                    <p>
-                      <strong>Hébergement:</strong>
-                      {membership.registrationDetails.housingSolo > 0 && ` ${membership.registrationDetails.housingSolo} solo`}
-                      {membership.registrationDetails.housingSolo > 0 && membership.registrationDetails.housingCouple > 0 && ' +'}
-                      {membership.registrationDetails.housingCouple > 0 && ` ${membership.registrationDetails.housingCouple} couple`}
-                    </p>
-                  )}
-                </div>
+                {/* Récapitulatif de commande */}
+                <MembershipOrderSummary membership={membership} />
 
                 {/* Mode de paiement et statut */}
                 {membership.status === 'pending_confirmation' && (

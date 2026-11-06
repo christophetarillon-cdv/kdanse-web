@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
-import { getCart, clearCart } from '@/services/cartService';
+import { getCart, clearCart, priceBreakdownOf } from '@/services/cartService';
 import { getDancerUids } from '@/services/userService';
 import { Cart } from '@/types/cart';
 
@@ -93,6 +93,7 @@ export default function CartPaymentPage() {
           insuranceChosen: item.insurance?.selected ?? false,
           insurancePercent: item.insurance?.percent ?? null,
           insuranceAmount: item.totals?.insurance ?? 0,
+          priceBreakdown: priceBreakdownOf(item),
           paymentMethod: method,
           status: method === 'helloasso' ? 'pending_payment' : 'pending_confirmation',
           cartId: cart.id,

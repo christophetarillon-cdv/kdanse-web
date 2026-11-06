@@ -40,6 +40,17 @@ export interface CartItem {
   insurance?: ItemInsurance | null;
 }
 
+// Détail du prix figé à la commande (montants bruts pour stage et hébergement, réduction et assurance à part)
+export interface PriceBreakdown {
+  stageTotal: number;
+  housingTotal: number;
+  housingSoloPrice: number;
+  housingCouplePrice: number;
+  discount: number;
+  insurance: number;
+  total: number;
+}
+
 // Assurance annulation : pourcentage figé au moment de l'ajout au panier
 export interface ItemInsurance {
   selected: boolean;

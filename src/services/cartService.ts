@@ -10,7 +10,7 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Cart, CartItem, RegistrationConfiguration, CartTotals, DiscountCode, ItemDiscount, ItemInsurance } from '@/types/cart';
+import { Cart, CartItem, RegistrationConfiguration, CartTotals, DiscountCode, ItemDiscount, ItemInsurance, PriceBreakdown } from '@/types/cart';
 import { getDiscountCode, isDiscountUsable } from '@/services/discountCodeService';
 
 const CART_COLLECTION = 'carts';
@@ -75,6 +75,21 @@ const discountOn = (base: number, discount: ItemDiscount | null | undefined, tar
   if (!discount || discount.target !== target || base <= 0) return 0;
   const raw = discount.type === 'percent' ? (base * discount.value) / 100 : discount.value;
   return Math.min(base, Math.round(raw * 100) / 100);
+};
+
+// Détail du prix d'un article, enregistré avec l'inscription : montants bruts, puis réduction et assurance
+export const priceBreakdownOf = (item: CartItem): PriceBreakdown => {
+  const gross = calculateItemPrice({ ...item, discount: null, insurance: null });
+  const totals = item.totals ?? calculateItemPrice(item);
+  return {
+    stageTotal: gross.stageTotal,
+    housingTotal: gross.housingTotal,
+    housingSoloPrice: item.housingPrices.solo,
+    housingCouplePrice: item.housingPrices.couple,
+    discount: totals.discount ?? 0,
+    insurance: totals.insurance ?? 0,
+    total: totals.total,
+  };
 };
 
 export const itemsWithDiscount = (items: CartItem[], discountCode: DiscountCode | null): CartItem[] =>

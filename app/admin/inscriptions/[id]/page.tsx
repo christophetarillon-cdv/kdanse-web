@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getDances, getLevels } from '@/services/coursesService';
 import { getDiscountCode } from '@/services/discountCodeService';
 import { updateMembershipDetails, Snapshot } from '@/services/membershipAdminService';
-import { calculateItemPrice } from '@/services/cartService';
+import { calculateItemPrice, priceBreakdownOf } from '@/services/cartService';
 import { CartItem, ItemDiscount } from '@/types/cart';
 import { Dance, Level } from '@/types/courses';
 
@@ -190,7 +190,8 @@ export default function EditMembershipPage() {
   }, [delta]);
 
   const handleSave = async () => {
-    if (!stored || !newTotals || !user) return;
+    const item = buildItem();
+    if (!stored || !newTotals || !user || !item) return;
     const incomplete = dancers.slice(0, dancerCount).some((d) => !d.firstName.trim() || !d.lastName.trim());
     if (incomplete) {
       alert('Veuillez renseigner le prénom et le nom de chaque danseur');
@@ -287,6 +288,7 @@ export default function EditMembershipPage() {
         amount: newAmount,
         discountAmount: newTotals.discount ?? 0,
         insuranceAmount: newTotals.insurance ?? 0,
+        priceBreakdown: priceBreakdownOf(item),
         courses: nextDancers.map((d, index) => ({
           index,
           name: `${d.firstName} ${d.lastName}`,

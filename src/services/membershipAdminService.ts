@@ -1,5 +1,6 @@
 import { collection, doc, getDocs, query, where, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import type { PriceBreakdown } from '@/types/cart';
 
 export interface CancelTarget {
   id: string;
@@ -91,6 +92,7 @@ export interface MembershipUpdateInput {
   amount: number;
   discountAmount: number;
   insuranceAmount: number;
+  priceBreakdown: PriceBreakdown;
   courses: { index: number; name: string; courses: Record<string, string> }[];
   refundAmount: number;
   refundDate: string | null;
@@ -110,6 +112,7 @@ export const updateMembershipDetails = async (membershipId: string, input: Membe
     amount: input.amount,
     discountAmount: input.discountAmount,
     insuranceAmount: input.insuranceAmount,
+    priceBreakdown: input.priceBreakdown,
     updatedAt: now,
   });
 

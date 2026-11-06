@@ -1,4 +1,6 @@
-export type { Cart, CartItem, CartTotals, RegistrationConfiguration } from './cart';
+import type { PriceBreakdown } from './cart';
+
+export type { Cart, CartItem, CartTotals, RegistrationConfiguration, PriceBreakdown } from './cart';
 
 // Season (Saisons - exemple: 2024-2025)
 export interface Season {
@@ -109,8 +111,9 @@ export interface Membership {
   status: 'paid' | 'pending_confirmation' | 'pending_plan' | 'pending_payment' | 'cancelled' | 'active' | 'completed';
   registrationDetails: {
     danceType: 'solo' | 'couple';
-    dancers: { licensed: boolean }[];
+    dancers: { firstName?: string; lastName?: string; licensed: boolean }[];
     accompanists: number;
+    accompanistDetails?: { firstName: string; lastName: string }[];
     wantHousing: boolean;
     housingSolo: number;
     housingCouple: number;
@@ -132,6 +135,7 @@ export interface Membership {
   insuranceChosen?: boolean;
   insurancePercent?: number | null;
   insuranceAmount?: number;
+  priceBreakdown?: PriceBreakdown;
   createdAt: Date;
   updatedAt?: Date;
 }
