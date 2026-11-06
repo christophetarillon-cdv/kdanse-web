@@ -11,6 +11,7 @@ interface Stage {
   name: string;
   description: string;
   location: string;
+  housingLocation?: string;
   imageUrl?: string;
   startDate?: string;
   endDate?: string;
@@ -51,6 +52,7 @@ export default function AdminStagesPage() {
     name: '',
     description: '',
     location: '',
+    housingLocation: '',
     startDate: '',
     endDate: '',
     imageUrl: '',
@@ -91,7 +93,7 @@ export default function AdminStagesPage() {
           createdAt: new Date(),
         });
       }
-      setForm({ name: '', description: '', location: '', startDate: '', endDate: '', imageUrl: '', lastInstallmentDate: '', pricing: defaultPricing });
+      setForm({ name: '', description: '', location: '', housingLocation: '', startDate: '', endDate: '', imageUrl: '', lastInstallmentDate: '', pricing: defaultPricing });
       fetchStages();
     } catch (error) {
       console.error('Error:', error);
@@ -103,6 +105,7 @@ export default function AdminStagesPage() {
       name: stage.name,
       description: stage.description,
       location: stage.location,
+      housingLocation: stage.housingLocation || '',
       startDate: stage.startDate || '',
       endDate: stage.endDate || '',
       imageUrl: stage.imageUrl || '',
@@ -140,7 +143,7 @@ export default function AdminStagesPage() {
 
   const handleCancel = () => {
     setEditing(null);
-    setForm({ name: '', description: '', location: '', startDate: '', endDate: '', imageUrl: '', lastInstallmentDate: '', pricing: defaultPricing });
+    setForm({ name: '', description: '', location: '', housingLocation: '', startDate: '', endDate: '', imageUrl: '', lastInstallmentDate: '', pricing: defaultPricing });
   };
 
   if (loading) return <div className="p-8">Chargement...</div>;
@@ -211,6 +214,13 @@ export default function AdminStagesPage() {
               onChange={(e) => setForm({ ...form, location: e.target.value })}
               className="border rounded px-3 py-2 text-gray-900 placeholder-gray-500"
               required
+            />
+            <input
+              type="text"
+              placeholder="Lieu d'hébergement (affiché sur la facture)"
+              value={form.housingLocation}
+              onChange={(e) => setForm({ ...form, housingLocation: e.target.value })}
+              className="border rounded px-3 py-2 text-gray-900 placeholder-gray-500"
             />
           </div>
 

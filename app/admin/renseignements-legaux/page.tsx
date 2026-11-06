@@ -47,6 +47,8 @@ export default function LegalSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [backfilling, setBackfilling] = useState(false);
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [regenerating, setRegenerating] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -95,6 +97,26 @@ export default function LegalSettingsPage() {
       alert('Erreur lors de la génération des documents');
     } finally {
       setBackfilling(false);
+    }
+  };
+
+  const handleRegenerateInvoice = async () => {
+    const number = invoiceNumber.trim();
+    if (!number) return;
+    setRegenerating(true);
+    try {
+      const callable = httpsCallable<{ documentId: string }, { number: string; storagePath: string }>(
+        getFunctions(app, 'europe-west3'),
+        'regenerateInvoice'
+      );
+      const result = await callable({ documentId: number });
+      alert(`Facture ${result.data.number} régénérée (même numéro)`);
+      setInvoiceNumber('');
+    } catch (error) {
+      console.error('Error regenerating invoice:', error);
+      alert('Régénération impossible : vérifiez le numéro de facture (FA-…) et que la commande est entièrement payée');
+    } finally {
+      setRegenerating(false);
     }
   };
 
@@ -238,6 +260,29 @@ export default function LegalSettingsPage() {
           >
             {backfilling ? 'Génération…' : 'Générer les documents manquants'}
           </button>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6 space-y-3">
+          <h2 className="text-xl font-bold text-gray-900">Régénérer une facture</h2>
+          <p className="text-sm text-gray-900">
+            Reconstruit le PDF d&apos;une facture avec la mise en page actuelle, en gardant son numéro (ex. FA-2026-0001).
+          </p>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              placeholder="Numéro de facture"
+              value={invoiceNumber}
+              onChange={(e) => setInvoiceNumber(e.target.value)}
+              className="border rounded px-3 py-2 text-gray-900 placeholder-gray-500 flex-1"
+            />
+            <button
+              onClick={handleRegenerateInvoice}
+              disabled={regenerating || !invoiceNumber.trim()}
+              className="bg-ink hover:bg-ink-soft text-white px-4 py-2 rounded font-semibold disabled:opacity-50"
+            >
+              {regenerating ? 'Régénération…' : 'Régénérer'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
