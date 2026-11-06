@@ -14,7 +14,7 @@ import { db } from '@/lib/firebase';
 import { PaymentPlan, PaymentInstallment, PaymentSettings, Cart, Membership, PaymentDetailsDraft } from '@/types';
 import { toPaymentDetailsUpdate } from '@/lib/paymentDetails';
 import { getDancerUids } from '@/services/userService';
-import { priceBreakdownOf } from '@/services/cartService';
+import { insuranceFieldsOf, priceBreakdownOf } from '@/services/cartService';
 
 const PAYMENT_PLANS_COLLECTION = 'paymentPlans';
 const INSTALLMENTS_COLLECTION = 'paymentInstallments';
@@ -131,9 +131,7 @@ export const createPaymentPlan = async (
           amount: item.totals?.total || 0,
           discountCode: item.discount?.code ?? null,
           discountAmount: item.totals?.discount ?? 0,
-          insuranceChosen: item.insurance?.selected ?? false,
-          insurancePercent: item.insurance?.percent ?? null,
-          insuranceAmount: item.totals?.insurance ?? 0,
+          ...insuranceFieldsOf(item),
           priceBreakdown: priceBreakdownOf(item),
           paymentMethod: 'plan',
           status: 'pending_plan',

@@ -181,6 +181,19 @@ export interface PaymentSettings {
   updatedAt: Date;
 }
 
+// Données du récapitulatif de commande, communes à une inscription et à un article du panier
+export type OrderSummaryData = Pick<
+  Membership,
+  | 'registrationDetails'
+  | 'priceBreakdown'
+  | 'discountAmount'
+  | 'discountCode'
+  | 'insuranceChosen'
+  | 'insurancePercent'
+  | 'insuranceAmount'
+  | 'amount'
+>;
+
 // Assurance annulation (document lisible par tous, affiché sur la page stage)
 export interface InsuranceSettings {
   enabled: boolean;

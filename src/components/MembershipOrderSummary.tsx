@@ -1,4 +1,4 @@
-import { Membership } from '@/types';
+import { OrderSummaryData } from '@/types';
 
 const Row = ({ label, value, tone, bold }: { label: string; value: string; tone?: 'green' | 'muted'; bold?: boolean }) => (
   <div className={`flex justify-between gap-4 ${bold ? 'font-bold pt-2 border-t' : ''} ${tone === 'green' ? 'text-green-700' : ''}`}>
@@ -8,9 +8,9 @@ const Row = ({ label, value, tone, bold }: { label: string; value: string; tone?
 );
 
 // Récapitulatif de commande : danseurs, accompagnateurs, hébergement, prix et assurance
-export default function MembershipOrderSummary({ membership }: { membership: Membership }) {
-  const details = membership.registrationDetails;
-  const breakdown = membership.priceBreakdown;
+export default function MembershipOrderSummary({ order }: { order: OrderSummaryData }) {
+  const details = order.registrationDetails;
+  const breakdown = order.priceBreakdown;
   const accompanists = details.accompanistDetails?.filter((a) => a.firstName || a.lastName) ?? [];
   const soloCount = details.housingSolo ?? 0;
   const coupleCount = details.housingCouple ?? 0;
@@ -66,23 +66,23 @@ export default function MembershipOrderSummary({ membership }: { membership: Mem
       <div className="space-y-1">
         {breakdown && <Row label="Stage" value={`${breakdown.stageTotal}€`} />}
         {breakdown && breakdown.housingTotal > 0 && <Row label="Hébergement" value={`${breakdown.housingTotal}€`} />}
-        {!!membership.discountAmount && (
+        {!!order.discountAmount && (
           <Row
-            label={`Réduction${membership.discountCode ? ` ${membership.discountCode}` : ''}`}
-            value={`−${membership.discountAmount}€`}
+            label={`Réduction${order.discountCode ? ` ${order.discountCode}` : ''}`}
+            value={`−${order.discountAmount}€`}
             tone="green"
           />
         )}
-        {membership.insuranceChosen === true && (
+        {order.insuranceChosen === true && (
           <Row
-            label={`Assurance annulation${membership.insurancePercent ? ` ${membership.insurancePercent} %` : ''} (non remboursable)`}
-            value={`${membership.insuranceAmount ?? 0}€`}
+            label={`Assurance annulation${order.insurancePercent ? ` ${order.insurancePercent} %` : ''} (non remboursable)`}
+            value={`${order.insuranceAmount ?? 0}€`}
           />
         )}
-        {membership.insuranceChosen === false && (
+        {order.insuranceChosen === false && (
           <Row label="Assurance annulation" value="pas souscrite" tone="muted" />
         )}
-        <Row label="Total" value={`${membership.amount}€`} bold />
+        <Row label="Total" value={`${order.amount}€`} bold />
       </div>
     </div>
   );

@@ -286,7 +286,7 @@ export default function MembershipsPage() {
                 )}
 
                 {/* Récapitulatif de commande */}
-                <MembershipOrderSummary membership={membership} />
+                <MembershipOrderSummary order={membership} />
 
                 {/* Mode de paiement et statut */}
                 {membership.status === 'pending_confirmation' && (

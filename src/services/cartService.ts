@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Cart, CartItem, RegistrationConfiguration, CartTotals, DiscountCode, ItemDiscount, ItemInsurance, PriceBreakdown } from '@/types/cart';
+import { OrderSummaryData } from '@/types';
 import { getDiscountCode, isDiscountUsable } from '@/services/discountCodeService';
 
 const CART_COLLECTION = 'carts';
@@ -91,6 +92,31 @@ export const priceBreakdownOf = (item: CartItem): PriceBreakdown => {
     total: totals.total,
   };
 };
+
+// Données du récapitulatif de commande pour un article du panier
+export const orderSummaryOfItem = (item: CartItem): OrderSummaryData => {
+  const totals = item.totals ?? calculateItemPrice(item);
+  return {
+    registrationDetails: item.configuration,
+    priceBreakdown: priceBreakdownOf(item),
+    discountAmount: totals.discount ?? 0,
+    discountCode: item.discount?.code ?? null,
+    insuranceChosen: item.insurance ? item.insurance.selected : undefined,
+    insurancePercent: item.insurance?.percent ?? null,
+    insuranceAmount: totals.insurance ?? 0,
+    amount: totals.total,
+  };
+};
+
+// Champs d'assurance enregistrés avec l'inscription : seulement si l'assurance est proposée
+export const insuranceFieldsOf = (item: CartItem) =>
+  item.insurance
+    ? {
+        insuranceChosen: item.insurance.selected,
+        insurancePercent: item.insurance.percent,
+        insuranceAmount: item.totals?.insurance ?? 0,
+      }
+    : {};
 
 export const itemsWithDiscount = (items: CartItem[], discountCode: DiscountCode | null): CartItem[] =>
   items.map((item) => {

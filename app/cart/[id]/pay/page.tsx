@@ -8,7 +8,8 @@ import Link from 'next/link';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
-import { getCart, clearCart, priceBreakdownOf } from '@/services/cartService';
+import { getCart, clearCart, insuranceFieldsOf, orderSummaryOfItem, priceBreakdownOf } from '@/services/cartService';
+import MembershipOrderSummary from '@/components/MembershipOrderSummary';
 import { getDancerUids } from '@/services/userService';
 import { Cart } from '@/types/cart';
 
@@ -90,9 +91,7 @@ export default function CartPaymentPage() {
           amount: item.totals?.total || 0,
           discountCode: item.discount?.code ?? null,
           discountAmount: item.totals?.discount ?? 0,
-          insuranceChosen: item.insurance?.selected ?? false,
-          insurancePercent: item.insurance?.percent ?? null,
-          insuranceAmount: item.totals?.insurance ?? 0,
+          ...insuranceFieldsOf(item),
           priceBreakdown: priceBreakdownOf(item),
           paymentMethod: method,
           status: method === 'helloasso' ? 'pending_payment' : 'pending_confirmation',
@@ -139,14 +138,20 @@ export default function CartPaymentPage() {
           {/* Résumé rapide */}
           <div className="bg-gold-50 border border-gold-200 rounded-lg p-6 mb-8">
             <h2 className="font-semibold text-gray-900 mb-4">Résumé de votre commande</h2>
-            <div className="space-y-2 mb-4">
+            <div className="space-y-4 mb-4">
               {cart.items.map((item) => (
-                <div key={item.id} className="flex justify-between text-sm">
-                  <span>{item.stageName}</span>
-                  <span className="font-medium">{item.totals?.total}€</span>
+                <div key={item.id}>
+                  <p className="font-semibold text-gray-900 mb-2">{item.stageName}</p>
+                  <MembershipOrderSummary order={orderSummaryOfItem(item)} />
                 </div>
               ))}
             </div>
+            {cart.items.some((item) => item.insurance) && (
+              <div className="flex justify-between text-sm mb-2">
+                <span>Assurance annulation:</span>
+                <span className="font-medium">{cart.totals.insurance ? `${cart.totals.insurance}€` : 'pas souscrite'}</span>
+              </div>
+            )}
             <div className="flex justify-between text-xl font-bold text-gold-deep pt-4 border-t border-gold-200">
               <span>Total:</span>
               <span>{cart.totals.total}€</span>

@@ -1,19 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/contexts/CartContext';
-import { updateCartItem } from '@/services/cartService';
-import { CartItem } from '@/types/cart';
+import { orderSummaryOfItem } from '@/services/cartService';
+import MembershipOrderSummary from '@/components/MembershipOrderSummary';
 
 export default function CartPage() {
   const { firebaseUser, loading: authLoading } = useAuth();
   const { cart, loading, removeFromCart } = useCart();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   // Pas besoin de redirection - permettre l'accès au panier sans connexion
 
   const handleRemoveItem = async (itemId: string) => {
@@ -22,16 +20,6 @@ export default function CartPage() {
     } catch (error) {
       console.error('Error removing item:', error);
     }
-  };
-
-  const toggleExpanded = (itemId: string) => {
-    const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(itemId)) {
-      newExpanded.delete(itemId);
-    } else {
-      newExpanded.add(itemId);
-    }
-    setExpandedItems(newExpanded);
   };
 
   if (authLoading || loading) return <div className="p-8">Chargement...</div>;
@@ -96,66 +84,9 @@ export default function CartPage() {
                       </div>
                     </div>
 
-                    {/* Configuration summary (collapsible) */}
-                    <button
-                      onClick={() => toggleExpanded(item.id)}
-                      className="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded border mb-4 flex justify-between items-center"
-                    >
-                      <span className="font-medium text-gray-700">
-                        📋 {item.configuration.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
-                        {item.configuration.accompanists > 0 && ` + ${item.configuration.accompanists} acc.`}
-                        {item.configuration.wantHousing && ' + logement'}
-                      </span>
-                      <span className="text-gray-900 font-medium">
-                        {expandedItems.has(item.id) ? '▼' : '▶'}
-                      </span>
-                    </button>
-
-                    {/* Expanded details */}
-                    {expandedItems.has(item.id) && (
-                      <div className="bg-gold-50 border border-gold-200 rounded p-4 mb-4 space-y-2 text-sm">
-                        <p>
-                          <strong>Danseurs:</strong> {item.configuration.danceType === 'solo' ? '1' : '2'}
-                          {item.configuration.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}
-                        </p>
-                        {item.configuration.accompanists > 0 && (
-                          <p>
-                            <strong>Accompagnateurs:</strong> {item.configuration.accompanists}
-                          </p>
-                        )}
-                        {item.configuration.wantHousing && (
-                          <p>
-                            <strong>Hébergement:</strong>
-                            {item.configuration.housingSolo > 0 && ` ${item.configuration.housingSolo} solo`}
-                            {item.configuration.housingSolo > 0 && item.configuration.housingCouple > 0 && ' +'}
-                            {item.configuration.housingCouple > 0 && ` ${item.configuration.housingCouple} couple`}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Price breakdown */}
-                    <div className="bg-gray-50 rounded p-3 mb-4 space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span>Stage:</span>
-                        <span className="font-medium">{item.totals?.stageTotal || 0}€</span>
-                      </div>
-                      {item.totals?.housingTotal ? (
-                        <div className="flex justify-between">
-                          <span>Hébergement:</span>
-                          <span className="font-medium">{item.totals.housingTotal}€</span>
-                        </div>
-                      ) : null}
-                      {item.totals?.insurance ? (
-                        <div className="flex justify-between">
-                          <span>Assurance annulation:</span>
-                          <span className="font-medium">{item.totals.insurance}€</span>
-                        </div>
-                      ) : null}
-                      <div className="flex justify-between pt-2 border-t font-bold">
-                        <span>Total:</span>
-                        <span>{item.totals?.total || 0}€</span>
-                      </div>
+                    {/* Récapitulatif de commande */}
+                    <div className="mb-4">
+                      <MembershipOrderSummary order={orderSummaryOfItem(item)} />
                     </div>
 
                     {/* Actions */}
@@ -197,10 +128,10 @@ export default function CartPage() {
                     <span className="font-medium">-{cart.totals.discount}€</span>
                   </div>
                 )}
-                {(cart.totals.insurance ?? 0) > 0 && (
+                {cart.items.some((item) => item.insurance) && (
                   <div className="flex justify-between text-gray-700">
                     <span>Assurance annulation:</span>
-                    <span className="font-medium">{cart.totals.insurance}€</span>
+                    <span className="font-medium">{cart.totals.insurance ? `${cart.totals.insurance}€` : 'pas souscrite'}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-lg font-bold text-orange-600 pt-3 border-t border-orange-200">

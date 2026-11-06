@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { getCart, submitCart } from '@/services/cartService';
+import { getCart, orderSummaryOfItem, submitCart } from '@/services/cartService';
+import MembershipOrderSummary from '@/components/MembershipOrderSummary';
 import { Cart } from '@/types/cart';
 import { collection, query, where, getDocs, getDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -542,43 +543,7 @@ export default function CartSummaryPage() {
                     <span className="text-2xl font-bold text-gold-deep">{item.totals?.total}€</span>
                   </div>
 
-                  <div className="bg-gold-50 rounded border border-gold-200 p-4 space-y-2 text-sm">
-                    <p>
-                      <strong>Danseurs:</strong> {item.configuration.danceType === 'solo' ? '1 danseur' : '2 danseurs'}
-                      {item.configuration.dancers.some((d) => d.licensed) && ' (licencié FFDanse)'}
-                    </p>
-                    {item.configuration.accompanists > 0 && (
-                      <p>
-                        <strong>Accompagnateurs:</strong> {item.configuration.accompanists}
-                      </p>
-                    )}
-                    {item.configuration.wantHousing && (
-                      <p>
-                        <strong>Hébergement:</strong>
-                        {item.configuration.housingSolo > 0 && ` ${item.configuration.housingSolo} solo`}
-                        {item.configuration.housingSolo > 0 && item.configuration.housingCouple > 0 && ' +'}
-                        {item.configuration.housingCouple > 0 && ` ${item.configuration.housingCouple} couple`}
-                      </p>
-                    )}
-                    {!item.configuration.wantHousing && <p><strong>Hébergement:</strong> Aucun</p>}
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span>Stage:</span>
-                      <span className="font-medium">{item.totals?.stageTotal}€</span>
-                    </div>
-                    {item.totals?.housingTotal ? (
-                      <div className="flex justify-between">
-                        <span>Hébergement:</span>
-                        <span className="font-medium">{item.totals.housingTotal}€</span>
-                      </div>
-                    ) : null}
-                    <div className="flex justify-between font-bold text-gray-900">
-                      <span>Sous-total:</span>
-                      <span>{item.totals?.total}€</span>
-                    </div>
-                  </div>
+                  <MembershipOrderSummary order={orderSummaryOfItem(item)} />
                 </div>
               ))}
             </div>
@@ -852,6 +817,18 @@ export default function CartSummaryPage() {
                   <div className="flex justify-between text-gray-700 mb-2">
                     <span>Total hébergement:</span>
                     <span className="font-medium">{cart.totals.housingTotal}€</span>
+                  </div>
+                )}
+                {(cart.totals.discount ?? 0) > 0 && (
+                  <div className="flex justify-between text-green-700 mb-2">
+                    <span>Réduction{cart.appliedCoupon ? ` (${cart.appliedCoupon})` : ''}:</span>
+                    <span className="font-medium">-{cart.totals.discount}€</span>
+                  </div>
+                )}
+                {cart.items.some((item) => item.insurance) && (
+                  <div className="flex justify-between text-gray-700 mb-2">
+                    <span>Assurance annulation:</span>
+                    <span className="font-medium">{cart.totals.insurance ? `${cart.totals.insurance}€` : 'pas souscrite'}</span>
                   </div>
                 )}
               </div>
