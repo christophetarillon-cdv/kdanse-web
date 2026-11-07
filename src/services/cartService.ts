@@ -74,7 +74,8 @@ export const calculateItemPrice = (item: CartItem): CartTotals => {
 
 const discountOn = (base: number, discount: ItemDiscount | null | undefined, target: 'stage' | 'housing') => {
   if (!discount || discount.target !== target || base <= 0) return 0;
-  const raw = discount.type === 'percent' ? (base * discount.value) / 100 : discount.value;
+  // Pourcentage arrondi à l'euro le plus proche ; montant fixe inchangé
+  const raw = discount.type === 'percent' ? Math.round((base * discount.value) / 100) : discount.value;
   return Math.min(base, Math.round(raw * 100) / 100);
 };
 
