@@ -305,7 +305,7 @@ export default function AdminStagesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1">Couple non licencié</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Couple non licencié (total pour le couple)</label>
                   <input
                     type="number"
                     value={form.pricing.stage.coupleUnlicensed || ''}
@@ -322,7 +322,7 @@ export default function AdminStagesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1">Couple licencié</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Couple licencié (total pour le couple)</label>
                   <input
                     type="number"
                     value={form.pricing.stage.coupleLicensed || ''}
@@ -339,7 +339,7 @@ export default function AdminStagesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1">Couple mixte (1 lic. + 1 non lic.)</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Couple mixte (1 lic. + 1 non lic., total pour le couple)</label>
                   <input
                     type="number"
                     value={form.pricing.stage.coupleMixed || ''}
@@ -385,7 +385,7 @@ export default function AdminStagesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1">Hébergement couple (lit double, 2 places)</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Hébergement couple (par chambre, lit double, 2 places)</label>
                   <input
                     type="number"
                     value={form.pricing.housing.couple || ''}
