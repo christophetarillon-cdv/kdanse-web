@@ -282,7 +282,7 @@ export default function AdminBankSettingsPage() {
               <span className="text-gray-900 font-medium">%</span>
             </div>
             <p className="text-xs text-gray-800 mt-1">
-              Arrondi à l&apos;euro supérieur. Non remboursable. Le pourcentage est figé dans chaque inscription à sa validation.
+              Arrondi à l&apos;euro le plus proche. Non remboursable. Le pourcentage est figé dans chaque inscription à sa validation.
             </p>
           </div>
         </div>

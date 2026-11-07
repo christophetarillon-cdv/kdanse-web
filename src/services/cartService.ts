@@ -17,9 +17,9 @@ import { getDiscountCode, isDiscountUsable } from '@/services/discountCodeServic
 const CART_COLLECTION = 'carts';
 const CART_EXPIRY_HOURS = 24;
 
-// Arrondi à l'euro supérieur, sur le montant à payer après réduction
+// Arrondi à l'euro le plus proche, sur le montant à payer après réduction
 export const insuranceAmountFor = (base: number, percent: number): number =>
-  Math.ceil(Number(((base * percent) / 100).toFixed(2)));
+  Math.round(Number(((base * percent) / 100).toFixed(2)));
 
 export const calculateItemPrice = (item: CartItem): CartTotals => {
   let stagePrice = 0;

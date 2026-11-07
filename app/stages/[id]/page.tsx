@@ -676,7 +676,7 @@ export default function StageDetailPage() {
                   </h3>
                   <p className="text-sm text-gray-900 mb-4">
                     Protégez votre inscription en cas d&apos;annulation : {insuranceSettings.percent} % du montant à payer
-                    après réduction, arrondi à l&apos;euro supérieur. Cette assurance n&apos;est pas remboursable.
+                    après réduction, arrondi à l&apos;euro le plus proche. Cette assurance n&apos;est pas remboursable.
                   </p>
                   <div className="grid md:grid-cols-2 gap-4">
                     <button
