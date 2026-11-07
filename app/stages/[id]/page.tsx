@@ -262,6 +262,8 @@ export default function StageDetailPage() {
 
   const priceItem = buildCartItem('preview');
   const totals = priceItem ? calculateItemPrice(priceItem) : null;
+  // Tarifs affichés sans réduction (la réduction est affichée à part)
+  const grossTotals = priceItem ? calculateItemPrice({ ...priceItem, discount: null, insurance: null }) : null;
 
   const handleAddToCart = async () => {
     if (!stage || isPast) return;
@@ -435,7 +437,7 @@ export default function StageDetailPage() {
                 <h3 className="font-semibold text-purple-900 mb-4 flex items-center">
                   <span className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">2</span>
                   Licence FFDanse
-                  {totals && <PriceTag>Stage : {totals.stageTotal}€</PriceTag>}
+                  {grossTotals && <PriceTag>Stage : {grossTotals.stageTotal}€</PriceTag>}
                 </h3>
                 <div className="space-y-3">
                   {form.dancers.map((dancer, idx) => (
@@ -536,7 +538,7 @@ export default function StageDetailPage() {
                 <h3 className="font-semibold text-green-900 mb-4 flex items-center">
                   <span className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">4</span>
                   Hébergement
-                  {totals && form.wantHousing && <PriceTag>+{totals.housingTotal}€</PriceTag>}
+                  {grossTotals && form.wantHousing && <PriceTag>+{grossTotals.housingTotal}€</PriceTag>}
                 </h3>
 
                 <div className="flex items-center gap-3 mb-6 p-4 bg-white rounded border">
