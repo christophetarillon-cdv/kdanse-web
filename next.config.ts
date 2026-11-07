@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
         destination: 'https://inscription.stagededanse.net/dashboard',
         permanent: false,
       },
+      // L'accueil du site de réservation est la liste des stages
+      {
+        source: '/',
+        destination: '/stages',
+        permanent: false,
+      },
     ];
   },
 };
