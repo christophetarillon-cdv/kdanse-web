@@ -3,6 +3,10 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 export async function POST() {
+  // Outil de développement : jamais disponible sur le site de production
+  if (process.env.VERCEL_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
   try {
     console.log('🚀 Initialisation des données de test...');
 

@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from 'react';
 
+// Adresses de production : pas de badge. Partout ailleurs (local, previews
+// Vercel) le badge « DEV » rappelle qu'on n'est pas sur le site public.
+const PRODUCTION_HOSTS = ['inscription.stagededanse.net'];
+
 export function EnvironmentBadge() {
   const [isDev, setIsDev] = useState(false);
 
   useEffect(() => {
-    setIsDev(!window.location.hostname.includes('kdanse-booking-prod'));
+    setIsDev(!PRODUCTION_HOSTS.includes(window.location.hostname));
   }, []);
 
   if (!isDev) return null;
