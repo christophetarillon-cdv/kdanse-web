@@ -127,6 +127,9 @@ export default function DashboardPage() {
             <Link href="/admin/inscriptions" className="bg-ink text-white px-4 py-2 rounded hover:bg-ink-soft text-center font-semibold">
               📋 Inscriptions aux stages
             </Link>
+            <Link href="/admin/rooming" className="bg-ink text-white px-4 py-2 rounded hover:bg-ink-soft text-center font-semibold">
+              🛏️ Rooming
+            </Link>
             <Link href="/admin/danseurs" className="bg-ink text-white px-4 py-2 rounded hover:bg-ink-soft text-center font-semibold">
               👤 Danseurs
             </Link>

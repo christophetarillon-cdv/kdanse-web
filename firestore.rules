@@ -126,6 +126,11 @@ service cloud.firestore {
       );
       allow create: if true;
     }
+    // Rooming par stage (page admin Rooming) : noms et chambres envoyés au
+    // centre d'hébergement, réservés aux admins
+    match /rooming/{document=**} {
+      allow read, write: if isAdmin();
+    }
     match /reservations/{document=**} {
       allow read, write: if true;
     }
