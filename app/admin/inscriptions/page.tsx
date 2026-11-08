@@ -418,8 +418,11 @@ export default function AdminInscriptionsPage() {
   let noAnswer = 0;
   let alreadyAttended = 0;
   const dancersOfMembership = (m: Membership) => m.dancers.length || 1;
-  const totalDancers = counted.reduce((n, m) => n + dancersOfMembership(m), 0);
-  counted.forEach((m) => {
+  // Les inscriptions gratuites (profs, bénévoles) ne passent pas par la
+  // question et ne sont pas des danseurs recrutés : hors de ce tableau
+  const originCounted = counted.filter((m) => m.paymentMethod !== 'gratuit');
+  const totalDancers = originCounted.reduce((n, m) => n + dancersOfMembership(m), 0);
+  originCounted.forEach((m) => {
     const weight = dancersOfMembership(m);
     if (m.alreadyAttendedKdanse === true) {
       alreadyAttended += weight;
@@ -673,7 +676,7 @@ export default function AdminInscriptionsPage() {
           <div>
             <h2 className="text-xl font-bold text-gray-900">Origine des inscriptions</h2>
             <p className="text-sm text-gray-900 font-medium">
-              Nombre de danseurs par réponse à « Comment avez-vous connu notre stage ? », pour les inscriptions non annulées affichées
+              Nombre de danseurs par réponse à « Comment avez-vous connu notre stage ? », pour les inscriptions non annulées affichées, hors inscriptions gratuites (profs, bénévoles)
             </p>
           </div>
           <div className="overflow-x-auto">
