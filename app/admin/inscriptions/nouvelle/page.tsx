@@ -292,6 +292,10 @@ export default function NewAdminMembershipPage() {
       alert('Veuillez renseigner le prénom et le nom de chaque danseur');
       return;
     }
+    if (dancers.slice(0, dancerCount).some((d) => !d.civility)) {
+      alert('Veuillez indiquer la civilité (M. ou Mme) de chaque danseur');
+      return;
+    }
     if (isPlan && (Math.abs(rowsGap) > 0.005 || rows.some((r) => !(r.amount > 0) || !r.dueDate))) {
       alert('Les échéances doivent être renseignées et leur somme doit correspondre au montant de l’inscription');
       return;

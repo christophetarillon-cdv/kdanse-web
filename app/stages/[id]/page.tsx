@@ -292,6 +292,10 @@ export default function StageDetailPage() {
       alert('Veuillez remplir les noms et prénoms de tous les danseurs');
       return;
     }
+    if (form.dancers.some(d => !d.civility)) {
+      alert('Veuillez indiquer la civilité (M. ou Mme) de chaque danseur');
+      return;
+    }
     if (form.accompanistDetails.some(a => !a.firstName.trim() || !a.lastName.trim())) {
       alert('Veuillez remplir les noms et prénoms de tous les accompagnateurs');
       return;

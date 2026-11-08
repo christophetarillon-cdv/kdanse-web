@@ -19,7 +19,42 @@ interface StoredDancer {
   firstName?: string;
   lastName?: string;
   email?: string;
+  civility?: 'M.' | 'Mme' | '';
 }
+
+// Nombre de danseurs, détaillé par civilité (M. = homme, Mme = femme)
+interface GenderCount {
+  total: number;
+  men: number;
+  women: number;
+  unknown: number;
+}
+
+const emptyCount = (): GenderCount => ({ total: 0, men: 0, women: 0, unknown: 0 });
+
+const addCount = (count: GenderCount, civility: string | undefined) => {
+  count.total += 1;
+  if (civility === 'M.') count.men += 1;
+  else if (civility === 'Mme') count.women += 1;
+  else count.unknown += 1;
+};
+
+const sumCounts = (counts: GenderCount[]): GenderCount =>
+  counts.reduce(
+    (acc, c) => ({ total: acc.total + c.total, men: acc.men + c.men, women: acc.women + c.women, unknown: acc.unknown + c.unknown }),
+    emptyCount()
+  );
+
+const GenderCell = ({ count, bold }: { count: GenderCount; bold?: boolean }) => (
+  <td className={`px-4 py-3 text-right ${bold ? 'font-bold' : ''}`}>
+    <div>{count.total}</div>
+    {count.total > 0 && (
+      <div className="text-xs font-normal text-gray-700 whitespace-nowrap">
+        {count.men} H · {count.women} F{count.unknown > 0 ? ` · ${count.unknown} ?` : ''}
+      </div>
+    )}
+  </td>
+);
 
 interface Membership {
   id: string;
@@ -402,16 +437,24 @@ export default function AdminInscriptionsPage() {
   };
 
   const confirmed = counted.filter((m) => m.coursesConfirmedAt);
+  // Chaque danseur avec ses cours et sa civilité
+  const confirmedDancers = confirmed.flatMap((m) =>
+    coursesOf(m).map((courses, i) => ({ courses, civility: m.dancers[i]?.civility }))
+  );
+  const countFor = (danceId: string, value: string) => {
+    const count = emptyCount();
+    confirmedDancers.forEach((d) => d.courses[danceId] === value && addCount(count, d.civility));
+    return count;
+  };
   const bilan = dances.map((dance) => {
-    const byLevel = levels.map((level) =>
-      confirmed.reduce((n, m) => n + coursesOf(m).filter((c) => c[dance.id] === level.id).length, 0)
-    );
-    const none = confirmed.reduce((n, m) => n + coursesOf(m).filter((c) => c[dance.id] === 'none').length, 0);
-    const total = byLevel.reduce((a, b) => a + b, 0) + none;
+    const byLevel = levels.map((level) => countFor(dance.id, level.id));
+    const none = countFor(dance.id, 'none');
+    const total = sumCounts([...byLevel, none]);
     return { dance, byLevel, none, total };
   });
-  const bilanTotals = levels.map((_, i) => bilan.reduce((n, row) => n + row.byLevel[i], 0));
-  const bilanNone = bilan.reduce((n, row) => n + row.none, 0);
+  const bilanTotals = levels.map((_, i) => sumCounts(bilan.map((row) => row.byLevel[i])));
+  const bilanNone = sumCounts(bilan.map((row) => row.none));
+  const bilanUnknown = sumCounts(bilan.map((row) => row.total)).unknown;
 
   const sourceCounts = new Map<string, number>();
   const otherTexts: string[] = [];
@@ -619,8 +662,14 @@ export default function AdminInscriptionsPage() {
           <div>
             <h2 className="text-xl font-bold text-gray-900">Bilan par danse</h2>
             <p className="text-sm text-gray-900 font-medium">
-              Nombre de danseurs par niveau, pour les inscriptions non annulées dont les cours sont confirmés
+              Nombre de danseurs par niveau (H = hommes, F = femmes d&apos;après la civilité), pour les inscriptions non
+              annulées dont les cours sont confirmés
             </p>
+            {bilanUnknown > 0 && (
+              <p className="text-sm text-gray-700">
+                « ? » : danseurs sans civilité renseignée (inscriptions antérieures, ou sans hébergement).
+              </p>
+            )}
           </div>
           {dances.length === 0 ? (
             <p className="text-gray-900 font-medium">Aucune danse configurée</p>
@@ -644,12 +693,10 @@ export default function AdminInscriptionsPage() {
                     <tr key={row.dance.id} className="text-gray-900">
                       <td className="px-4 py-3 font-semibold">{row.dance.name}</td>
                       {row.byLevel.map((count, i) => (
-                        <td key={levels[i].id} className="px-4 py-3 text-right">
-                          {count}
-                        </td>
+                        <GenderCell key={levels[i].id} count={count} />
                       ))}
-                      <td className="px-4 py-3 text-right">{row.none}</td>
-                      <td className="px-4 py-3 text-right font-bold">{row.total}</td>
+                      <GenderCell count={row.none} />
+                      <GenderCell count={row.total} bold />
                     </tr>
                   ))}
                 </tbody>
@@ -657,14 +704,10 @@ export default function AdminInscriptionsPage() {
                   <tr className="text-gray-900 font-bold">
                     <td className="px-4 py-3">Total</td>
                     {bilanTotals.map((count, i) => (
-                      <td key={levels[i].id} className="px-4 py-3 text-right">
-                        {count}
-                      </td>
+                      <GenderCell key={levels[i].id} count={count} />
                     ))}
-                    <td className="px-4 py-3 text-right">{bilanNone}</td>
-                    <td className="px-4 py-3 text-right">
-                      {bilanTotals.reduce((a, b) => a + b, 0) + bilanNone}
-                    </td>
+                    <GenderCell count={bilanNone} />
+                    <GenderCell count={sumCounts([...bilanTotals, bilanNone])} />
                   </tr>
                 </tfoot>
               </table>

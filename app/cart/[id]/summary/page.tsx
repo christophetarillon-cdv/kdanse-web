@@ -274,16 +274,14 @@ export default function CartSummaryPage() {
     setDancersInfo(newDancers);
   };
 
-  // Civilité demandée par le centre d'hébergement
-  const needsCivility = !!cart?.items.some((item) => item.configuration.wantHousing);
-
   const handleContinueToPayment = async () => {
     if (!cart) return;
 
     // Valider que tous les champs danseurs sont remplis
     for (const dancer of dancersInfo) {
-      if (needsCivility && !dancer.civility) {
-        alert('Veuillez indiquer la civilité (M. ou Mme) de chaque danseur : elle est demandée par le centre d\'hébergement');
+      // Civilité obligatoire : rooming et bilan hommes / femmes par danse
+      if (!dancer.civility) {
+        alert('Veuillez indiquer la civilité (M. ou Mme) de chaque danseur');
         return;
       }
       if (!dancer.dateOfBirth || !dancer.postalAddress?.street || !dancer.postalAddress?.postalCode || !dancer.postalAddress?.city) {
@@ -657,7 +655,7 @@ export default function CartSummaryPage() {
                   {/* Civilité, noms et prénoms */}
                   <div className="grid grid-cols-[auto_1fr_1fr] gap-4">
                     <div>
-                      <label className="block text-sm font-bold text-gray-900 mb-2">Civilité{needsCivility ? '*' : ''}</label>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">Civilité*</label>
                       <CivilitySelect
                         value={dancer.civility}
                         onChange={(civility) => {
