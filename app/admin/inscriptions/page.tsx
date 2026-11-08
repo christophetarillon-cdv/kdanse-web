@@ -28,6 +28,7 @@ interface Membership {
   stageName: string;
   amount: number;
   paymentMethod: string;
+  freeRole: string | null;
   paymentPlanId: string | null;
   status: string;
   createdAt: Date | null;
@@ -106,7 +107,10 @@ const MODE_LABELS: Record<string, string> = {
   cheque: 'Chèque',
   helloasso: 'HelloAsso',
   plan: 'Échéancier',
+  gratuit: 'Gratuit',
 };
+
+const FREE_ROLE_LABELS: Record<string, string> = { benevole: 'Bénévole', prof: 'Prof' };
 
 const eur = (n: number) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 const formatDate = (d: Date | null) => (d ? d.toLocaleDateString('fr-FR') : '—');
@@ -118,6 +122,7 @@ const toMembership = (id: string, data: DocumentData): Membership => ({
   stageName: data.stageName ?? '',
   amount: Number(data.amount ?? 0),
   paymentMethod: data.paymentMethod ?? '',
+  freeRole: data.freeRole ?? null,
   paymentPlanId: data.paymentPlanId ?? null,
   status: data.status ?? '',
   createdAt: data.createdAt?.toDate?.() ?? null,
@@ -392,6 +397,7 @@ export default function AdminInscriptionsPage() {
     paid: filtered.filter((m) => m.status === 'paid').length,
     pending: filtered.filter((m) => PENDING_STATUSES.includes(m.status)).length,
     notConfirmed: counted.filter((m) => !m.coursesConfirmedAt).length,
+    free: counted.filter((m) => m.paymentMethod === 'gratuit').length,
     total: counted.reduce((sum, m) => sum + m.amount, 0),
   };
 
@@ -459,7 +465,9 @@ export default function AdminInscriptionsPage() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-2xl font-bold text-gray-900">{kpis.count}</div>
-            <div className="text-sm text-gray-900 font-medium">Inscriptions</div>
+            <div className="text-sm text-gray-900 font-medium">
+              Inscriptions{kpis.free > 0 ? ` (dont ${kpis.free} gratuite${kpis.free > 1 ? 's' : ''})` : ''}
+            </div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-2xl font-bold text-green-700">{kpis.paid}</div>
@@ -551,7 +559,14 @@ export default function AdminInscriptionsPage() {
                         )}
                       </td>
                       <td className="px-4 py-3">{danses.length > 0 ? danses.join(', ') : '—'}</td>
-                      <td className="px-4 py-3">{MODE_LABELS[modeOf(m)] ?? (modeOf(m) || '—')}</td>
+                      <td className="px-4 py-3">
+                        {MODE_LABELS[modeOf(m)] ?? (modeOf(m) || '—')}
+                        {m.freeRole && (
+                          <span className="ml-2 inline-block px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-800">
+                            {FREE_ROLE_LABELS[m.freeRole] ?? m.freeRole}
+                          </span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-right font-semibold">{eur(m.amount)}</td>
                       <td className="px-4 py-3">
                         <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${status.className}`}>
@@ -559,7 +574,9 @@ export default function AdminInscriptionsPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        {m.coursesConfirmedAt ? (
+                        {m.paymentMethod === 'gratuit' ? (
+                          <span className="text-sm text-gray-900">—</span>
+                        ) : m.coursesConfirmedAt ? (
                           <span className="inline-block px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800">
                             Confirmés
                           </span>

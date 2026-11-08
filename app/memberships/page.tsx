@@ -257,7 +257,9 @@ export default function MembershipsPage() {
                 </div>
 
                 {/* Danseurs et Cours */}
-                {membership.registrationDetails?.dancers && membership.registrationDetails.dancers.length > 0 && (
+                {/* Pas de choix de cours pour une inscription gratuite (bénévole / prof) */}
+                {membership.paymentMethod !== 'gratuit' &&
+                  membership.registrationDetails?.dancers && membership.registrationDetails.dancers.length > 0 && (
                   <div className="bg-purple-50 rounded border border-purple-200 p-4 space-y-3">
                     <p className="font-semibold text-purple-900 mb-2">🎯 Sélection des cours</p>
                     {membership.registrationDetails.dancers.map((dancer: any, idx: number) => {

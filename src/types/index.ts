@@ -118,7 +118,7 @@ export interface Membership {
     housingSolo: number;
     housingCouple: number;
   };
-  paymentMethod?: 'helloasso' | 'virement' | 'cheque' | 'plan';
+  paymentMethod?: 'helloasso' | 'virement' | 'cheque' | 'plan' | 'gratuit';
   amount: number;
   paymentDate?: Date;
   chequeNumber?: string;

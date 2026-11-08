@@ -39,7 +39,11 @@ const PAYMENT_LABELS: Record<string, string> = {
   virement: 'Virement',
   helloasso: 'HelloAsso',
   plan: 'Échéancier',
+  gratuit: 'Gratuit (bénévole / prof)',
 };
+
+const FREE_ROLE_LABELS = { benevole: 'Bénévole', prof: 'Prof' } as const;
+type FreeRole = keyof typeof FREE_ROLE_LABELS;
 
 type InstallmentMethod = 'cheque' | 'virement' | 'cheque_vacances';
 
@@ -93,6 +97,7 @@ export default function NewAdminMembershipPage() {
 
   const [paymentMethod, setPaymentMethod] = useState('cheque');
   const [alreadyReceived, setAlreadyReceived] = useState(false);
+  const [freeRole, setFreeRole] = useState<FreeRole>('benevole');
   const [installmentCount, setInstallmentCount] = useState(2);
   const [rows, setRows] = useState<InstallmentRow[]>([]);
 
@@ -185,8 +190,10 @@ export default function NewAdminMembershipPage() {
       })
     );
 
+  const isFree = paymentMethod === 'gratuit';
+
   const total = useMemo(() => {
-    if (!stage?.pricing) return 0;
+    if (isFree || !stage?.pricing) return 0;
     const item: CartItem = {
       id: 'new',
       stageId: stage.id,
@@ -205,7 +212,7 @@ export default function NewAdminMembershipPage() {
       discount: null,
     };
     return calculateItemPrice(item).total;
-  }, [stage, danceType, dancers, dancerCount, accompanists, wantHousing, housingSolo, housingCouple]);
+  }, [isFree, stage, danceType, dancers, dancerCount, accompanists, wantHousing, housingSolo, housingCouple]);
 
   const isPlan = paymentMethod === 'plan';
   const rowsTotal = Math.round(rows.reduce((sum, r) => sum + Number(r.amount || 0), 0) * 100) / 100;
@@ -246,7 +253,7 @@ export default function NewAdminMembershipPage() {
   };
 
   const handleSave = async () => {
-    if (!donor || !stage?.pricing || !user) {
+    if (!donor || !stage || (!isFree && !stage.pricing) || !user) {
       alert('Veuillez choisir le donneur d’ordre et le stage');
       return;
     }
@@ -273,7 +280,8 @@ export default function NewAdminMembershipPage() {
       housingSolo: wantHousing ? housingSolo : 0,
       housingCouple: wantHousing ? housingCouple : 0,
     };
-    const status = isPlan ? 'pending_plan' : alreadyReceived ? 'paid' : 'pending_confirmation';
+    // Gratuit (bénévole / prof) : validée tout de suite, comme un paiement reçu
+    const status = isFree ? 'paid' : isPlan ? 'pending_plan' : alreadyReceived ? 'paid' : 'pending_confirmation';
     const snapshot: Snapshot = {
       amount: total,
       danceType,
@@ -284,6 +292,7 @@ export default function NewAdminMembershipPage() {
       housingCouple: extras.housingCouple,
       paymentMethod,
       status,
+      ...(isFree ? { freeRole: FREE_ROLE_LABELS[freeRole] } : {}),
       ...(isPlan ? { installments: rows.map((r) => `${r.dueDate} · ${INSTALLMENT_METHOD_LABELS[r.method]} · ${r.amount}€`) } : {}),
     };
 
@@ -319,13 +328,19 @@ export default function NewAdminMembershipPage() {
         amount: total,
         paymentMethod: isPlan ? 'plan' : paymentMethod,
         status,
-        courses: people.map((d, index) => ({
-          index,
-          name: `${d.firstName} ${d.lastName}`,
-          courses: selections[index] ?? {},
-        })),
+        // Pas de choix de cours pour les bénévoles et les profs
+        courses: isFree
+          ? []
+          : people.map((d, index) => ({
+              index,
+              name: `${d.firstName} ${d.lastName}`,
+              courses: selections[index] ?? {},
+            })),
+        ...(isFree ? { freeRole, coursesConfirmed: true } : {}),
         snapshot,
-        summary: `Inscription saisie par l’admin · ${PAYMENT_LABELS[paymentMethod]}${isPlan ? ` (${rows.length} échéances)` : ` · ${alreadyReceived ? 'déjà reçu' : 'à confirmer'}`}`,
+        summary: isFree
+          ? `Inscription gratuite saisie par l’admin · ${FREE_ROLE_LABELS[freeRole]}`
+          : `Inscription saisie par l’admin · ${PAYMENT_LABELS[paymentMethod]}${isPlan ? ` (${rows.length} échéances)` : ` · ${alreadyReceived ? 'déjà reçu' : 'à confirmer'}`}`,
         adminId: user.id,
       });
       router.push('/admin/inscriptions');
@@ -475,7 +490,7 @@ export default function NewAdminMembershipPage() {
           )}
         </div>
 
-        {stage && (
+        {stage && !isFree && (
           <div className="bg-white rounded-lg shadow p-6 space-y-4">
             <h2 className="text-xl font-bold text-gray-900">3. Cours</h2>
             {Array.from({ length: dancerCount }, (_, i) => (
@@ -511,7 +526,22 @@ export default function NewAdminMembershipPage() {
               </option>
             ))}
           </select>
-          {isPlan ? (
+          {isFree ? (
+            <div className="space-y-3">
+              <div className="flex gap-6">
+                {(Object.keys(FREE_ROLE_LABELS) as FreeRole[]).map((role) => (
+                  <label key={role} className="flex items-center gap-2 text-gray-900">
+                    <input type="radio" name="freeRole" checked={freeRole === role} onChange={() => setFreeRole(role)} />
+                    {FREE_ROLE_LABELS[role]}
+                  </label>
+                ))}
+              </div>
+              <p className="text-sm text-gray-900">
+                Inscription à 0 €, hébergement et accompagnateurs compris, validée immédiatement : accès au stage dans
+                l&apos;app et dans l&apos;espace perso. Pas de choix de cours, pas de facture, pas d&apos;email.
+              </p>
+            </div>
+          ) : isPlan ? (
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-1">Nombre d&apos;échéances</label>

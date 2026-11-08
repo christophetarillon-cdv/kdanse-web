@@ -87,6 +87,7 @@ const MODE_LABELS: Record<string, string> = {
   cheque_vacances: 'Chèque vacances',
   helloasso: 'HelloAsso',
   plan: 'Échéancier',
+  gratuit: 'Gratuit (bénévole / prof)',
 };
 
 const eur = (n: number) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });

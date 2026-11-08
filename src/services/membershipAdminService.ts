@@ -167,6 +167,9 @@ export interface NewMembershipInput {
   snapshot: Snapshot;
   summary: string;
   adminId: string;
+  // Inscription gratuite : bénévole ou prof, sans choix de cours
+  freeRole?: 'benevole' | 'prof';
+  coursesConfirmed?: boolean;
 }
 
 export const createAdminMembership = async (input: NewMembershipInput): Promise<string> => {
@@ -190,6 +193,8 @@ export const createAdminMembership = async (input: NewMembershipInput): Promise<
     createdAt: now,
     createdBy: input.adminId,
     ...(input.status === 'paid' ? { paymentDate: now } : {}),
+    ...(input.freeRole ? { freeRole: input.freeRole } : {}),
+    ...(input.coursesConfirmed ? { coursesConfirmedAt: now } : {}),
   });
 
   input.courses.forEach((entry) => {

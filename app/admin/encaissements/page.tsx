@@ -168,6 +168,7 @@ export default function AdminEncaissementsPage() {
           (m) =>
             !m.paymentPlanId &&
             m.paymentMethod !== 'plan' &&
+            m.paymentMethod !== 'gratuit' &&
             (m.status === 'paid' || m.status === 'pending_confirmation')
         )
         .map((m) => ({

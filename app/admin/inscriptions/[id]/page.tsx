@@ -178,7 +178,11 @@ export default function EditMembershipPage() {
   };
 
   const item = buildItem();
-  const newTotals = item ? calculateItemPrice(item) : null;
+  // Inscription gratuite (bénévole / prof) : reste à 0 €, quelles que soient les modifications
+  const isFree = stored?.paymentMethod === 'gratuit';
+  const computedTotals = item ? calculateItemPrice(item) : null;
+  const newTotals =
+    computedTotals && isFree ? { ...computedTotals, total: 0, discount: 0, insurance: 0 } : computedTotals;
   const oldAmount = Number(stored?.amount ?? 0);
   const newAmount = newTotals?.total ?? oldAmount;
   const delta = Math.round((newAmount - oldAmount) * 100) / 100;
@@ -288,8 +292,18 @@ export default function EditMembershipPage() {
         amount: newAmount,
         discountAmount: newTotals.discount ?? 0,
         insuranceAmount: newTotals.insurance ?? 0,
-        priceBreakdown: priceBreakdownOf(item),
-        courses: nextDancers.map((d, index) => ({
+        priceBreakdown: isFree
+          ? {
+              stageTotal: 0,
+              housingTotal: 0,
+              housingSoloPrice: 0,
+              housingCouplePrice: 0,
+              discount: 0,
+              insurance: 0,
+              total: 0,
+            }
+          : priceBreakdownOf(item),
+        courses: isFree ? [] : nextDancers.map((d, index) => ({
           index,
           name: `${d.firstName} ${d.lastName}`,
           courses: selections[index] ?? {},
@@ -435,6 +449,7 @@ export default function EditMembershipPage() {
           )}
         </div>
 
+        {!isFree && (
         <div className="bg-white rounded-lg shadow p-6 space-y-4">
           <h2 className="text-xl font-bold text-gray-900">Cours</h2>
           {Array.from({ length: dancerCount }, (_, i) => (
@@ -462,6 +477,7 @@ export default function EditMembershipPage() {
             </div>
           ))}
         </div>
+        )}
 
         <div className="bg-white rounded-lg shadow p-6 space-y-4">
           <h2 className="text-xl font-bold text-gray-900">Montant</h2>
