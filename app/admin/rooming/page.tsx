@@ -4,12 +4,15 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
+  addDoc,
   collection,
+  deleteDoc,
   deleteField,
   doc,
   getDoc,
   getDocs,
   query,
+  serverTimestamp,
   setDoc,
   updateDoc,
   where,
@@ -27,6 +30,17 @@ import {
   RoomingSettings,
   roomingTotals,
 } from '@/lib/roomingPlan';
+import {
+  longDate,
+  pointChanges,
+  pointFileName,
+  pointLines,
+  pointTotals,
+  RoomingPoint,
+  stayShort,
+  toPointRows,
+} from '@/lib/roomingPoints';
+import { buildRoomingWorkbook, downloadBuffer } from '@/lib/roomingExcel';
 
 interface StageOption {
   id: string;
@@ -77,6 +91,8 @@ function Rooming() {
   const [settingsForm, setSettingsForm] = useState<RoomingSettings>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
+  const [points, setPoints] = useState<RoomingPoint[]>([]);
+  const [pointDate, setPointDate] = useState(() => new Date().toLocaleDateString('sv-SE'));
 
   useEffect(() => {
     if (authLoading) return;
@@ -121,10 +137,17 @@ function Rooming() {
         const data = (snap.data() ?? {}) as RoomingDoc;
         setRoomingDoc(data);
         setSettingsForm(data.settings ?? {});
+        const pointSnap = await getDocs(collection(db, 'rooming', stageId, 'points'));
+        setPoints(
+          pointSnap.docs
+            .map((d) => ({ id: d.id, ...(d.data() as RoomingPoint) }))
+            .sort((a, b) => a.number - b.number)
+        );
         setRoomingError(null);
       } catch (error) {
         console.error('Rooming doc:', error);
         setRoomingDoc({});
+        setPoints([]);
         setRoomingError('Les corrections et réglages du rooming ne sont pas accessibles (règles Firestore à déployer).');
       }
     } finally {
@@ -142,6 +165,56 @@ function Rooming() {
   );
   const totals = roomingTotals(result.rows);
   const contractRooms = roomingDoc.settings?.contractRooms ?? null;
+
+  // Points intermédiaires
+  const stage = stages.find((s) => s.id === stageId);
+  const stay = stayShort(stage?.startDate, typeof stage?.endDate === 'string' ? stage.endDate : undefined);
+  const currentRows = useMemo(() => toPointRows(result.rows), [result.rows]);
+  const lastPoint = points[points.length - 1] ?? null;
+  const nextLines = useMemo(() => pointLines(currentRows, lastPoint?.rows ?? null), [currentRows, lastPoint]);
+  const nextChanges = pointChanges(nextLines);
+
+  const downloadPoint = async (point: RoomingPoint, previous: RoomingPoint | null, preview = false) => {
+    const lines = pointLines(point.rows, previous?.rows ?? null);
+    const buffer = await buildRoomingWorkbook({
+      settings: roomingDoc.settings ?? {},
+      date: point.date,
+      lines,
+      rows: point.rows,
+    });
+    const name = pointFileName(point, roomingDoc.settings?.groupName ?? '', stay);
+    downloadBuffer(buffer, preview ? `APERCU ${name}` : name);
+  };
+
+  const savePoint = async () => {
+    if (!pointDate) return;
+    if (result.issues.length && !confirm(`${result.issues.length} point(s) restent à vérifier. Enregistrer le point quand même ?`)) return;
+    const point: RoomingPoint = {
+      number: (lastPoint?.number ?? 0) + 1,
+      date: pointDate,
+      rows: currentRows,
+      createdBy: user?.email ?? '',
+    };
+    setSaving('point');
+    try {
+      const ref = await addDoc(collection(db, 'rooming', stageId, 'points'), { ...point, createdAt: serverTimestamp() });
+      const saved = { ...point, id: ref.id };
+      setPoints([...points, saved]);
+      await downloadPoint(saved, lastPoint);
+    } catch (error) {
+      console.error(error);
+      alert('Enregistrement du point impossible');
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const deleteLastPoint = async () => {
+    if (!lastPoint?.id) return;
+    if (!confirm(`Supprimer le point n°${lastPoint.number} du ${longDate(lastPoint.date)} ? Le prochain point sera comparé au précédent.`)) return;
+    await deleteDoc(doc(db, 'rooming', stageId, 'points', lastPoint.id));
+    setPoints(points.slice(0, -1));
+  };
 
   const saveOverride = async (row: RoomingRow, changes: { type?: RoomType; comment?: string | null }) => {
     const current = roomingDoc.overrides?.[row.id] ?? {};
@@ -368,6 +441,78 @@ function Rooming() {
                 </ul>
               </div>
             )}
+
+            {/* Points envoyés au centre */}
+            <div className="bg-white rounded-lg shadow p-6 space-y-4">
+              <h2 className="text-xl font-bold text-gray-900">Points envoyés au centre</h2>
+              <p className="text-sm text-gray-700">
+                Chaque point fige le rooming à une date et produit le fichier Excel du centre. Par rapport au point
+                précédent, les chambres nouvelles ou modifiées sont en rouge ; les anciennes sont gardées en rouge barré,
+                sans numéro ni comptage, avec ce que sont devenues les personnes.
+              </p>
+              <div className="flex flex-wrap items-end gap-3">
+                <label className="block">
+                  <span className="block text-sm font-medium text-gray-900 mb-1">Date du point</span>
+                  <input type="date" value={pointDate} onChange={(e) => setPointDate(e.target.value)} className={inputClass} />
+                </label>
+                <button
+                  onClick={() => downloadPoint({ number: (lastPoint?.number ?? 0) + 1, date: pointDate, rows: currentRows }, lastPoint, true)}
+                  className="border border-gray-400 text-gray-900 px-4 py-2 rounded font-semibold hover:bg-gray-100"
+                >
+                  Aperçu Excel
+                </button>
+                <button
+                  onClick={savePoint}
+                  disabled={saving === 'point' || !!roomingError || currentRows.length === 0}
+                  className="bg-ink hover:bg-ink-soft text-white px-4 py-2 rounded font-semibold disabled:opacity-50"
+                >
+                  {saving === 'point' ? 'Enregistrement…' : `Enregistrer le point n°${(lastPoint?.number ?? 0) + 1} et télécharger`}
+                </button>
+              </div>
+              <p className="text-sm text-gray-900">
+                {lastPoint
+                  ? `Depuis le point n°${lastPoint.number} : ${nextChanges.added} chambre(s) en rouge, ${nextChanges.removed} barrée(s), ${nextChanges.comments} commentaire(s) modifié(s).`
+                  : 'Premier point : tout le fichier sera en noir.'}
+                {!roomingDoc.settings?.groupName && ' Pensez à renseigner les réglages du séjour (en-tête du fichier).'}
+              </p>
+              {points.length > 0 && (
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-100 border-b">
+                    <tr className="text-left font-semibold text-gray-900">
+                      <th className="px-3 py-2">N°</th>
+                      <th className="px-3 py-2">Date</th>
+                      <th className="px-3 py-2">Chambres</th>
+                      <th className="px-3 py-2">Personnes</th>
+                      <th className="px-3 py-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {[...points].reverse().map((point) => {
+                      const index = points.indexOf(point);
+                      const t = pointTotals(point.rows);
+                      return (
+                        <tr key={point.id ?? point.number} className="text-gray-900">
+                          <td className="px-3 py-2 font-semibold">{point.number}</td>
+                          <td className="px-3 py-2">{longDate(point.date)}</td>
+                          <td className="px-3 py-2">{t.rooms}</td>
+                          <td className="px-3 py-2">{t.people}</td>
+                          <td className="px-3 py-2 text-right whitespace-nowrap space-x-3">
+                            <button className="underline" onClick={() => downloadPoint(point, points[index - 1] ?? null)}>
+                              Télécharger
+                            </button>
+                            {point === lastPoint && (
+                              <button className="underline text-red-700" onClick={deleteLastPoint}>
+                                Supprimer
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
 
             {/* En-tête du fichier du centre */}
             <div className="bg-white rounded-lg shadow p-6 space-y-4">
