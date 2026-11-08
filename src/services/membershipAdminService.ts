@@ -179,7 +179,9 @@ export const createAdminMembership = async (input: NewMembershipInput): Promise<
 
   batch.set(ref, {
     userId: input.userId,
-    visibleUserIds: [],
+    // Gratuit : le donneur d'ordre (bénévole / prof) a accès au stage dans l'app,
+    // même sans danseur (hébergement seul)
+    visibleUserIds: input.freeRole ? [input.userId] : [],
     stageId: input.stageId,
     stageName: input.stageName,
     registrationDetails: input.registrationDetails,

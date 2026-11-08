@@ -44,6 +44,7 @@ const PAYMENT_LABELS: Record<string, string> = {
 
 const FREE_ROLE_LABELS = { benevole: 'Bénévole', prof: 'Prof' } as const;
 type FreeRole = keyof typeof FREE_ROLE_LABELS;
+type DanceType = 'solo' | 'couple' | 'none';
 
 type InstallmentMethod = 'cheque' | 'virement' | 'cheque_vacances';
 
@@ -86,7 +87,7 @@ export default function NewAdminMembershipPage() {
   const [newAccount, setNewAccount] = useState({ email: '', password: '', prenom: '', nom: '' });
 
   const [stageId, setStageId] = useState('');
-  const [danceType, setDanceType] = useState<'solo' | 'couple'>('solo');
+  const [danceType, setDanceType] = useState<DanceType>('solo');
   const [dancers, setDancers] = useState<EditableDancer[]>([{ firstName: '', lastName: '', licensed: false }]);
   const [accompanists, setAccompanists] = useState(0);
   const [accompanistDetails, setAccompanistDetails] = useState<{ firstName: string; lastName: string }[]>([]);
@@ -157,11 +158,11 @@ export default function NewAdminMembershipPage() {
       .slice(0, 15);
   }, [search, users]);
 
-  const dancerCount = danceType === 'couple' ? 2 : 1;
+  const dancerCount = danceType === 'couple' ? 2 : danceType === 'none' ? 0 : 1;
 
-  const changeDanceType = (type: 'solo' | 'couple') => {
+  const changeDanceType = (type: DanceType) => {
     setDanceType(type);
-    const count = type === 'couple' ? 2 : 1;
+    const count = type === 'couple' ? 2 : type === 'none' ? 0 : 1;
     setDancers((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? { firstName: '', lastName: '', licensed: false }));
     setSelections((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? {}));
   };
@@ -192,8 +193,14 @@ export default function NewAdminMembershipPage() {
 
   const isFree = paymentMethod === 'gratuit';
 
+  // « Aucun danseur » (hébergement seul) n'existe que pour les inscriptions gratuites
+  useEffect(() => {
+    if (!isFree && danceType === 'none') changeDanceType('solo');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFree, danceType]);
+
   const total = useMemo(() => {
-    if (isFree || !stage?.pricing) return 0;
+    if (isFree || !stage?.pricing || danceType === 'none') return 0;
     const item: CartItem = {
       id: 'new',
       stageId: stage.id,
@@ -443,10 +450,23 @@ export default function NewAdminMembershipPage() {
               </option>
             ))}
           </select>
-          <select value={danceType} onChange={(e) => changeDanceType(e.target.value as 'solo' | 'couple')} className={inputClass}>
+          <select value={danceType} onChange={(e) => changeDanceType(e.target.value as DanceType)} className={inputClass}>
             <option value="solo">Solo (1 danseur)</option>
             <option value="couple">Couple (2 danseurs)</option>
+            {isFree && <option value="none">Aucun danseur (hébergement seul)</option>}
           </select>
+          {!isFree && (
+            <p className="text-sm text-gray-700">
+              Pour une personne hébergée qui ne danse pas (bénévole), choisissez d&apos;abord le paiement « Gratuit » en bas
+              de page : la formule « Aucun danseur » apparaîtra ici.
+            </p>
+          )}
+          {danceType === 'none' && (
+            <p className="text-sm text-gray-900">
+              Le donneur d&apos;ordre ({donor?.name || donor?.email || 'à choisir'}) est inscrit sans danser : il a accès au
+              stage dans l&apos;app. Ajoutez les autres personnes hébergées comme accompagnateurs.
+            </p>
+          )}
           {Array.from({ length: dancerCount }, (_, i) => (
             <div key={i} className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
               <input type="text" placeholder={`Prénom danseur ${i + 1}`} value={dancers[i]?.firstName ?? ''} onChange={(e) => updateDancer(i, { firstName: e.target.value })} className={inputClass} />

@@ -250,7 +250,7 @@ export default function AdminInscriptionsPage() {
   const historyValue = (field: string, value: unknown): string => {
     if (field === 'amount' || field === 'discountAmount') return value == null ? '—' : eur(Number(value));
     if (field === 'courses') return coursesLabel(value);
-    if (field === 'danceType') return value === 'couple' ? 'Couple' : value === 'solo' ? 'Solo' : formatValue(value);
+    if (field === 'danceType') return value === 'couple' ? 'Couple' : value === 'solo' ? 'Solo' : value === 'none' ? 'Aucun danseur' : formatValue(value);
     if (field === 'wantHousing') return value === null || value === undefined ? '—' : value ? 'Oui' : 'Non';
     if (field === 'status') return STATUS_LABELS[String(value)]?.label ?? formatValue(value);
     return formatValue(value);
@@ -553,7 +553,7 @@ export default function AdminInscriptionsPage() {
                         <div className="text-gray-700">{m.stageName}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <div>{dancerNames(m).join(', ') || '—'}</div>
+                        <div>{dancerNames(m).join(', ') || (m.freeRole ? 'Aucun danseur (hébergement seul)' : '—')}</div>
                         {m.accompanistNames.length > 0 && (
                           <div className="text-gray-700 text-xs">Accompagnateurs : {m.accompanistNames.join(', ')}</div>
                         )}

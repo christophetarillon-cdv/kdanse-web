@@ -23,6 +23,10 @@ const eur = (n: number) => n.toLocaleString('fr-FR', { style: 'currency', curren
 
 const dancerLicensed = (d: DocumentData) => d.licensed === true;
 
+type DanceType = 'solo' | 'couple' | 'none';
+const DANCE_TYPE_LABELS: Record<DanceType, string> = { solo: 'solo', couple: 'couple', none: 'aucun danseur' };
+const danceTypeOf = (value: unknown): DanceType => (value === 'couple' || value === 'none' ? value : 'solo');
+
 export default function EditMembershipPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -38,7 +42,7 @@ export default function EditMembershipPage() {
   const [dances, setDances] = useState<Dance[]>([]);
   const [levels, setLevels] = useState<Level[]>([]);
 
-  const [danceType, setDanceType] = useState<'solo' | 'couple'>('solo');
+  const [danceType, setDanceType] = useState<DanceType>('solo');
   const [dancers, setDancers] = useState<EditableDancer[]>([]);
   const [accompanists, setAccompanists] = useState(0);
   const [accompanistDetails, setAccompanistDetails] = useState<{ firstName: string; lastName: string }[]>([]);
@@ -88,7 +92,7 @@ export default function EditMembershipPage() {
         setLevels(levelsData);
 
         setStored({ ...data, id: membershipId });
-        const type: 'solo' | 'couple' = details.danceType === 'couple' ? 'couple' : 'solo';
+        const type = danceTypeOf(details.danceType);
         setDanceType(type);
         setDancers(
           storedDancers.map((d) => ({
@@ -120,11 +124,11 @@ export default function EditMembershipPage() {
     load();
   }, [authLoading, user, router, membershipId]);
 
-  const dancerCount = danceType === 'couple' ? 2 : 1;
+  const dancerCount = danceType === 'couple' ? 2 : danceType === 'none' ? 0 : 1;
 
-  const changeDanceType = (type: 'solo' | 'couple') => {
+  const changeDanceType = (type: DanceType) => {
     setDanceType(type);
-    const count = type === 'couple' ? 2 : 1;
+    const count = type === 'couple' ? 2 : type === 'none' ? 0 : 1;
     setDancers((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? { firstName: '', lastName: '', licensed: false }));
     setSelections((prev) => Array.from({ length: count }, (_, i) => prev[i] ?? {}));
   };
@@ -160,7 +164,8 @@ export default function EditMembershipPage() {
       stageId: stored.stageId,
       stageName: stored.stageName,
       configuration: {
-        danceType,
+        // « Aucun danseur » n'existe qu'en gratuit, dont le total est forcé à 0
+        danceType: danceType === 'none' ? 'solo' : danceType,
         dancers: dancers.slice(0, dancerCount).map((d) => ({ licensed: d.licensed })),
         accompanists,
         wantHousing,
@@ -221,7 +226,7 @@ export default function EditMembershipPage() {
     }));
 
     const snapshotOf = (
-      type: 'solo' | 'couple',
+      type: DanceType,
       people: { firstName: string; lastName: string; licensed: boolean }[],
       extras: { accompanists: number; wantHousing: boolean; housingSolo: number; housingCouple: number },
       amount: number,
@@ -239,7 +244,7 @@ export default function EditMembershipPage() {
       courses: courses.map((c) => JSON.stringify(c)),
     });
     const beforeSnapshot = snapshotOf(
-      previousDetails.danceType === 'couple' ? 'couple' : 'solo',
+      danceTypeOf(previousDetails.danceType),
       previousDancers.map((d) => ({ firstName: d.firstName ?? '', lastName: d.lastName ?? '', licensed: dancerLicensed(d) })),
       {
         accompanists: Number(previousDetails.accompanists ?? 0),
@@ -267,7 +272,7 @@ export default function EditMembershipPage() {
 
     const summary = [
       `Montant ${eur(oldAmount)} → ${eur(newAmount)}`,
-      `Danse : ${danceType === 'couple' ? 'couple' : 'solo'}`,
+      `Danse : ${DANCE_TYPE_LABELS[danceType]}`,
       `Danseurs : ${nextDancers.map((d) => `${d.firstName} ${d.lastName}`).join(', ')}`,
       `Hébergement : ${wantHousing ? `${housingSolo} solo, ${housingCouple} couple` : 'non'}`,
       `Accompagnateurs : ${accompanists}`,
@@ -371,9 +376,10 @@ export default function EditMembershipPage() {
           <h2 className="text-xl font-bold text-gray-900">Danseurs et formule</h2>
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">Formule</label>
-            <select value={danceType} onChange={(e) => changeDanceType(e.target.value as 'solo' | 'couple')} className={inputClass}>
+            <select value={danceType} onChange={(e) => changeDanceType(e.target.value as DanceType)} className={inputClass}>
               <option value="solo">Solo (1 danseur)</option>
               <option value="couple">Couple (2 danseurs)</option>
+              {(isFree || danceType === 'none') && <option value="none">Aucun danseur (hébergement seul)</option>}
             </select>
           </div>
           {Array.from({ length: dancerCount }, (_, i) => (
