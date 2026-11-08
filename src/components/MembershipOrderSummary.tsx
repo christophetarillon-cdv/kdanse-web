@@ -1,4 +1,5 @@
 import { OrderSummaryData } from '@/types';
+import { displayName, personFallbackLabel, ROOM_TYPE_LABELS, roomingPeople } from '@/lib/rooming';
 
 const Row = ({ label, value, tone, bold }: { label: string; value: string; tone?: 'green' | 'muted'; bold?: boolean }) => (
   <div className={`flex justify-between gap-4 ${bold ? 'font-bold pt-2 border-t' : ''} ${tone === 'green' ? 'text-green-700' : ''}`}>
@@ -14,6 +15,9 @@ export default function MembershipOrderSummary({ order }: { order: OrderSummaryD
   const accompanists = details.accompanistDetails?.filter((a) => a.firstName || a.lastName) ?? [];
   const soloCount = details.housingSolo ?? 0;
   const coupleCount = details.housingCouple ?? 0;
+  const rooms = details.rooms ?? [];
+  const people = roomingPeople(details);
+  const nameOf = (key: string) => displayName(people.find((p) => p.key === key), personFallbackLabel(key));
 
   return (
     <div className="bg-gold-50 rounded border border-gold-200 p-4 space-y-3 text-sm">
@@ -23,7 +27,7 @@ export default function MembershipOrderSummary({ order }: { order: OrderSummaryD
         <p className="font-semibold text-gray-900">Danseurs</p>
         {details.dancers.map((dancer, idx) => (
           <p key={idx} className="text-gray-900">
-            {[dancer.firstName, dancer.lastName].filter(Boolean).join(' ') || `Danseur ${idx + 1}`}
+            {[dancer.civility, dancer.firstName, dancer.lastName].filter(Boolean).join(' ') || `Danseur ${idx + 1}`}
             <span className="text-gray-700">
               {' · '}
               {dancer.licensed ? 'licencié FFDanse' : 'non licencié'}
@@ -37,7 +41,7 @@ export default function MembershipOrderSummary({ order }: { order: OrderSummaryD
           <p className="font-semibold text-gray-900">Accompagnateurs</p>
           {accompanists.length > 0 ? (
             accompanists.map((a, idx) => (
-              <p key={idx} className="text-gray-900">{`${a.firstName} ${a.lastName}`.trim()}</p>
+              <p key={idx} className="text-gray-900">{[a.civility, a.firstName, a.lastName].filter(Boolean).join(' ')}</p>
             ))
           ) : (
             <p className="text-gray-900">{details.accompanists}</p>
@@ -60,6 +64,13 @@ export default function MembershipOrderSummary({ order }: { order: OrderSummaryD
               value={breakdown ? `${coupleCount * breakdown.housingCouplePrice}€` : ''}
             />
           )}
+          {rooms.map((room, idx) => (
+            <p key={idx} className="text-gray-900">
+              {ROOM_TYPE_LABELS[room.type]}
+              {room.type === 'double' ? ' (demandé)' : ''} : {room.occupants.map(nameOf).join(', ') || '—'}
+              {room.comment ? <span className="text-gray-700"> · {room.comment}</span> : null}
+            </p>
+          ))}
         </div>
       )}
 

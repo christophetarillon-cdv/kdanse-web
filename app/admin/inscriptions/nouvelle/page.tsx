@@ -13,6 +13,8 @@ import { createPaymentPlan } from '@/services/paymentPlanService';
 import { calculateItemPrice } from '@/services/cartService';
 import { CartItem } from '@/types/cart';
 import { Dance, Level } from '@/types/courses';
+import { Civility, RoomRequest, roomingError, roomingPeople, syncRooms } from '@/lib/rooming';
+import RoomAssignment, { CivilitySelect } from '@/components/RoomAssignment';
 
 interface UserOption {
   id: string;
@@ -30,7 +32,10 @@ interface EditableDancer {
   firstName: string;
   lastName: string;
   licensed: boolean;
+  civility?: Civility | '';
 }
+
+type EditablePerson = { firstName: string; lastName: string; civility?: Civility | '' };
 
 const eur = (n: number) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
@@ -90,10 +95,11 @@ export default function NewAdminMembershipPage() {
   const [danceType, setDanceType] = useState<DanceType>('solo');
   const [dancers, setDancers] = useState<EditableDancer[]>([{ firstName: '', lastName: '', licensed: false }]);
   const [accompanists, setAccompanists] = useState(0);
-  const [accompanistDetails, setAccompanistDetails] = useState<{ firstName: string; lastName: string }[]>([]);
+  const [accompanistDetails, setAccompanistDetails] = useState<EditablePerson[]>([]);
   const [wantHousing, setWantHousing] = useState(false);
   const [housingSolo, setHousingSolo] = useState(0);
   const [housingCouple, setHousingCouple] = useState(0);
+  const [rooms, setRooms] = useState<RoomRequest[]>([]);
   const [selections, setSelections] = useState<Record<string, string>[]>([{}]);
 
   const [paymentMethod, setPaymentMethod] = useState('cheque');
@@ -174,7 +180,7 @@ export default function NewAdminMembershipPage() {
     );
   };
 
-  const updateAccompanistDetail = (index: number, changes: Partial<{ firstName: string; lastName: string }>) =>
+  const updateAccompanistDetail = (index: number, changes: Partial<EditablePerson>) =>
     setAccompanistDetails((prev) => prev.map((a, i) => (i === index ? { ...a, ...changes } : a)));
 
   const updateDancer = (index: number, changes: Partial<EditableDancer>) =>
@@ -192,6 +198,24 @@ export default function NewAdminMembershipPage() {
     );
 
   const isFree = paymentMethod === 'gratuit';
+
+  // Personnes hébergées et répartition dans les chambres
+  const roomingConfig = {
+    dancers: dancers.slice(0, dancerCount),
+    accompanistDetails: accompanistDetails.slice(0, accompanists),
+    accompanists,
+    wantHousing,
+    rooms,
+  };
+  const people = roomingPeople(roomingConfig);
+  const peopleKey = people.map((p) => p.key).join(',');
+  useEffect(() => {
+    setRooms((prev) => {
+      const next = wantHousing ? syncRooms(housingSolo, housingCouple, people, prev) : [];
+      return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wantHousing, housingSolo, housingCouple, peopleKey]);
 
   // « Aucun danseur » (hébergement seul) n'existe que pour les inscriptions gratuites
   useEffect(() => {
@@ -272,10 +296,16 @@ export default function NewAdminMembershipPage() {
       alert('Les échéances doivent être renseignées et leur somme doit correspondre au montant de l’inscription');
       return;
     }
-    const people = dancers.slice(0, dancerCount).map((d) => ({
+    const housingError = roomingError(roomingConfig, people);
+    if (housingError) {
+      alert(`Hébergement : ${housingError}`);
+      return;
+    }
+    const dancerPeople = dancers.slice(0, dancerCount).map((d) => ({
       firstName: d.firstName.trim(),
       lastName: d.lastName.trim(),
       licensed: d.licensed,
+      civility: d.civility ?? '',
     }));
     if (accompanistDetails.slice(0, accompanists).some((a) => !a.firstName.trim() || !a.lastName.trim())) {
       alert('Veuillez renseigner le prénom et le nom de chaque accompagnateur');
@@ -292,7 +322,7 @@ export default function NewAdminMembershipPage() {
     const snapshot: Snapshot = {
       amount: total,
       danceType,
-      dancers: people.map((d) => `${d.firstName} ${d.lastName}${d.licensed ? ' (licencié)' : ''}`),
+      dancers: dancerPeople.map((d) => `${d.firstName} ${d.lastName}${d.licensed ? ' (licencié)' : ''}`),
       accompanists: extras.accompanists,
       wantHousing: extras.wantHousing,
       housingSolo: extras.housingSolo,
@@ -325,12 +355,14 @@ export default function NewAdminMembershipPage() {
         stageName: stage.name,
         registrationDetails: {
           danceType,
-          dancers: people,
+          dancers: dancerPeople,
           accompanistDetails: accompanistDetails.slice(0, accompanists).map((a) => ({
             firstName: a.firstName.trim(),
             lastName: a.lastName.trim(),
+            civility: a.civility ?? '',
           })),
           ...extras,
+          rooms: wantHousing ? rooms : [],
         },
         amount: total,
         paymentMethod: isPlan ? 'plan' : paymentMethod,
@@ -338,7 +370,7 @@ export default function NewAdminMembershipPage() {
         // Pas de choix de cours pour les bénévoles et les profs
         courses: isFree
           ? []
-          : people.map((d, index) => ({
+          : dancerPeople.map((d, index) => ({
               index,
               name: `${d.firstName} ${d.lastName}`,
               courses: selections[index] ?? {},
@@ -464,11 +496,13 @@ export default function NewAdminMembershipPage() {
           {danceType === 'none' && (
             <p className="text-sm text-gray-900">
               Le donneur d&apos;ordre ({donor?.name || donor?.email || 'à choisir'}) est inscrit sans danser : il a accès au
-              stage dans l&apos;app. Ajoutez les autres personnes hébergées comme accompagnateurs.
+              stage dans l&apos;app. Saisissez les personnes hébergées comme accompagnateurs, y compris lui-même, pour
+              qu&apos;elles figurent dans le rooming.
             </p>
           )}
           {Array.from({ length: dancerCount }, (_, i) => (
-            <div key={i} className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+            <div key={i} className="grid grid-cols-1 sm:grid-cols-[auto_1fr_1fr_auto] gap-3 items-end">
+              <CivilitySelect value={dancers[i]?.civility} onChange={(civility) => updateDancer(i, { civility })} />
               <input type="text" placeholder={`Prénom danseur ${i + 1}`} value={dancers[i]?.firstName ?? ''} onChange={(e) => updateDancer(i, { firstName: e.target.value })} className={inputClass} />
               <input type="text" placeholder={`Nom danseur ${i + 1}`} value={dancers[i]?.lastName ?? ''} onChange={(e) => updateDancer(i, { lastName: e.target.value })} className={inputClass} />
               <label className="flex items-center gap-2 text-gray-900 pb-2">
@@ -484,7 +518,8 @@ export default function NewAdminMembershipPage() {
           {accompanists > 0 && (
             <div className="space-y-3">
               {Array.from({ length: accompanists }, (_, i) => (
-                <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div key={i} className="grid grid-cols-1 sm:grid-cols-[auto_1fr_1fr] gap-3">
+                  <CivilitySelect value={accompanistDetails[i]?.civility} onChange={(civility) => updateAccompanistDetail(i, { civility })} />
                   <input type="text" placeholder={`Prénom accompagnateur ${i + 1}`} value={accompanistDetails[i]?.firstName ?? ''} onChange={(e) => updateAccompanistDetail(i, { firstName: e.target.value })} className={inputClass} />
                   <input type="text" placeholder={`Nom accompagnateur ${i + 1}`} value={accompanistDetails[i]?.lastName ?? ''} onChange={(e) => updateAccompanistDetail(i, { lastName: e.target.value })} className={inputClass} />
                 </div>
@@ -508,6 +543,7 @@ export default function NewAdminMembershipPage() {
               </div>
             </div>
           )}
+          {wantHousing && <RoomAssignment people={people} rooms={rooms} onChange={setRooms} />}
         </div>
 
         {stage && !isFree && (

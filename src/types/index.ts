@@ -1,3 +1,4 @@
+import type { Civility, RoomRequest } from '@/lib/rooming';
 import type { PriceBreakdown } from './cart';
 
 export type { Cart, CartItem, CartTotals, RegistrationConfiguration, PriceBreakdown } from './cart';
@@ -52,6 +53,7 @@ export interface UserProfile {
 
 // Danseur enregistré dans profile.dancers (saisi lors d'une inscription)
 export interface SavedDancer {
+  civility?: Civility | '';
   uid?: string; // compte propre du danseur, si l'email correspond à un compte
   firstName: string;
   lastName: string;
@@ -111,12 +113,13 @@ export interface Membership {
   status: 'paid' | 'pending_confirmation' | 'pending_plan' | 'pending_payment' | 'cancelled' | 'active' | 'completed';
   registrationDetails: {
     danceType: 'solo' | 'couple';
-    dancers: { firstName?: string; lastName?: string; licensed: boolean }[];
+    dancers: { firstName?: string; lastName?: string; licensed: boolean; civility?: Civility | '' }[];
     accompanists: number;
-    accompanistDetails?: { firstName: string; lastName: string }[];
+    accompanistDetails?: { firstName: string; lastName: string; civility?: Civility | '' }[];
     wantHousing: boolean;
     housingSolo: number;
     housingCouple: number;
+    rooms?: RoomRequest[];
   };
   paymentMethod?: 'helloasso' | 'virement' | 'cheque' | 'plan' | 'gratuit';
   amount: number;

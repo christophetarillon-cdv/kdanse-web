@@ -1,6 +1,9 @@
+import type { Civility, RoomRequest } from '@/lib/rooming';
+
 export interface Dancer {
   licensed: boolean;
   uid?: string;
+  civility?: Civility | '';
 }
 
 export interface RegistrationConfiguration {
@@ -11,11 +14,14 @@ export interface RegistrationConfiguration {
   wantHousing: boolean;
   housingSolo: number;
   housingCouple: number;
+  // Détail des chambres : type demandé, occupants, commentaire (voir src/lib/rooming.ts)
+  rooms?: RoomRequest[];
 }
 
 export interface AccompanistDetail {
   firstName: string;
   lastName: string;
+  civility?: Civility | '';
 }
 
 export interface CartItem {

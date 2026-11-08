@@ -12,12 +12,17 @@ import { updateMembershipDetails, Snapshot } from '@/services/membershipAdminSer
 import { calculateItemPrice, priceBreakdownOf } from '@/services/cartService';
 import { CartItem, ItemDiscount } from '@/types/cart';
 import { Dance, Level } from '@/types/courses';
+import { Civility, RoomRequest, roomingError, roomingPeople, syncRooms } from '@/lib/rooming';
+import RoomAssignment, { CivilitySelect } from '@/components/RoomAssignment';
 
 interface EditableDancer {
   firstName: string;
   lastName: string;
   licensed: boolean;
+  civility?: Civility | '';
 }
+
+type EditablePerson = { firstName: string; lastName: string; civility?: Civility | '' };
 
 const eur = (n: number) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
@@ -45,7 +50,8 @@ export default function EditMembershipPage() {
   const [danceType, setDanceType] = useState<DanceType>('solo');
   const [dancers, setDancers] = useState<EditableDancer[]>([]);
   const [accompanists, setAccompanists] = useState(0);
-  const [accompanistDetails, setAccompanistDetails] = useState<{ firstName: string; lastName: string }[]>([]);
+  const [accompanistDetails, setAccompanistDetails] = useState<EditablePerson[]>([]);
+  const [rooms, setRooms] = useState<RoomRequest[]>([]);
   const [wantHousing, setWantHousing] = useState(false);
   const [housingSolo, setHousingSolo] = useState(0);
   const [housingCouple, setHousingCouple] = useState(0);
@@ -99,18 +105,21 @@ export default function EditMembershipPage() {
             firstName: d.firstName ?? '',
             lastName: d.lastName ?? '',
             licensed: dancerLicensed(d),
+            civility: (d.civility ?? '') as Civility | '',
           }))
         );
         setAccompanists(Number(details.accompanists ?? 0));
         setAccompanistDetails(
-          ((details.accompanistDetails ?? []) as { firstName?: string; lastName?: string }[]).map((a) => ({
+          ((details.accompanistDetails ?? []) as { firstName?: string; lastName?: string; civility?: Civility | '' }[]).map((a) => ({
             firstName: a.firstName ?? '',
             lastName: a.lastName ?? '',
+            civility: a.civility ?? '',
           }))
         );
         setWantHousing(!!details.wantHousing);
         setHousingSolo(Number(details.housingSolo ?? 0));
         setHousingCouple(Number(details.housingCouple ?? 0));
+        setRooms((details.rooms ?? []) as RoomRequest[]);
         const loadedSelections = storedDancers.map((_, i) => ((coursesSnaps[i] as { data: () => DocumentData | undefined }).data()?.courses ?? {}) as Record<string, string>);
         setSelections(loadedSelections);
         setOriginalSelections(loadedSelections);
@@ -140,7 +149,7 @@ export default function EditMembershipPage() {
     );
   };
 
-  const updateAccompanistDetail = (index: number, changes: Partial<{ firstName: string; lastName: string }>) =>
+  const updateAccompanistDetail = (index: number, changes: Partial<EditablePerson>) =>
     setAccompanistDetails((prev) => prev.map((a, i) => (i === index ? { ...a, ...changes } : a)));
 
   const updateDancer = (index: number, changes: Partial<EditableDancer>) =>
@@ -198,6 +207,26 @@ export default function EditMembershipPage() {
     else setRefundAmount('0');
   }, [delta]);
 
+  // Personnes hébergées et répartition dans les chambres (les inscriptions
+  // antérieures sans répartition sont pré-remplies dans l'ordre)
+  const roomingConfig = {
+    dancers: dancers.slice(0, dancerCount),
+    accompanistDetails: accompanistDetails.slice(0, accompanists),
+    accompanists,
+    wantHousing,
+    rooms,
+  };
+  const people = roomingPeople(roomingConfig);
+  const peopleKey = people.map((p) => p.key).join(',');
+  useEffect(() => {
+    if (loading) return;
+    setRooms((prev) => {
+      const next = wantHousing ? syncRooms(housingSolo, housingCouple, people, prev) : [];
+      return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, wantHousing, housingSolo, housingCouple, peopleKey]);
+
   const handleSave = async () => {
     const item = buildItem();
     if (!stored || !newTotals || !user || !item) return;
@@ -209,6 +238,15 @@ export default function EditMembershipPage() {
     if (accompanistDetails.slice(0, accompanists).some((a) => !a.firstName.trim() || !a.lastName.trim())) {
       alert('Veuillez renseigner le prénom et le nom de chaque accompagnateur');
       return;
+    }
+    const housingError = roomingError(roomingConfig, people);
+    if (housingError) {
+      // Civilité manquante (inscriptions antérieures) : avertir sans bloquer
+      const onlyCivility = housingError.startsWith('Indiquez la civilité');
+      if (!onlyCivility || !confirm(`Hébergement : ${housingError}. Enregistrer quand même ?`)) {
+        if (!onlyCivility) alert(`Hébergement : ${housingError}`);
+        return;
+      }
     }
     const refund = Number(refundAmount.replace(',', '.'));
     if (!(refund >= 0) || refund > Math.max(0, -delta)) {
@@ -223,6 +261,7 @@ export default function EditMembershipPage() {
       firstName: d.firstName.trim(),
       lastName: d.lastName.trim(),
       licensed: d.licensed,
+      civility: d.civility ?? '',
     }));
 
     const snapshotOf = (
@@ -289,10 +328,12 @@ export default function EditMembershipPage() {
           accompanistDetails: accompanistDetails.slice(0, accompanists).map((a) => ({
             firstName: a.firstName.trim(),
             lastName: a.lastName.trim(),
+            civility: a.civility ?? '',
           })),
           wantHousing,
           housingSolo: wantHousing ? housingSolo : 0,
           housingCouple: wantHousing ? housingCouple : 0,
+          rooms: wantHousing ? rooms : [],
         },
         amount: newAmount,
         discountAmount: newTotals.discount ?? 0,
@@ -383,7 +424,8 @@ export default function EditMembershipPage() {
             </select>
           </div>
           {Array.from({ length: dancerCount }, (_, i) => (
-            <div key={i} className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+            <div key={i} className="grid grid-cols-1 sm:grid-cols-[auto_1fr_1fr_auto] gap-3 items-end">
+              <CivilitySelect value={dancers[i]?.civility} onChange={(civility) => updateDancer(i, { civility })} />
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-1">Prénom danseur {i + 1}</label>
                 <input
@@ -425,7 +467,8 @@ export default function EditMembershipPage() {
           {accompanists > 0 && (
             <div className="space-y-3">
               {Array.from({ length: accompanists }, (_, i) => (
-                <div key={i} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div key={i} className="grid grid-cols-1 sm:grid-cols-[auto_1fr_1fr] gap-3">
+                  <CivilitySelect value={accompanistDetails[i]?.civility} onChange={(civility) => updateAccompanistDetail(i, { civility })} />
                   <input type="text" placeholder={`Prénom accompagnateur ${i + 1}`} value={accompanistDetails[i]?.firstName ?? ''} onChange={(e) => updateAccompanistDetail(i, { firstName: e.target.value })} className={inputClass} />
                   <input type="text" placeholder={`Nom accompagnateur ${i + 1}`} value={accompanistDetails[i]?.lastName ?? ''} onChange={(e) => updateAccompanistDetail(i, { lastName: e.target.value })} className={inputClass} />
                 </div>
@@ -453,6 +496,7 @@ export default function EditMembershipPage() {
               </div>
             </div>
           )}
+          {wantHousing && <RoomAssignment people={people} rooms={rooms} onChange={setRooms} />}
         </div>
 
         {!isFree && (

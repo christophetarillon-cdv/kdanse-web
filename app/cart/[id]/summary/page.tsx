@@ -13,6 +13,7 @@ import { auth, db } from '@/lib/firebase';
 import PasswordInput from '@/components/PasswordInput';
 import { redeemDiscountCode } from '@/services/discountCodeService';
 import { isValidPostalCode, isValidEmail, isValidPassword } from '@/lib/validation';
+import { CivilitySelect } from '@/components/RoomAssignment';
 import {
   findUserUidByEmail,
   linkDancerAccount,
@@ -206,6 +207,7 @@ export default function CartSummaryPage() {
                     ...dancer,
                     firstName: selectedDancer.firstName,
                     lastName: selectedDancer.lastName,
+                    civility: selectedDancer.civility || dancer.civility || '',
                     email: selectedDancer.email || '',
                     uid: selectedDancer.uid,
                     dateOfBirth: selectedDancer.dateOfBirth || '',
@@ -272,11 +274,18 @@ export default function CartSummaryPage() {
     setDancersInfo(newDancers);
   };
 
+  // Civilité demandée par le centre d'hébergement
+  const needsCivility = !!cart?.items.some((item) => item.configuration.wantHousing);
+
   const handleContinueToPayment = async () => {
     if (!cart) return;
 
     // Valider que tous les champs danseurs sont remplis
     for (const dancer of dancersInfo) {
+      if (needsCivility && !dancer.civility) {
+        alert('Veuillez indiquer la civilité (M. ou Mme) de chaque danseur : elle est demandée par le centre d\'hébergement');
+        return;
+      }
       if (!dancer.dateOfBirth || !dancer.postalAddress?.street || !dancer.postalAddress?.postalCode || !dancer.postalAddress?.city) {
         alert('Veuillez remplir toutes les informations des danseurs');
         return;
@@ -421,6 +430,7 @@ export default function CartSummaryPage() {
         const dancersToSave = dancersToSubmit.map((d, index) => ({
           firstName: d.firstName,
           lastName: d.lastName,
+          ...(d.civility ? { civility: d.civility } : {}),
           email: d.email,
           dateOfBirth: d.dateOfBirth,
           postalAddress: d.postalAddress,
@@ -467,6 +477,7 @@ export default function CartSummaryPage() {
               .map((dancer, dancerIndex) => ({
                 firstName: dancer.firstName,
                 lastName: dancer.lastName,
+                civility: dancer.civility ?? '',
                 email: dancer.email,
                 dateOfBirth: dancer.dateOfBirth,
                 postalAddress: dancer.postalAddress,
@@ -592,6 +603,7 @@ export default function CartSummaryPage() {
                               ...newDancers[idx],
                               firstName: selectedDancer.firstName,
                               lastName: selectedDancer.lastName,
+                              civility: selectedDancer.civility || newDancers[idx].civility || '',
                               email: selectedDancer.email || firebaseUser?.email || '',
                               dateOfBirth: selectedDancer.dateOfBirth || '',
                               postalAddress: selectedDancer.postalAddress || { street: '', postalCode: '', city: '' },
@@ -642,8 +654,19 @@ export default function CartSummaryPage() {
                     </div>
                   )}
 
-                  {/* Noms et prénoms */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* Civilité, noms et prénoms */}
+                  <div className="grid grid-cols-[auto_1fr_1fr] gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-900 mb-2">Civilité{needsCivility ? '*' : ''}</label>
+                      <CivilitySelect
+                        value={dancer.civility}
+                        onChange={(civility) => {
+                          const newDancers = [...dancersInfo];
+                          newDancers[idx] = { ...newDancers[idx], civility };
+                          setDancersInfo(newDancers);
+                        }}
+                      />
+                    </div>
                     <div>
                       <label className="block text-sm font-bold text-gray-900 mb-2">Prénom*</label>
                       <input

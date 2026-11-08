@@ -19,6 +19,8 @@ import Link from 'next/link';
 import { CartItem, DiscountCode, ItemDiscount } from '@/types/cart';
 import { InsuranceSettings } from '@/types';
 import { isStagePast } from '@/lib/stageDates';
+import { Civility, RoomRequest, roomingError, roomingPeople, syncRooms } from '@/lib/rooming';
+import RoomAssignment, { CivilitySelect } from '@/components/RoomAssignment';
 
 const formatDateFr = (isoDate: string) =>
   new Date(`${isoDate}T00:00:00`).toLocaleDateString('fr-FR', {
@@ -66,6 +68,7 @@ interface Dancer {
   firstName: string;
   lastName: string;
   licensed: boolean;
+  civility?: Civility | '';
   // Remplis en Phase 2 avant paiement
   dateOfBirth?: string;
   postalAddress?: {
@@ -84,10 +87,11 @@ interface RegistrationForm {
   danceType: 'solo' | 'couple';
   dancers: Dancer[];
   accompanists: number;
-  accompanistDetails: { firstName: string; lastName: string }[];
+  accompanistDetails: { firstName: string; lastName: string; civility?: Civility | '' }[];
   wantHousing: boolean;
   housingSolo: number;
   housingCouple: number;
+  rooms: RoomRequest[];
 }
 
 export default function StageDetailPage() {
@@ -117,6 +121,7 @@ export default function StageDetailPage() {
     wantHousing: false,
     housingSolo: 0,
     housingCouple: 0,
+    rooms: [],
   });
 
   useEffect(() => {
@@ -138,6 +143,7 @@ export default function StageDetailPage() {
       wantHousing: item.configuration.wantHousing,
       housingSolo: item.configuration.housingSolo,
       housingCouple: item.configuration.housingCouple,
+      rooms: item.configuration.rooms ?? [],
     });
     setInsurance(item.insurance ? item.insurance.selected : null);
     if (item.discount) {
@@ -187,11 +193,24 @@ export default function StageDetailPage() {
       ),
     }));
 
-  const updateAccompanist = (index: number, changes: Partial<{ firstName: string; lastName: string }>) =>
+  const updateAccompanist = (index: number, changes: Partial<{ firstName: string; lastName: string; civility: Civility | '' }>) =>
     setForm((prev) => ({
       ...prev,
       accompanistDetails: prev.accompanistDetails.map((a, i) => (i === index ? { ...a, ...changes } : a)),
     }));
+
+  // Personnes à loger et répartition dans les chambres, tenue à jour quand le
+  // nombre de chambres ou de personnes change
+  const people = roomingPeople(form);
+  const peopleKey = people.map((p) => p.key).join(',');
+  useEffect(() => {
+    setForm((prev) => {
+      const rooms = prev.wantHousing
+        ? syncRooms(prev.housingSolo, prev.housingCouple, roomingPeople(prev), prev.rooms)
+        : [];
+      return JSON.stringify(rooms) === JSON.stringify(prev.rooms) ? prev : { ...prev, rooms };
+    });
+  }, [form.wantHousing, form.housingSolo, form.housingCouple, peopleKey]);
 
   const getTotalPersons = (): number => {
     const dancers = form.danceType === 'solo' ? 1 : 2;
@@ -275,6 +294,11 @@ export default function StageDetailPage() {
     }
     if (form.accompanistDetails.some(a => !a.firstName.trim() || !a.lastName.trim())) {
       alert('Veuillez remplir les noms et prénoms de tous les accompagnateurs');
+      return;
+    }
+    const housingError = roomingError(form, people);
+    if (housingError) {
+      alert(`Hébergement : ${housingError}`);
       return;
     }
     if (couponInput.trim() && !appliedDiscount) {
@@ -402,7 +426,15 @@ export default function StageDetailPage() {
                 </h3>
                 <div className="space-y-4">
                   {form.dancers.map((dancer, idx) => (
-                    <div key={idx} className="grid grid-cols-2 gap-3">
+                    <div key={idx} className="grid grid-cols-[auto_1fr_1fr] gap-3">
+                      <CivilitySelect
+                        value={dancer.civility}
+                        onChange={(civility) => {
+                          const newDancers = [...form.dancers];
+                          newDancers[idx] = { ...newDancers[idx], civility };
+                          setForm({ ...form, dancers: newDancers });
+                        }}
+                      />
                       <input
                         type="text"
                         placeholder="Prénom"
@@ -509,7 +541,8 @@ export default function StageDetailPage() {
                 {form.accompanists > 0 && (
                   <div className="mt-4 space-y-3">
                     {form.accompanistDetails.map((a, index) => (
-                      <div key={index} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div key={index} className="grid grid-cols-1 sm:grid-cols-[auto_1fr_1fr] gap-3">
+                        <CivilitySelect value={a.civility} onChange={(civility) => updateAccompanist(index, { civility })} />
                         <input
                           type="text"
                           placeholder={`Prénom accompagnateur ${index + 1}`}
@@ -629,6 +662,10 @@ export default function StageDetailPage() {
                       {getHousingStatus() === 'warning' && `⚠️ Capacité: ${getTotalHousingCapacity()} places pour ${getTotalPersons()} personnes (places excédentaires)`}
                       {getHousingStatus() === 'error' && `❌ Capacité insuffisante: ${getTotalHousingCapacity()} places pour ${getTotalPersons()} personnes`}
                     </div>
+
+                    {getHousingStatus() !== 'error' && (
+                      <RoomAssignment people={people} rooms={form.rooms} onChange={(rooms) => setForm({ ...form, rooms })} />
+                    )}
                   </div>
                 )}
               </div>
